@@ -1,0 +1,147 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mehrab/core/config/routes/extension.dart';
+import '../../core/config/routes/app_routes.dart';
+import '../../core/utilities/resources/colors.dart';
+import '../../core/utilities/resources/constants.dart';
+import '../../core/utilities/services/cache_service.dart';
+import '../../core/widgets/icon_broken.dart';
+import 'main_app_state.dart';
+
+class MainAppCubit extends Cubit<MainAppStates> {
+  MainAppCubit()
+    : super(MainAppInitial());
+
+  static MainAppCubit instance(BuildContext context) =>
+      BlocProvider.of(context);
+
+  bool isEnglish = true;
+  int currentIndex = 2;
+  int? totalUnseenNotification;
+  int? totalUnseenAnnouncement;
+
+
+  Color setEnglishColor(BuildContext context) {
+    if (isEnglish) {
+      return AppColors.accentColor;
+    }
+    return context.backgroundColor;
+  }
+
+  Color setArabicColor(BuildContext context) {
+    if (isEnglish) {
+      return context.backgroundColor;
+    }
+    return AppColors.accentColor;
+  }
+
+  void englishFunction({bool? isEnglishCache}) {
+    if (isEnglishCache != null) {
+      isEnglish = isEnglishCache;
+      emit(MainAppChangeLangState());
+    } else {
+      if (!isEnglish) {
+        isEnglish = true;
+        CacheService.setData(key: AppConstants.isEnglish, value: isEnglish);
+        emit(MainAppChangeLangState());
+      }
+    }
+  }
+
+  void setCurrentIndex({int? index, int? cacheThemValue}) {
+    if (cacheThemValue != null) {
+      currentIndex = cacheThemValue;
+    } else {
+      if (currentIndex != index) {
+        currentIndex = index ?? 2;
+        emit(MainAppChangeModeState());
+        CacheService.setData(key: AppConstants.themeMode, value: currentIndex);
+      }
+    }
+  }
+
+
+  Color setLangColor(int index) {
+    if (currentIndex == index) {
+      return AppColors.accentColor;
+    } else {
+      return Colors.transparent;
+    }
+  }
+
+  bool isSystemModeDark(BuildContext context) {
+    final Brightness brightness = MediaQuery.of(context).platformBrightness;
+    if (brightness == Brightness.dark) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Color? systemNavBarColor(BuildContext context) {
+    switch (currentIndex) {
+      case 0:
+        return AppColors.blackColor;
+      case 2:
+        if (isSystemModeDark(context)) {
+          return AppColors.blackColor;
+        } else {
+          return Colors.transparent.withValues(alpha: 0);
+        }
+      default:
+        return Colors.transparent.withValues(alpha: 0);
+    }
+  }
+
+  ThemeMode get themeMode {
+    switch (currentIndex) {
+      case 0:
+        return ThemeMode.dark;
+      case 1:
+        return ThemeMode.light;
+      default:
+        return ThemeMode.system;
+    }
+  }
+
+  void arabicFunction() {
+    if (isEnglish) {
+      isEnglish = false;
+      CacheService.setData(key: AppConstants.isEnglish, value: isEnglish);
+      emit(MainAppChangeLangState());
+    }
+  }
+
+  Locale setAppLanguage() {
+    if (isEnglish) {
+      return const Locale(AppConstants.en);
+    }
+    return const Locale(AppConstants.ar);
+  }
+
+  IconData changeArrow() {
+    if (isEnglish) {
+      return IconBroken.Arrow___Left_2;
+    }
+    return IconBroken.Arrow___Right_2;
+  }
+
+  String setFontFamily() {
+    if (isEnglish) {
+      return AppConstants.englishFont;
+    }
+    return AppConstants.arabicFont;
+  }
+
+  String get checkNextRoute {
+    CacheService.baseUrl = CacheService.getData(key: AppConstants.baseUrl);
+    CacheService.token = CacheService.getData(key: AppConstants.token);
+    CacheService.userRole = CacheService.getData(key: AppConstants.userRole);
+    CacheService.isParentSelectChild = CacheService.getData(
+      key: AppConstants.isParentSelectChild,
+    );
+    CacheService.userId = CacheService.getData(key: AppConstants.userId);
+    CacheService.userPhoto = CacheService.getData(key: AppConstants.userPhoto);
+    return AppRoutes.homeRoute;
+  }
+}
