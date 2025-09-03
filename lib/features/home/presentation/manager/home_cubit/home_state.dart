@@ -23,3 +23,8 @@ final class GetUserDataErrorState extends HomeState {
 final class TryAgainSubmitQuizSuccessState extends HomeState {}
 
 final class TryAgainSubmitQuizErrorState extends HomeState {}
+class ChangeSliderIndexState extends HomeState {
+  final int index;
+  ChangeSliderIndexState(this.index);
+}
+

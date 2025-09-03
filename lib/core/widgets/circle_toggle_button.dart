@@ -136,6 +136,7 @@ class CircleToggleButtonGridView extends StatefulWidget {
   final MainAxisAlignment? mainAxisAlignment;
   final TextStyle? textStyle;
   final bool isTextTranslated;
+  final double? height;
 
   const CircleToggleButtonGridView({
     super.key,
@@ -150,6 +151,7 @@ class CircleToggleButtonGridView extends StatefulWidget {
     this.mainAxisAlignment,
     this.textStyle,
     this.isTextTranslated = true,
+    this.height,
   });
 
   @override
@@ -192,50 +194,53 @@ class _CircleToggleButtonGridViewState
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // Two columns
-        childAspectRatio: 5, // Adjust the height-to-width ratio
-        crossAxisSpacing: 8.0, // Spacing between columns
-        mainAxisSpacing: 8.0, // Spacing between rows
-      ),
-      itemCount: widget.length,
-      shrinkWrap: true,
-      // To make GridView take up the necessary space only
-      physics: const NeverScrollableScrollPhysics(),
-      // Disable scrolling in the grid
-      itemBuilder: (context, index) {
-        return InkWell(
-          onTap: () => _onToggle(index, widget.titles[index]),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment:
-                  widget.mainAxisAlignment ?? MainAxisAlignment.start,
-              children: [
-                CircleToggleButton(
-                  isSelected: selectedIndex == index,
-                  selectedColor: widget.selectedColor,
-                  unselectedColor: widget.unselectedColor,
-                  size: widget.size,
-                ),
-                const SizedBox(width: 15.0),
-                Text(
-                  widget.isTextTranslated
-                      ? widget.titles[index].tr(context)
-                      : widget.titles[index],
-                  style:
-                      widget.textStyle ??
-                      AppStyle.textStyle12Regular.copyWith(
-                        fontSize: 14.sp,
-                        color: context.invertedColor,
-                      ),
-                ),
-              ],
+    return SizedBox(
+      height: widget.height, // Adjust height based on size
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, // Two columns
+          childAspectRatio: 5, // Adjust the height-to-width ratio
+          crossAxisSpacing: 8.0, // Spacing between columns
+          mainAxisSpacing: 8.0, // Spacing between rows
+        ),
+        itemCount: widget.length,
+        shrinkWrap: true,
+        // To make GridView take up the necessary space only
+        physics: const NeverScrollableScrollPhysics(),
+        // Disable scrolling in the grid
+        itemBuilder: (context, index) {
+          return InkWell(
+            onTap: () => _onToggle(index, widget.titles[index]),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment:
+                    widget.mainAxisAlignment ?? MainAxisAlignment.start,
+                children: [
+                  CircleToggleButton(
+                    isSelected: selectedIndex == index,
+                    selectedColor: widget.selectedColor,
+                    unselectedColor: widget.unselectedColor,
+                    size: widget.size,
+                  ),
+                  const SizedBox(width: 15.0),
+                  Text(
+                    widget.isTextTranslated
+                        ? widget.titles[index].tr(context)
+                        : widget.titles[index],
+                    style:
+                        widget.textStyle ??
+                        AppStyle.textStyle12Regular.copyWith(
+                          fontSize: 14.sp,
+                          color: context.invertedColor,
+                        ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

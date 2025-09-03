@@ -25,6 +25,7 @@ class CustomDropDownMenu extends StatefulWidget {
     this.disabledBorder,
     this.enabledBorder,
     this.focusedBorder,
+    this.errorBorder,
     this.autoValidateMode = AutovalidateMode.onUserInteraction,
     this.onChangedIndex,
     this.isDense = false,
@@ -46,6 +47,7 @@ class CustomDropDownMenu extends StatefulWidget {
   final InputBorder? disabledBorder;
   final InputBorder? enabledBorder;
   final InputBorder? focusedBorder;
+  final InputBorder? errorBorder;
   final AutovalidateMode autoValidateMode;
   final bool isDense;
   final EdgeInsetsGeometry? contentPadding;
@@ -208,6 +210,7 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
       suffixIcon: suffixIcon,
       hint: widget.hint,
       disabledBorder: widget.disabledBorder,
+      errorBorder: widget.errorBorder,
       enabledBorder: widget.enabledBorder,
       focusedBorder: widget.focusedBorder,
       isDense: widget.isDense,
@@ -582,5 +585,233 @@ class _MultiSelectionExpansionTileState
       selectedItemsId.clear();
       selectedItemsNames.clear();
     }
+  }
+}
+
+
+class CustomDropDownMenuWithSearch extends StatefulWidget {
+  const CustomDropDownMenuWithSearch({
+    super.key,
+    this.dropdownWidth,
+    required this.dropdownItems,
+    this.value,
+    required this.onChanged,
+    this.validator,
+    this.isTextTranslated = false,
+    this.enabled = true,
+    this.isShowLoading = true,
+    this.label,
+    this.suffixIcon,
+    this.hint,
+    this.disabledBorder,
+    this.enabledBorder,
+    this.focusedBorder,
+    this.autoValidateMode = AutovalidateMode.onUserInteraction,
+    this.onChangedIndex,
+    this.isDense = false,
+    this.contentPadding,
+  });
+
+  final double? dropdownWidth;
+  final List<String> dropdownItems;
+  final bool isTextTranslated;
+  final String? value;
+  final void Function(String? value) onChanged;
+  final void Function(int? value)? onChangedIndex;
+  final String? Function(String?)? validator;
+  final String? label;
+  final String? hint;
+  final bool enabled;
+  final bool isShowLoading;
+  final Widget? suffixIcon;
+  final InputBorder? disabledBorder;
+  final InputBorder? enabledBorder;
+  final InputBorder? focusedBorder;
+  final AutovalidateMode autoValidateMode;
+  final bool isDense;
+  final EdgeInsetsGeometry? contentPadding;
+
+  @override
+  State<CustomDropDownMenuWithSearch> createState() => _CustomDropDownMenuWithSearchState();
+}
+
+class _CustomDropDownMenuWithSearchState extends State<CustomDropDownMenuWithSearch> {
+  late TextEditingController _controller;
+  late ScrollController _scrollController;
+  late TextEditingController _searchController;
+
+  final GlobalKey _textFieldKey = GlobalKey();
+  List<String> filteredItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+    _scrollController = ScrollController();
+    _searchController = TextEditingController();
+    filteredItems = widget.dropdownItems;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.text = widget.isTextTranslated
+          ? widget.value?.tr(context) ?? ''
+          : widget.value ?? '';
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant CustomDropDownMenuWithSearch oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.text = widget.isTextTranslated
+          ? widget.value?.tr(context) ?? ''
+          : widget.value ?? '';
+    });
+  }
+
+  void _showPopupMenu(BuildContext context) {
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final RenderBox renderBox =
+    _textFieldKey.currentContext!.findRenderObject() as RenderBox;
+    final Offset offset = renderBox.localToGlobal(Offset.zero);
+    final Size size = renderBox.size;
+    final double menuWidth = widget.dropdownWidth ?? size.width;
+
+    _searchController.clear();
+    filteredItems = widget.dropdownItems;
+
+    showMenu<String>(
+      context: context,
+      color: context.chatColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      position: !isRtl
+          ? RelativeRect.fromLTRB(offset.dx, offset.dy + size.height, offset.dx, offset.dy)
+          : RelativeRect.fromLTRB(offset.dx - (menuWidth - size.width), offset.dy + size.height, offset.dx + menuWidth, offset.dy),
+      constraints: BoxConstraints(
+        minWidth: menuWidth,
+        maxWidth: menuWidth,
+        maxHeight: 40.hR,
+      ),
+      items: [
+        PopupMenuItem<String>(
+          enabled: false,
+          padding: EdgeInsets.zero,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    setState(() {
+                      filteredItems = widget.dropdownItems
+                          .where((item) => (widget.isTextTranslated
+                          ? item.tr(context)
+                          : item)
+                          .toLowerCase()
+                          .contains(value.toLowerCase()))
+                          .toList();
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: AppStrings.search.tr(context),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: 30.hR),
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  controller: _scrollController,
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(
+                        filteredItems.length,
+                            (index) => PopupMenuItem<String>(
+                          value: filteredItems[index],
+                          child: Text(
+                            widget.isTextTranslated
+                                ? filteredItems[index].tr(context)
+                                : filteredItems[index],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: context.invertedColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ).then((value) {
+      if (value != null) {
+        _controller.text = widget.isTextTranslated ? value.tr(context) : value;
+        widget.onChanged(value);
+        if (widget.onChangedIndex != null) {
+          widget.onChangedIndex!(widget.dropdownItems.indexOf(value));
+        }
+      }
+    });
+  }
+
+  bool get isLoading => widget.dropdownItems.isEmpty && widget.isShowLoading;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MyTextField(
+      key: _textFieldKey,
+      onTap: () {
+        if (!isLoading && widget.enabled) {
+          _showPopupMenu(context);
+        }
+      },
+      autoValidateMode: widget.autoValidateMode,
+      enabled: widget.enabled,
+      controller: _controller,
+      readOnly: true,
+      validator: widget.validator,
+      keyboardType: TextInputType.none,
+      label: widget.label,
+      suffixIcon: suffixIcon,
+      hint: widget.hint,
+      disabledBorder: widget.disabledBorder,
+      enabledBorder: widget.enabledBorder,
+      focusedBorder: widget.focusedBorder,
+      isDense: widget.isDense,
+      contentPadding: widget.contentPadding,
+    );
+  }
+
+  Widget get suffixIcon {
+    if (isLoading) {
+      return const WaitingTextFormIndicator();
+    }
+    return widget.suffixIcon ??
+        Icon(
+          Icons.keyboard_arrow_down_outlined,
+          color: AppColors.blueGrey.withValues(alpha: 0.6),
+          size: 20.sp,
+        );
   }
 }

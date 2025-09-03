@@ -12,7 +12,7 @@ abstract class NavigationBarThemeCustom {
     labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((states) {
       if (states.contains(WidgetState.selected)) {
         return  TextStyle(
-          color: AppColors.accentColor,
+          color: AppColors.myAppColor,
           fontSize: 12.sp,
           fontWeight: FontWeight.w500,
         );
@@ -26,7 +26,7 @@ abstract class NavigationBarThemeCustom {
     iconTheme:  WidgetStateProperty.resolveWith<IconThemeData>((states) {
       if (states.contains(WidgetState.selected)) {
       return const IconThemeData(
-          color: AppColors.accentColor,
+          color: AppColors.myAppColor,
         );
       }
       return IconThemeData(
@@ -40,14 +40,14 @@ abstract class NavigationBarThemeCustom {
   static NavigationBarThemeData darkTheme =  NavigationBarThemeData(
     backgroundColor: AppColors.primaryDarkColor,
     elevation: 0,
-    indicatorColor:AppColors.accentColor.withValues(
+    indicatorColor:AppColors.myAppColor.withValues(
       alpha: 0.3,
     ),
     labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((states) {
         if (states.contains(WidgetState.selected)) {
           return  TextStyle(
-            color: AppColors.accentColor,
+            color: AppColors.myAppColor,
             fontSize: 12.sp,
             fontWeight: FontWeight.w500,
           );
@@ -62,7 +62,7 @@ abstract class NavigationBarThemeCustom {
       iconTheme:  WidgetStateProperty.resolveWith<IconThemeData>((states) {
         if (states.contains(WidgetState.selected)) {
           return const IconThemeData(
-            color: AppColors.accentColor,
+            color: AppColors.myAppColor,
           );
         }
         return const IconThemeData(

@@ -35,18 +35,23 @@ class MainAppCubit extends Cubit<MainAppStates> {
     return AppColors.accentColor;
   }
 
-  void englishFunction({bool? isEnglishCache}) {
+  void englishFunction({
+    bool? isEnglishCache,
+    Locale? systemLocale,
+  }) {
     if (isEnglishCache != null) {
       isEnglish = isEnglishCache;
-      emit(MainAppChangeLangState());
     } else {
-      if (!isEnglish) {
-        isEnglish = true;
-        CacheService.setData(key: AppConstants.isEnglish, value: isEnglish);
-        emit(MainAppChangeLangState());
+      if (systemLocale != null) {
+        isEnglish = systemLocale.languageCode == 'en';
+      } else {
+        isEnglish = true; // fallback default
       }
     }
+    CacheService.setData(key: AppConstants.isEnglish, value: isEnglish);
+    emit(MainAppChangeLangState());
   }
+
 
   void setCurrentIndex({int? index, int? cacheThemValue}) {
     if (cacheThemValue != null) {
@@ -134,14 +139,13 @@ class MainAppCubit extends Cubit<MainAppStates> {
   }
 
   String get checkNextRoute {
-    CacheService.baseUrl = CacheService.getData(key: AppConstants.baseUrl);
-    CacheService.token = CacheService.getData(key: AppConstants.token);
     CacheService.userRole = CacheService.getData(key: AppConstants.userRole);
-    CacheService.isParentSelectChild = CacheService.getData(
-      key: AppConstants.isParentSelectChild,
-    );
-    CacheService.userId = CacheService.getData(key: AppConstants.userId);
-    CacheService.userPhoto = CacheService.getData(key: AppConstants.userPhoto);
-    return AppRoutes.homeRoute;
+    CacheService.uid = CacheService.getData(key: AppConstants.uid);
+    if(CacheService.uid != null){
+      if(CacheService.userRole == "student"){
+        return AppRoutes.studentHomeLayoutRoute;
+      }
+    }
+    return AppRoutes.loginRoute;
   }
 }

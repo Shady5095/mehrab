@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/gradient_scaffold.dart';
 import '../manager/home_cubit/home_cubit.dart';
+import '../widgets/home_bottom_navigation_bar.dart';
 
 
 class HomeLayoutBody extends StatelessWidget {
@@ -14,7 +15,7 @@ class HomeLayoutBody extends StatelessWidget {
         final cubit = HomeCubit.instance(context);
         return GradientScaffold(
           body: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 200),
             switchInCurve: Curves.easeIn,
             switchOutCurve: Curves.easeOut,
             transitionBuilder: (
@@ -28,6 +29,7 @@ class HomeLayoutBody extends StatelessWidget {
               child: cubit.homeLayoutScreens[cubit.currentScreenIndex],
             ),
           ),
+          bottomNavigationBar: HomeBottomNavigationBar(),
           //bottomNavigationBar: const HomeBottomNavigationBar(),
         );
       },

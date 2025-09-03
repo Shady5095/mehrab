@@ -50,7 +50,7 @@ abstract class AppColors {
   static const darkSlateBlue = Color(0XFF244360);
   static const orangeRed = Color(0XFFfe2323);
   static const notificationRed = Color(0XFFf92f2f);
-  static const duckEggBlue = Color(0XFFf1f7fc);
+  static const duckEggBlue = Color(0xffd5e5ec);
   static const lighterPurple95 = Color(0XFF8748fc);
   static const veryLightGray = Color(0XFFF0F3F4);
   static const errorRed = Color(0XFFF24024);
@@ -70,6 +70,7 @@ abstract class AppColors {
   static const veryLightBlue = Color(0XFFC9E8FF);
 
   static const darkGreen = Color(0xff38AD61);
+  static const myAppColor = Color(0xff2fa39c);
 
   static const darkerBlue = Color(0XFF3EBCF0);
   static const primaryBlue = Color(0XFF0091FF);

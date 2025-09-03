@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/utilities/functions/dependency_injection.dart';
 import '../../../../core/utilities/functions/exit_app_dialog.dart';
 import '../manager/home_cubit/home_cubit.dart';
 import 'home_layout_body.dart';
 
-class HomeLayout extends StatelessWidget {
-  const HomeLayout({super.key});
+class StudentHomeLayout extends StatelessWidget {
+  const StudentHomeLayout({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +14,7 @@ class HomeLayout extends StatelessWidget {
         BlocProvider(
           create:
               (context) =>
-                  HomeCubit()
+                  HomeCubit()..getUserData()..setupFirebase(context)
         ),
       ],
       child: PopScope(

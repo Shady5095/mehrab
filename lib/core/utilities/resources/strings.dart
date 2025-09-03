@@ -192,6 +192,7 @@ class AppStrings {
   static const String switchSon = 'switchSon';
   static const String passwordValue = 'passwordValue';
   static const String nameValue = 'nameValue';
+  static const String emailValue = 'emailValue';
   static const String validName = 'validName';
   static const String createdBy = 'createdBy';
   static const String sessionEnd = 'sessionEnd';
@@ -1329,5 +1330,39 @@ class AppStrings {
   static const String namedResponsesDescription = 'namedResponsesDescription';
   static const String anonymousResponsesDescription = 'anonymousResponsesDescription';
 
+  ///////////////////////////////////////////////////////////////////////////
 
+
+  static const String welcomeText = 'welcomeText';
+  static const String welcomeTextDescription = 'welcomeTextDescription';
+  static const String signInWithGoogle = 'signInWithGoogle';
+  static const String register = 'register';
+  static const String doNotHaveAccount = 'doNotHaveAccount';
+  static const String registerStudent = 'registerStudent';
+  static const String confirmPassword = 'confirmPassword';
+  static const String passNotMatch = 'passNotMatch';
+  static const String educationLevel = 'educationLevel';
+  static const String register2 = 'register2';
+  static const String completeRegistration = 'completeRegistration';
+  static const String thisEmailIsRegistered = 'thisEmailIsRegistered';
+  static const String pleaseEnterYourEmailToResetYourPassword = 'pleaseEnterYourEmailToResetYourPassword';
+  static const String thisEmailIsNotRegisteredBefore = 'thisEmailIsNotRegisteredBefore';
+  static const String emailUsedBefore = 'emailUsedBefore';
+  static const String passwordResetSentToYourEmail = 'passwordResetSentToYourEmail';
+  static const String invalidEmail = 'invalidEmail';
+  static const String userDisabled = 'userDisabled';
+  static const String userNotFound = 'userNotFound';
+  static const String wrongPassword = 'wrongPassword';
+  static const String invalidCredential = 'invalidCredential';
+  static const String tooManyRequests = 'tooManyRequests';
+  static const String networkRequestFailed = 'networkRequestFailed';
+  static const String enterValidEmail = 'enterValidEmail';
+  static const String updateMyProfile = 'updateMyProfile';
+  static const String yourProfileUpdated = 'yourProfileUpdated';
+  static const String changePassword = 'changePassword';
+  static const String newPassword = 'newPassword';
+  static const String confirmNewPassword = 'confirmNewPassword';
+  static const String currentPassword = 'currentPassword';
+  static const String passwordChangedSuccessfully = 'passwordChangedSuccessfully';
+  static const String currentPasswordIncorrect = 'currentPasswordIncorrect';
 }

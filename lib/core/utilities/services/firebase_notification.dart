@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:http/http.dart' as http;
+import 'package:mehrab/core/utilities/services/cache_service.dart';
 
 import '../functions/print_with_color.dart';
 import '../resources/constants.dart';
@@ -47,17 +48,6 @@ class AppFirebaseNotification {
     }
   }
 
-  static Future<String> get notificationToken async {
-    {
-      if (Platform.isIOS) {
-        await _instance.getAPNSToken();
-      }
-      return await _instance.getToken().catchError((error) {
-            return '';
-          }) ??
-          '';
-    }
-  }
 
   static void whileAppOpenHandleNotification(BuildContext context) {
     FirebaseMessaging.onMessage.listen((_) {
@@ -195,8 +185,8 @@ class AppFirebaseNotification {
   }
 
   static subscribeToTopic() {
-    _instance.subscribeToTopic('');
-    _instance.subscribeToTopic('');
+    _instance.subscribeToTopic('all');
+    _instance.subscribeToTopic(CacheService.uid ?? 'all');
   }
 
   static Future<void> deleteNotificationToken() async {
@@ -204,8 +194,8 @@ class AppFirebaseNotification {
   }
 
   static Future<void> unSubscribeFromTopic() async {
-    _instance.unsubscribeFromTopic('');
-    _instance.unsubscribeFromTopic('');
+    _instance.unsubscribeFromTopic('all');
+    _instance.unsubscribeFromTopic(CacheService.uid ?? 'all');
   }
 
   static logEvent(String eventName, Map<String, Object> eventParams) {

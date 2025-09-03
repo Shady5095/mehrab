@@ -88,3 +88,10 @@ extension FormatDateToString on DateTime?{
 
 
 }
+extension FirstNameFromFullName on String {
+  String get firstName {
+    final trimmed = trim();
+    if (trimmed.isEmpty) return '';
+    return trimmed.split(' ').first;
+  }
+}

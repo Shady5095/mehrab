@@ -78,11 +78,11 @@ class MyBackButtonLightMode extends StatelessWidget {
               width: height ?? 38.sp,
               height: width ?? 38.sp,
               decoration: BoxDecoration(
-                color: AppColors.duckEggBlue.withValues(alpha: 0.5),
+                color: AppColors.duckEggBlue.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(50),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withValues(alpha: 0.5),
+                    color: AppColors.myAppColor.withValues(alpha: 0.7),
                     blurRadius: 20,
                     spreadRadius: 1,
                     offset: const Offset(0, 3),

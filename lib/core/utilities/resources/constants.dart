@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl_phone_field/countries.dart';
 import 'dart:io';
 class AppConstants {
   static const androidDownloadDirectory = '/storage/emulated/0/Download';
@@ -72,6 +73,7 @@ class AppConstants {
   static const String canUserDeleteMessage = 'canUserDeleteMessage';
   static const String isShowGrades = 'isShowGrades';
   static const String isUserRateApp = 'isUserRateApp';
+  static const String uid = 'uid';
 
   /// download
   static const announcement = 'Announcement';
@@ -191,4 +193,552 @@ class AppConstants {
 
   ///quiz
   static const String cachedQuizAnswer = 'cachedQuizAnswer';
+  static List<String> nationalities = [
+    "afghan",
+    "albanian",
+    "algerian",
+    "american",
+    "andorran",
+    "angolan",
+    "argentine",
+    "armenian",
+    "australian",
+    "austrian",
+    "azerbaijani",
+    "bahraini",
+    "bangladeshi",
+    "belarusian",
+    "belgian",
+    "belizean",
+    "beninese",
+    "bhutanese",
+    "bolivian",
+    "bosnian",
+    "brazilian",
+    "british",
+    "bruneian",
+    "bulgarian",
+    "burkinabe",
+    "burmese",
+    "burundian",
+    "cambodian",
+    "cameroonian",
+    "canadian",
+    "chadian",
+    "chilean",
+    "chinese",
+    "colombian",
+    "comoran",
+    "congolese",
+    "costa_rican",
+    "croatian",
+    "cuban",
+    "cypriot",
+    "czech",
+    "danish",
+    "djiboutian",
+    "dominican",
+    "dutch",
+    "east_timorese",
+    "ecuadorian",
+    "egyptian",
+    "emirati",
+    "english",
+    "equatorial_guinean",
+    "eritrean",
+    "estonian",
+    "ethiopian",
+    "fijian",
+    "finnish",
+    "french",
+    "gabonese",
+    "gambian",
+    "georgian",
+    "german",
+    "ghanaian",
+    "greek",
+    "guatemalan",
+    "guinean",
+    "haitian",
+    "honduran",
+    "hungarian",
+    "icelandic",
+    "indian",
+    "indonesian",
+    "iranian",
+    "iraqi",
+    "irish",
+    "israeli",
+    "italian",
+    "ivorian",
+    "jamaican",
+    "japanese",
+    "jordanian",
+    "kazakh",
+    "kenyan",
+    "kuwaiti",
+    "kyrgyz",
+    "laotian",
+    "latvian",
+    "lebanese",
+    "liberian",
+    "libyan",
+    "lithuanian",
+    "luxembourgish",
+    "macedonian",
+    "malagasy",
+    "malawian",
+    "malaysian",
+    "maldivian",
+    "malian",
+    "maltese",
+    "mauritanian",
+    "mauritian",
+    "mexican",
+    "moldovan",
+    "monacan",
+    "mongolian",
+    "montenegrin",
+    "moroccan",
+    "mozambican",
+    "namibian",
+    "nepalese",
+    "dutch_national",
+    "new_zealander",
+    "nicaraguan",
+    "nigerien",
+    "nigerian",
+    "north_korean",
+    "norwegian",
+    "omani",
+    "pakistani",
+    "palestinian",
+    "panamanian",
+    "paraguayan",
+    "peruvian",
+    "philippine",
+    "polish",
+    "portuguese",
+    "qatari",
+    "romanian",
+    "russian",
+    "rwandan",
+    "saint_lucian",
+    "salvadoran",
+    "saudi",
+    "scottish",
+    "senegalese",
+    "serbian",
+    "singaporean",
+    "slovak",
+    "slovenian",
+    "somali",
+    "south_african",
+    "south_korean",
+    "spanish",
+    "sri_lankan",
+    "sudanese",
+    "swazi",
+    "swedish",
+    "swiss",
+    "syrian",
+    "taiwanese",
+    "tajik",
+    "tanzanian",
+    "thai",
+    "togolese",
+    "tunisian",
+    "turkish",
+    "turkmen",
+    "ugandan",
+    "ukrainian",
+    "uruguayan",
+    "uzbek",
+    "venezuelan",
+    "vietnamese",
+    "welsh",
+    "yemeni",
+    "zambian",
+    "zimbabwean",
+  ];
+
+  static List<String> arabicNationalities = [
+    "afghan", // أفغاني (ا)
+    "american", // أمريكي (ا)
+    "andorran", // أندوري (ا)
+    "angolan", // أنغولي (ا)
+    "argentine", // أرجنتيني (ا)
+    "armenian", // أرميني (ا)
+    "australian", // أسترالي (ا)
+    "azerbaijani", // أذربيجاني (ا)
+    "albanian", // ألباني (ا)
+    "jordanian", // أردني (ا)
+    "german", // ألماني (ا)
+    "icelandic", // آيسلندي (ا)
+    "bahraini", // بحريني (ب)
+    "bangladeshi", // بنغلاديشي (ب)
+    "belarusian", // بيلاروسي (ب)
+    "belgian", // بلجيكي (ب)
+    "belizean", // بليزي (ب)
+    "beninese", // بنيني (ب)
+    "bhutanese", // بوتاني (ب)
+    "bolivian", // بوليفي (ب)
+    "bosnian", // بوسني (ب)
+    "brazilian", // برازيلي (ب)
+    "british", // بريطاني (ب)
+    "bruneian", // بروني (ب)
+    "bulgarian", // بلغاري (ب)
+    "burkinabe", // بوركيني (ب)
+    "burmese", // بورمي (ب)
+    "burundian", // بوروندي (ب)
+    "pakistani", // باكستاني (ب)
+    "panamanian", // بنمي (ب)
+    "paraguayan", // باراغواي (ب)
+    "peruvian", // بيروفي (ب)
+    "polish", // بولندي (ب)
+    "portuguese", // برتغالي (ب)
+    "thai", // تايلندي (ت)
+    "taiwanese", // تايواني (ت)
+    "tanzanian", // تنزاني (ت)
+    "togolese", // توغولي (ت)
+    "tunisian", // تونسي (ت)
+    "turkish", // تركي (ت)
+    "turkmen", // تركماني (ت)
+    "chadian", // تشادي (ت)
+    "chilean", // تشيليني (ت)
+    "czech", // تشيكي (ت)
+    "algerian", // جزائري (ج)
+    "comoran", // جزر القمر (ج)
+    "jamaican", // جامايكي (ج)
+    "japanese", // ياباني (ج)
+    "georgian", // جورجي (ج)
+    "djiboutian", // جيبوتي (ج)
+    "south_african", // جنوب أفريقي (ج)
+    "south_korean", // كوري جنوبي (ج)
+    "haitian", // هايتي (هـ)
+    "honduran", // هندوراسي (هـ)
+    "dutch", // هولندي (هـ)
+    "dutch_national", // هولندي (هـ)
+    "danish", // دنماركي (د)
+    "dominican", // دومينيكاني (د)
+    "russian", // روسي (ر)
+    "rwandan", // رواندي (ر)
+    "romanian", // روماني (ر)
+    "zambian", // زامبي (ز)
+    "zimbabwean", // زيمبابوي (ز)
+    "saint_lucian", // سانت لوسي (س)
+    "salvadoran", // سلفادوري (س)
+    "saudi", // سعودي (س)
+    "senegalese", // سنغالي (س)
+    "singaporean", // سنغافوري (س)
+    "slovak", // سلوفاكي (س)
+    "slovenian", // سلوفيني (س)
+    "sri_lankan", // سريلانكي (س)
+    "sudanese", // سوداني (س)
+    "swazi", // سوازي (س)
+    "swedish", // سويدي (س)
+    "swiss", // سويسري (س)
+    "syrian", // سوري (س)
+    "scottish", // اسكتلندي (س)
+    "spanish", // إسباني (س)
+    "chinese", // صيني (ص)
+    "serbian", // صربي (ص)
+    "somali", // صومالي (ص)
+    "tajik", // طاجيكي (ط)
+    "iraqi", // عراقي (ع)
+    "omani", // عماني (ع)
+    "ugandan", // أوغندي (ع)
+    "uzbek", // أوزبكي (ع)
+    "ukrainian", // أوكراني (ع)
+    "uruguayan", // أورغواياني (ع)
+    "gambian", // غامبي (غ)
+    "ghanaian", // غاني (غ)
+    "guatemalan", // غواتيمالي (غ)
+    "guinean", // غيني (غ)
+    "equatorial_guinean", // غيني استوائي (غ)
+    "gabonese", // غابوني (غ)
+    "fijian", // فيجي (ف)
+    "philippine", // فلبيني (ف)
+    "venezuelan", // فنزويلي (ف)
+    "vietnamese", // فيتنامي (ف)
+    "palestinian", // فلسطيني (ف)
+    "finnish", // فنلندي (إ)
+    "french", // فرنسي (ف)
+    "qatari", // قطري (ق)
+    "cypriot", // قبرصي (ق)
+    "kyrgyz", // قرغيزي (ق)
+    "kazakh", // كازاخستاني (ك)
+    "kenyan", // كيني (ك)
+    "kuwaiti", // كويتي (ك)
+    "cambodian", // كمبودي (ك)
+    "cameroonian", // كاميروني (ك)
+    "canadian", // كندي (ك)
+    "colombian", // كولومبي (ك)
+    "congolese", // كونغولي (ك)
+    "costa_rican", // كوستاريكي (ك)
+    "croatian", // كرواتي (ك)
+    "cuban", // كوبي (ك)
+    "north_korean", // كوري شمالي (ك)
+    "laotian", // لاوسي (ل)
+    "latvian", // لاتفي (ل)
+    "lebanese", // لبناني (ل)
+    "liberian", // ليبيري (ل)
+    "libyan", // ليبي (ل)
+    "lithuanian", // ليتواني (ل)
+    "luxembourgish", // لوكسمبورغي (ل)
+    "egyptian", // مصري (م)
+    "hungarian", // مجري (م)
+    "malagasy", // مدغشقري (م)
+    "malawian", // مالاوي (م)
+    "malaysian", // ماليزي (م)
+    "maldivian", // مالديفي (م)
+    "malian", // مالي (م)
+    "maltese", // مالطي (م)
+    "mauritanian", // موريتاني (م)
+    "mauritian", // موريشي (م)
+    "mexican", // مكسيكي (م)
+    "moldovan", // مولدوفي (م)
+    "monacan", // موناكي (م)
+    "mongolian", // منغولي (م)
+    "montenegrin", // مونتينيغري (م)
+    "moroccan", // مغربي (م)
+    "mozambican", // موزمبيقي (م)
+    "namibian", // ناميبي (ن)
+    "nepalese", // نيبالي (ن)
+    "new_zealander", // نيوزيلندي (ن)
+    "nicaraguan", // نيكاراغوي (ن)
+    "nigerien", // نيجري (ن)
+    "nigerian", // نيجيري (ن)
+    "norwegian", // نرويجي (ن)
+    "austrian", // نمساوي (ن)
+    "indian", // هندي (ه)
+    "welsh", // ويلزي (و)
+    "yemeni", // يمني (ي)
+    "greek", // يوناني (ي)
+    "ecuadorian", // إكوادوري (إ)
+    "emirati", // إماراتي (إ)
+    "english", // إنجليزي (إ)
+    "eritrean", // إريتري (إ)
+    "estonian", // إستوني (إ)
+    "ethiopian", // إثيوبي (إ)
+    "iranian", // إيراني (إ)
+    "irish", // إيرلندي (إ)
+    "israeli", // إسرائيلي (إ)
+    "italian", // إيطالي (إ)
+    "ivorian", // إيفواري (إ)
+
+    "indonesian", // إندونيسي (إ)
+  ];
+  static final List<String> educationLevelKeys = [
+    "primary",
+    "intermediate",
+    "secondary",
+    "continued",
+    "university",
+    "masters",
+    "phd",
+  ];
+
+
+  static final List<Country> arabCountries = [
+    Country(
+      name: "Algeria",
+      nameTranslations: {"en": "Algeria", "ar": "الجزائر"},
+      flag: "🇩🇿",
+      code: "DZ",
+      dialCode: "213",
+      minLength: 9,
+      maxLength: 9,
+    ),
+    Country(
+      name: "Bahrain",
+      nameTranslations: {"en": "Bahrain", "ar": "البحرين"},
+      flag: "🇧🇭",
+      code: "BH",
+      dialCode: "973",
+      minLength: 8,
+      maxLength: 8,
+    ),
+    Country(
+      name: "Comoros",
+      nameTranslations: {"en": "Comoros", "ar": "جزر القمر"},
+      flag: "🇰🇲",
+      code: "KM",
+      dialCode: "269",
+      minLength: 7,
+      maxLength: 7,
+    ),
+    Country(
+      name: "Djibouti",
+      nameTranslations: {"en": "Djibouti", "ar": "جيبوتي"},
+      flag: "🇩🇯",
+      code: "DJ",
+      dialCode: "253",
+      minLength: 6,
+      maxLength: 8,
+    ),
+    Country(
+      name: "Egypt",
+      nameTranslations: {"en": "Egypt", "ar": "مصر"},
+      flag: "🇪🇬",
+      code: "EG",
+      dialCode: "20",
+      minLength: 9,
+      maxLength: 10,
+    ),
+    Country(
+      name: "Iraq",
+      nameTranslations: {"en": "Iraq", "ar": "العراق"},
+      flag: "🇮🇶",
+      code: "IQ",
+      dialCode: "964",
+      minLength: 10,
+      maxLength: 10,
+    ),
+    Country(
+      name: "Jordan",
+      nameTranslations: {"en": "Jordan", "ar": "الأردن"},
+      flag: "🇯🇴",
+      code: "JO",
+      dialCode: "962",
+      minLength: 9,
+      maxLength: 9,
+    ),
+    Country(
+      name: "Kuwait",
+      nameTranslations: {"en": "Kuwait", "ar": "الكويت"},
+      flag: "🇰🇼",
+      code: "KW",
+      dialCode: "965",
+      minLength: 8,
+      maxLength: 8,
+    ),
+    Country(
+      name: "Lebanon",
+      nameTranslations: {"en": "Lebanon", "ar": "لبنان"},
+      flag: "🇱🇧",
+      code: "LB",
+      dialCode: "961",
+      minLength: 7,
+      maxLength: 8,
+    ),
+    Country(
+      name: "Libya",
+      nameTranslations: {"en": "Libya", "ar": "ليبيا"},
+      flag: "🇱🇾",
+      code: "LY",
+      dialCode: "218",
+      minLength: 9,
+      maxLength: 9,
+    ),
+    Country(
+      name: "Mauritania",
+      nameTranslations: {"en": "Mauritania", "ar": "موريتانيا"},
+      flag: "🇲🇷",
+      code: "MR",
+      dialCode: "222",
+      minLength: 8,
+      maxLength: 8,
+    ),
+    Country(
+      name: "Morocco",
+      nameTranslations: {"en": "Morocco", "ar": "المغرب"},
+      flag: "🇲🇦",
+      code: "MA",
+      dialCode: "212",
+      minLength: 9,
+      maxLength: 9,
+    ),
+    Country(
+      name: "Oman",
+      nameTranslations: {"en": "Oman", "ar": "عمان"},
+      flag: "🇴🇲",
+      code: "OM",
+      dialCode: "968",
+      minLength: 8,
+      maxLength: 8,
+    ),
+    Country(
+      name: "Palestine",
+      nameTranslations: {"en": "Palestine", "ar": "فلسطين"},
+      flag: "🇵🇸",
+      code: "PS",
+      dialCode: "970",
+      minLength: 9,
+      maxLength: 9,
+    ),
+    Country(
+      name: "Qatar",
+      nameTranslations: {"en": "Qatar", "ar": "قطر"},
+      flag: "🇶🇦",
+      code: "QA",
+      dialCode: "974",
+      minLength: 8,
+      maxLength: 8,
+    ),
+    Country(
+      name: "Saudi Arabia",
+      nameTranslations: {"en": "Saudi Arabia", "ar": "السعودية"},
+      flag: "🇸🇦",
+      code: "SA",
+      dialCode: "966",
+      minLength: 9,
+      maxLength: 9,
+    ),
+    Country(
+      name: "Somalia",
+      nameTranslations: {"en": "Somalia", "ar": "الصومال"},
+      flag: "🇸🇴",
+      code: "SO",
+      dialCode: "252",
+      minLength: 7,
+      maxLength: 8,
+    ),
+    Country(
+      name: "Sudan",
+      nameTranslations: {"en": "Sudan", "ar": "السودان"},
+      flag: "🇸🇩",
+      code: "SD",
+      dialCode: "249",
+      minLength: 9,
+      maxLength: 9,
+    ),
+    Country(
+      name: "Syria",
+      nameTranslations: {"en": "Syria", "ar": "سوريا"},
+      flag: "🇸🇾",
+      code: "SY",
+      dialCode: "963",
+      minLength: 9,
+      maxLength: 9,
+    ),
+    Country(
+      name: "Tunisia",
+      nameTranslations: {"en": "Tunisia", "ar": "تونس"},
+      flag: "🇹🇳",
+      code: "TN",
+      dialCode: "216",
+      minLength: 8,
+      maxLength: 8,
+    ),
+    Country(
+      name: "United Arab Emirates",
+      nameTranslations: {"en": "United Arab Emirates", "ar": "الإمارات"},
+      flag: "🇦🇪",
+      code: "AE",
+      dialCode: "971",
+      minLength: 9,
+      maxLength: 9,
+    ),
+    Country(
+      name: "Yemen",
+      nameTranslations: {"en": "Yemen", "ar": "اليمن"},
+      flag: "🇾🇪",
+      code: "YE",
+      dialCode: "967",
+      minLength: 9,
+      maxLength: 9,
+    ),
+  ];
+
 }

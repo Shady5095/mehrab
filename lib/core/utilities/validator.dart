@@ -9,8 +9,8 @@ import 'functions/format_date_and_time.dart';
 abstract class AppValidator {
   static String? passwordValidator(String? value, BuildContext context) {
     if (value?.isEmpty == true) {
-      return AppStrings.passwordValue.tr(context);
-    } else if ((value?.length ?? 0) <= 2) {
+      return AppStrings.passRequired.tr(context);
+    } else if ((value?.length ?? 0) <= 5) {
       return AppStrings.passwordShort.tr(context);
     } else {
       return null;
@@ -20,10 +20,10 @@ abstract class AppValidator {
   static String? userNameValidator(String? value, BuildContext context) {
     final bool nameValid = RegExp(r'^[a-zA-Z0-9_\s\-]+$').hasMatch(value ?? '');
     if (value?.isEmpty == true) {
-      return AppStrings.nameValue.tr(context);
+      return AppStrings.emailValue.tr(context);
     }
     if (!nameValid) {
-      return AppStrings.validName.tr(context);
+      return AppStrings.emailValue.tr(context);
     } else {
       return null;
     }
@@ -165,6 +165,21 @@ abstract class AppValidator {
     }
     return null;
   }
+
+  static String? emailValidator(String? value, BuildContext context) {
+    final bool isValidEmail = RegExp(
+      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+    ).hasMatch(value ?? '');
+
+    if (value?.isEmpty == true || value == null) {
+      return AppStrings.emailValue.tr(context);
+    } else if (!isValidEmail) {
+      return AppStrings.enterValidEmail.tr(context);
+    } else {
+      return null;
+    }
+  }
+
 
   static String? validateNumber(String? value) {
     if (value == null || value.isEmpty) {

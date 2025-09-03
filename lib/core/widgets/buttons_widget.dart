@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 
+import '../../app/main_app_cubit/main_app_cubit.dart';
 import '../utilities/resources/assets.dart';
 import '../utilities/resources/colors.dart';
 import '../utilities/resources/dimens.dart';
@@ -71,6 +72,7 @@ class ButtonWidget extends StatelessWidget {
                                     labelFontSize ??
                                     AppDimens.buttonFontSize.sp,
                                 fontWeight: FontWeight.w500,
+                                  fontFamily: MainAppCubit.instance(context).setFontFamily()
                               ),
                             ),
                             if (isShowArrow)
@@ -98,6 +100,7 @@ class ButtonWidget extends StatelessWidget {
                                   labelFontSize ??
                                   AppDimens.buttonFontSize.sp,
                               fontWeight: FontWeight.w500,
+                              fontFamily: MainAppCubit.instance(context).setFontFamily()
                             ),
                           ),
                           if (isShowArrow)
@@ -186,6 +189,7 @@ class OutlineButtonWidget extends StatelessWidget {
                               color: labelColor ?? AppColors.accentColor,
                               fontSize: AppDimens.outlineButtonFontSize.sp,
                               fontWeight: FontWeight.w600,
+                                fontFamily: MainAppCubit.instance(context).setFontFamily()
                             ),
                           ),
                           if (isShowArrow)
@@ -211,6 +215,7 @@ class OutlineButtonWidget extends StatelessWidget {
                             color: labelColor ?? AppColors.accentColor,
                             fontSize: AppDimens.outlineButtonFontSize.sp,
                             fontWeight: FontWeight.w600,
+                              fontFamily: MainAppCubit.instance(context).setFontFamily()
                           ),
                         ),
                         if (isShowArrow)

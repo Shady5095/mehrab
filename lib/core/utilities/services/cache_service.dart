@@ -8,9 +8,10 @@ class CacheService {
   static String? baseUrl;
   static bool? isEnglishCacheValue;
   static int? themeMode;
-  static int? userRole;
+  static String? userRole;
   static String? schoolImage;
   static bool? isParentSelectChild;
+  static String? uid;
 
   static bool? isShowGrades;
 

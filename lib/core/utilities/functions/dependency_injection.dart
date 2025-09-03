@@ -7,5 +7,4 @@ final getIt = GetIt.instance;
 void setup() {
   getIt.registerLazySingleton<ApiService>(() => ApiService(Dio()));
 
-
 }

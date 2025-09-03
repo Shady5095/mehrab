@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:device_preview/device_preview.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -8,7 +9,9 @@ import 'app/my_app.dart';
 import 'core/utilities/functions/bloc_observer.dart';
 import 'core/utilities/functions/dependency_injection.dart';
 import 'core/utilities/services/api_service.dart';
+import 'core/utilities/services/cache_service.dart';
 import 'core/utilities/services/local_notifications_service.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,11 +19,11 @@ void main() async {
   setup();
   HttpOverrides.global =
       MyHttpOverrides(); // To handle android blew 8 http connection
-  // await checkVersionAndClearAppData();
   await Future.wait([
     LocalNotificationsService.init(),
     FlutterDownloader.initialize(),
-    //Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+    CacheService.init(),
+    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
   ]);
 
   runApp(

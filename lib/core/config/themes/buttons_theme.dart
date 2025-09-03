@@ -11,7 +11,7 @@ abstract class ButtonsTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          backgroundColor: AppColors.azure,
+          backgroundColor: AppColors.myAppColor,
           textStyle: AppStyle.textStyle14,
           foregroundColor: AppColors.white,
           minimumSize: const Size.fromHeight(AppDimens.buttonHeight),
@@ -20,7 +20,7 @@ abstract class ButtonsTheme {
   static OutlinedButtonThemeData outlinedButtonLightTheme =
       OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppColors.azure),
+          side: const BorderSide(color: AppColors.myAppColor),
 
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),

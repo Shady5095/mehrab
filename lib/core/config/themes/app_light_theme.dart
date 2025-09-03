@@ -30,30 +30,29 @@ class AppLightThemes {
         color: AppColors.blackColor,
 
       ),
-      selectedColor: AppColors.accentColor,
-      secondarySelectedColor: AppColors.accentColor,
+      selectedColor: AppColors.myAppColor,
+      secondarySelectedColor: AppColors.myAppColor,
       disabledColor: AppColors.greyColor,
-      selectedShadowColor: AppColors.accentColor,
+      selectedShadowColor: AppColors.myAppColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.accentColor,
+      backgroundColor: AppColors.myAppColor,
       foregroundColor: AppColors.white,
     ),
     navigationBarTheme: NavigationBarThemeCustom.lightTheme,
-
     elevatedButtonTheme: ButtonsTheme.elevatedButtonLightTheme,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.accentColor,
-    ).copyWith(secondary: AppColors.accentColor),
+      seedColor: AppColors.myAppColor,
+    ).copyWith(secondary: AppColors.myAppColor),
     checkboxTheme: ThemeData.light().checkboxTheme.copyWith(
       fillColor: WidgetStateProperty.resolveWith<Color>((
         Set<WidgetState> states,
       ) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.accentColor;
+          return AppColors.myAppColor;
         }
         return Colors.transparent;
       }),
