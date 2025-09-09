@@ -44,7 +44,7 @@ class HomeItemsIcons extends StatelessWidget {
         context.navigateTo(pageName: AppRoutes.teachersScreen,arguments: [true]).then((value) => cubit.getFavoriteTeachersCount());
       },
       () {
-        context.navigateTo(pageName: '/students');
+        context.navigateTo(pageName: AppRoutes.allStudentsScreen).then((value) => cubit.getStudentsCount());
       },
       () {
         context.navigateTo(pageName: AppRoutes.prayerTimesScreen);
@@ -140,7 +140,7 @@ class HomeItemsIcons extends StatelessWidget {
               const SizedBox(height: 10.0),
               Text(
                 name.tr(context),
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               if (details != null)

@@ -5,6 +5,7 @@ import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/my_appbar.dart';
 import 'package:mehrab/features/teachers/presentation/manager/teachers_cubit/teachers_cubit.dart';
 import 'package:mehrab/features/teachers/presentation/widgets/teachers_list.dart';
+import 'package:mehrab/features/teachers/presentation/widgets/teachers_search_bar.dart';
 
 class TeachersScreenBody extends StatelessWidget {
   const TeachersScreenBody({super.key});
@@ -21,7 +22,11 @@ class TeachersScreenBody extends StatelessWidget {
           child: Column(
             children: [
               MyAppBar(title: isFav ? AppStrings.favoriteTeachers: AppStrings.teachers, isShowBackButton: isFav,),
-              const SizedBox(height: 20,),
+              const SizedBox(height: 10,),
+               if (!isFav)
+               const TeacherSearchBar(),
+              if (!isFav)
+              const SizedBox(height: 10,),
               const Expanded(
                 child: TeachersList(),
               ),

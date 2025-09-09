@@ -11,6 +11,7 @@ class BuildTeacherPhoto extends StatelessWidget {
     required this.radius,
     this.imageColor,
     this.isOnline = false,
+    this.isFromFav = false,
   });
 
   final String? imageUrl;
@@ -18,6 +19,7 @@ class BuildTeacherPhoto extends StatelessWidget {
 
   final Color? imageColor;
   final bool isOnline ;
+  final bool isFromFav;
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +32,12 @@ class BuildTeacherPhoto extends StatelessWidget {
             decoration: BoxDecoration(shape: BoxShape.circle, color: imageColor),
             child: const Image(image: AssetImage(AppAssets.profilePlaceholder)),
           ),
+            if(!isFromFav)
             CircleAvatar(
               radius: 8.3,
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             ),
+            if(!isFromFav)
              CircleAvatar(
               radius: 7,
               backgroundColor: isOnline ? Colors.green : Colors.grey[500],
@@ -55,10 +59,12 @@ class BuildTeacherPhoto extends StatelessWidget {
             borderRadius: BorderRadius.circular(50),
           ),
         ),
+          if(!isFromFav)
           CircleAvatar(
             radius: 8.3,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           ),
+          if(!isFromFav)
            CircleAvatar(
             radius: 7,
             backgroundColor: isOnline ? AppColors.coolGreen : Colors.grey[500],

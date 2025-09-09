@@ -129,8 +129,8 @@ class RegisterScreenBody extends StatelessWidget {
                         initialCountryCode: 'EG',
 
                         onChanged: (phone) {
-                          cubit.countryCodeNumber = phone.countryISOCode;
-                          cubit.countryCode = phone.countryCode;
+                          cubit.countryCode = phone.countryISOCode;
+                          cubit.countryCodeNumber = phone.countryCode;
                         },
                         countries: AppConstants.arabCountries,
                       ),

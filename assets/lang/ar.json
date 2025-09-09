@@ -1105,5 +1105,7 @@
   "teachersEmptyDescription": "لا يوجد معلمين في هذا الوقت",
   "teachersFavEmpty": "لا يوجد معلمين مفضلين",
   "teachersEmptyFavDescription": "لا يوجد معلمين مفضلين في هذا الوقت",
-  "quran": "القرآن الكريم"
+  "quran": "القرآن الكريم",
+  "joinedDate": "تاريخ الانضمام",
+  "availableNow": "متاح الآن"
 }

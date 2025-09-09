@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/features/authentication/presentation/views/login_screen.dart';
 import 'package:mehrab/features/my_profile/presentation/screens/my_profile_screen.dart';
+import 'package:mehrab/features/notifications/presentation/screens/notifications_screen.dart';
 import '../../../features/authentication/presentation/views/register_screen.dart';
 import '../../../features/home/presentation/views/home_layout.dart';
 import '../../../features/home/presentation/widgets/quran_web_view_screen.dart';
 import '../../../features/my_profile/presentation/screens/change_password_screen.dart';
 import '../../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
+import '../../../features/students/presentation/screens/students_profile_screen.dart';
+import '../../../features/students/presentation/screens/students_screen.dart';
 import '../../../features/teachers/presentation/screens/add_teacher_screen.dart';
 import '../../../features/teachers/presentation/screens/teacher_profile_screen.dart';
 import '../../../features/teachers/presentation/screens/teachers_screen.dart';
@@ -24,6 +27,9 @@ abstract class AppRoutes {
   static const String teachersScreen = 'teachersScreen';
   static const String quranWebView = 'quranWebView';
   static const String prayerTimesScreen = 'prayerTimesScreen';
+  static const String allStudentsScreen = 'allStudentsScreen';
+  static const String studentsProfileScreen = 'studentsProfileScreen';
+  static const String notificationsScreen = 'notificationsScreen';
 }
 
 abstract class RouteGenerator {
@@ -53,32 +59,56 @@ abstract class RouteGenerator {
           settings: settings,
           builder: (BuildContext context) => const ChangePasswordScreen(),
         );
-        case AppRoutes.addTeachersScreen:
+      case AppRoutes.addTeachersScreen:
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const AddTeacherScreen(),
         );
-        case AppRoutes.teacherProfileScreen:
-        return getPageRoute(
+      case AppRoutes.teacherProfileScreen:
+        return PageRouteBuilder(
           settings: settings,
-          builder: (BuildContext context) => const TeacherProfileScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          pageBuilder:
+              (context, animation, secondaryAnimation) =>
+          const TeacherProfileScreen(),
         );
-        case AppRoutes.teachersScreen:
+      case AppRoutes.teachersScreen:
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const TeachersScreen(),
         );
-        case AppRoutes.quranWebView:
+      case AppRoutes.quranWebView:
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const QuranWebView(),
         );
-        case AppRoutes.prayerTimesScreen:
+      case AppRoutes.prayerTimesScreen:
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const PrayerTimesScreen(),
         );
-
+      case AppRoutes.allStudentsScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const StudentsScreen(),
+        );
+        case AppRoutes.studentsProfileScreen:
+          return PageRouteBuilder(
+            settings: settings,
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            pageBuilder:
+                (context, animation, secondaryAnimation) =>
+            const StudentsProfileScreen(),
+          );
+      case AppRoutes.notificationsScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const NotificationsScreen(),
+        );
       default:
         return noRoute();
     }

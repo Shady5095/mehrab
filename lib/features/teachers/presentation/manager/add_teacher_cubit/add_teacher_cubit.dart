@@ -280,6 +280,9 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
   Future<void> updateTeacher() async {
     if(teacherModel == null) return;
     emit(UpdateTeacherLoadingState());
+    if(imageFile != null) {
+      await uploadImageToImageKit();
+    }
     if (formKey.currentState!.validate()) {
       await db
           .collection('users')

@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:meta/meta.dart';
@@ -14,17 +15,16 @@ class TeachersCubit extends Cubit<TeachersState> {
 
   static TeachersCubit get(context) => BlocProvider.of(context);
   FirebaseFirestore db = FirebaseFirestore.instance;
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
 
   Future<void> toggleTeacherFav(String teacherUid) async {
-    if(state is ToggleTeacherFavLoadingState){
+    if (state is ToggleTeacherFavLoadingState) {
       return;
     }
-    // in db i have users collection and each teacher has a list of fav students that favorited him
-    // i need to add the current user uid to that list if not exist and remove it if exist
-    // // if the list is null i need to create it
     emit(ToggleTeacherFavLoadingState());
     final userUid = currentUserModel?.uid;
-    if(userUid == null || userUid.isEmpty){
+    if (userUid == null || userUid.isEmpty) {
       return;
     }
     final teacherRef = db.collection("users").doc(teacherUid);
@@ -48,9 +48,10 @@ class TeachersCubit extends Cubit<TeachersState> {
       emit(ToggleTeacherFavErrorState(error.toString()));
     });
   }
-  void addStudentInTeacherCollection(String teacherUid){
+
+  void addStudentInTeacherCollection(String teacherUid) {
     final userUid = currentUserModel?.uid;
-    if(userUid == null || userUid.isEmpty){
+    if (userUid == null || userUid.isEmpty) {
       return;
     }
     final teacherRef = db.collection("users").doc(teacherUid).collection("favoriteStudents").doc(userUid);
@@ -64,9 +65,10 @@ class TeachersCubit extends Cubit<TeachersState> {
       printWithColor(error);
     });
   }
-  void addTeacherInStudentCollection(TeacherModel model){
+
+  void addTeacherInStudentCollection(TeacherModel model) {
     final userUid = currentUserModel?.uid;
-    if(userUid == null || userUid.isEmpty){
+    if (userUid == null || userUid.isEmpty) {
       return;
     }
     final studentRef = db.collection("users").doc(userUid).collection("favoriteTeachers").doc(model.uid);
@@ -79,5 +81,34 @@ class TeachersCubit extends Cubit<TeachersState> {
     }).catchError((error) {
       printWithColor(error);
     });
+  }
+
+  void setSearchText(String query) {
+    searchQuery = query.trim();
+    emit(TeachersSearchUpdatedState());
+  }
+
+  void clearSearchText() {
+    searchController.clear();
+    searchQuery = '';
+    emit(TeachersSearchUpdatedState());
+  }
+
+  Stream<QuerySnapshot> getTeachersStream({required bool isFav, String? searchQuery}) {
+    Query queryRef = isFav
+        ? db.collection('users').doc(myUid).collection('favoriteTeachers').where("userRole", isEqualTo: "teacher")
+        : db.collection('users').where("userRole", isEqualTo: "teacher").orderBy("isOnline", descending: true).orderBy("name", descending: false);
+
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      queryRef = queryRef.where("name", isGreaterThanOrEqualTo: searchQuery).where("name", isLessThanOrEqualTo: '$searchQuery\uf8ff');
+    }
+
+    return queryRef.snapshots();
+  }
+
+  @override
+  Future<void> close() {
+    searchController.dispose();
+    return super.close();
   }
 }

@@ -9,7 +9,7 @@ import '../resources/strings.dart';
 String formatDate(BuildContext context, Timestamp? timestamp) {
   if (timestamp != null) {
     return DateFormat(
-      'MMMM dd, yyyy',
+      'd MMM, y',
       isArabic(context) ? 'ar' : 'en',
     ).format(timestamp.toDate());
   }

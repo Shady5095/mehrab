@@ -22,8 +22,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     SizeConfig.init(context);
 
-    final Locale systemLocale = WidgetsBinding.instance.platformDispatcher
-        .locale;
+   /* final Locale systemLocale = WidgetsBinding.instance.platformDispatcher
+        .locale;*/
 
     return MultiBlocProvider(
       providers: [
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
           MainAppCubit()
             ..englishFunction(
               isEnglishCache: CacheService.getData(key: AppConstants.isEnglish),
-              systemLocale: systemLocale,
+              systemLocale: Locale('ar')//systemLocale,
             )
             ..setCurrentIndex(
               cacheThemValue: CacheService.getData(key: AppConstants.themeMode),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/format_date_and_time.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
@@ -53,46 +52,50 @@ class TeacherItem extends StatelessWidget {
           ),
           child: Row(
             children: [
-              BuildTeacherPhoto(
-                imageUrl: teacher.imageUrl,
-                radius: 29.sp,
-                imageColor: AppColors.myAppColor.withValues(alpha: 0.5),
-                isOnline: teacher.isOnline,
+              Hero(
+                tag: teacher.uid,
+                child: BuildTeacherPhoto(
+                  imageUrl: teacher.imageUrl,
+                  radius: 29.sp,
+                  imageColor: Colors.white,
+                  isOnline: teacher.isOnline,
+                  isFromFav: isFav,
+                ),
               ),
               const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    teacher.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      teacher.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:  TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  Center(
-                    child: RatingBar.builder(
-                      minRating: 1,
-                      unratedColor: Colors.black.withValues(alpha: 0.3),
-                      itemSize: 15.sp,
-                      initialRating: teacher.averageRating,
-                      ignoreGestures: true,
-                      itemPadding: const EdgeInsets.symmetric(horizontal: 0.0),
-                      itemBuilder:
-                          (context, _) =>
-                              const Icon(Icons.star, color: Colors.amber),
-                      onRatingUpdate: (rating) {},
+                    SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Icon(Icons.star, color: Colors.amber, size: 17.sp),
+                        SizedBox(width: 3),
+                        Text(
+                          teacher.averageRating.toStringAsFixed(1),
+                          style: TextStyle(fontSize: 14.sp, color: Colors.black87, fontWeight: FontWeight.w600),
+                        ),
+                      ],
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}",
-                    style: TextStyle(fontSize: 12.sp, color: Colors.black54),
-                  ),
-                ],
+                    SizedBox(height: 5),
+                    if(!isFav)
+                    Text(
+                        teacher.isOnline ? AppStrings.availableNow.tr(context) :  "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}",
+                      style: TextStyle(fontSize: 12.sp, color:teacher.isOnline ?AppColors.coolGreen : Colors.black54),
+                    ),
+                  ],
+                ),
               ),
-              Spacer(),
               IconButton(
                 onPressed: () async {
 

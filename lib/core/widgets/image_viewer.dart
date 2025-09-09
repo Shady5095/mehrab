@@ -70,7 +70,7 @@ class _ImageViewerState extends State<ImageViewer> {
         child: Column(
           children: [
             const Align(
-              alignment: Alignment.topLeft,
+              alignment: AlignmentDirectional.topStart,
               child: Padding(
                 padding: EdgeInsets.all(20.0),
                 child: MyBackButton(),

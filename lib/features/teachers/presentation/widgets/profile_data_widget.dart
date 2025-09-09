@@ -20,8 +20,6 @@ class _UserProfileDataState extends State<UserProfileData> {
   late List<String?> profileDataDescriptions;
   late final List<String> profileDataTitles = [
     AppStrings.name,
-    AppStrings.email,
-    AppStrings.password,
     AppStrings.phone,
     AppStrings.experience,
     AppStrings.specialization,
@@ -33,6 +31,8 @@ class _UserProfileDataState extends State<UserProfileData> {
     AppStrings.compatibility,
     AppStrings.universityDegree,
     AppStrings.igaz,
+    AppStrings.email,
+    AppStrings.password,
   ];
 
   @override
@@ -52,10 +52,8 @@ class _UserProfileDataState extends State<UserProfileData> {
   void _setProfileDataDescriptions() {
     profileDataDescriptions = [
       widget.model.name,
-      widget.model.email,
-      widget.model.password,
       widget.model.phone,
-      widget.model.experience,
+      "${widget.model.experience} عاما",
       widget.model.specialization,
       widget.model.foundationalTexts,
       widget.model.categories,
@@ -65,7 +63,8 @@ class _UserProfileDataState extends State<UserProfileData> {
       widget.model.compatibility,
       widget.model.school,
       widget.model.igazah,
-
+      widget.model.email,
+      widget.model.password,
     ];
   }
 

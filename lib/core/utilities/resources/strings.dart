@@ -1385,5 +1385,7 @@ class AppStrings {
   static const String teachersFavEmpty = 'teachersFavEmpty';
   static const String teachersEmptyFavDescription = 'teachersEmptyFavDescription';
   static const String quran = 'quran';
+  static const String joinedDate = 'joinedDate';
+  static const String availableNow = 'availableNow';
 
 }

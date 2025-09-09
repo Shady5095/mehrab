@@ -9,5 +9,4 @@ final getIt = GetIt.instance;
 void setup() {
   getIt.registerLazySingleton<ApiService>(() => ApiService(Dio()));
   getIt.registerLazySingleton<PrayerTimesRepoImpl>(()=> PrayerTimesRepoImpl(PrayerTimesRemoteRepoImpl(getIt.get<ApiService>())));
-
 }

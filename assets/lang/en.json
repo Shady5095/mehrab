@@ -1105,5 +1105,7 @@
   "teachersEmptyDescription": "You don't have any teachers at the moment",
   "teachersFavEmpty": "No Favorite Teachers",
   "teachersEmptyFavDescription": "You don't have any favorite teachers at the moment",
-  "quran": "Quran"
+  "quran": "Quran",
+  "joinedDate": "joinedDate",
+  "availableNow": "Available Now"
 }
