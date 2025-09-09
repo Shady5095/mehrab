@@ -32,6 +32,10 @@ class HomeCubit extends Cubit<HomeState> {
   void changeNavBar(int index) {
     if (index != currentScreenIndex) {
       currentScreenIndex = index;
+      if(index == 0){
+        getFavoriteTeachersCount();
+        getStudentsCount();
+      }
       emit(ChangeNavBarState(currentIndex: currentScreenIndex));
     }
   }
@@ -50,6 +54,13 @@ class HomeCubit extends Cubit<HomeState> {
       if (value.exists) {
         userModel = UserModel.fromJson(value.data()??{});
         await cacheRole(userModel?.userRole??'');
+        myUid = uid;
+        currentUserModel = userModel;
+        if(userModel?.userRole == "admin"){
+          AppConstants.isAdmin = true;
+        }
+        await getFavoriteTeachersCount();
+        getStudentsCount();
         emit(GetUserDataSuccessState());
       } else {
         emit(GetUserDataErrorState("User data not found"));
@@ -74,5 +85,38 @@ class HomeCubit extends Cubit<HomeState> {
   void changeSliderIndex(int index) {
     sliderIndex = index;
     emit(ChangeSliderIndexState(index));
+  }
+
+  int favoriteTeachersCount = 0;
+  int studentsCount = 0;
+  Future<void> getFavoriteTeachersCount() async {
+    try {
+      final snapshot = await db
+          .collection('users')
+          .doc(myUid)
+          .collection('favoriteTeachers')
+          .count()
+          .get();
+      favoriteTeachersCount = snapshot.count??0;
+      emit(ToggleTeacherFavSuccessState());
+    } catch (e) {
+      printWithColor('Error getting favorite teachers count: $e');
+    }
+  }
+  Future<void> getStudentsCount() async {
+    if(!AppConstants.isAdmin){
+      return;
+    }
+    try {
+      final snapshot = await db
+          .collection('users')
+          .where("userRole", isEqualTo: "student")
+          .count()
+          .get();
+      studentsCount = snapshot.count??0;
+      emit(ToggleTeacherFavSuccessState());
+    } catch (e) {
+      printWithColor('Error getting students count: $e');
+    }
   }
 }

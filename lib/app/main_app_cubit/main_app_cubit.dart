@@ -142,7 +142,7 @@ class MainAppCubit extends Cubit<MainAppStates> {
     CacheService.userRole = CacheService.getData(key: AppConstants.userRole);
     CacheService.uid = CacheService.getData(key: AppConstants.uid);
     if(CacheService.uid != null){
-      if(CacheService.userRole == "student"){
+      if(CacheService.userRole == "student" || CacheService.userRole == "admin"){
         return AppRoutes.studentHomeLayoutRoute;
       }
     }

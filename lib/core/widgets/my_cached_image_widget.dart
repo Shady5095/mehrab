@@ -37,7 +37,7 @@ class MyCachedNetworkImage extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(3.0),
         child: CircularProgressIndicator(
-          color: loadingIndicatorColor ?? AppColors.accentColor,
+          color: loadingIndicatorColor ?? AppColors.myAppColor,
           value:
               loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded /

@@ -20,11 +20,17 @@ final class GetUserDataErrorState extends HomeState {
   GetUserDataErrorState(this.mess);
 }
 
-final class TryAgainSubmitQuizSuccessState extends HomeState {}
-
-final class TryAgainSubmitQuizErrorState extends HomeState {}
 class ChangeSliderIndexState extends HomeState {
   final int index;
   ChangeSliderIndexState(this.index);
+}
+class ToggleTeacherFavLoadingState extends HomeState {}
+
+class ToggleTeacherFavSuccessState extends HomeState {}
+
+class ToggleTeacherFavErrorState extends HomeState {
+  final String error;
+
+  ToggleTeacherFavErrorState(this.error);
 }
 

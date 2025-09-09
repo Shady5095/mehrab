@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/widgets/gradient_scaffold.dart';
+import 'package:mehrab/core/utilities/resources/colors.dart';
 import '../manager/home_cubit/home_cubit.dart';
 import '../widgets/home_bottom_navigation_bar.dart';
 
@@ -13,7 +13,8 @@ class HomeLayoutBody extends StatelessWidget {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         final cubit = HomeCubit.instance(context);
-        return GradientScaffold(
+        return Scaffold(
+          backgroundColor: AppColors.offlineWhite,
           body: AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             switchInCurve: Curves.easeIn,

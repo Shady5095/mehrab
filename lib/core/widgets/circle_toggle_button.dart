@@ -20,7 +20,7 @@ class CircleToggleButtonList extends StatefulWidget {
     super.key,
     required this.length,
     required this.titles,
-    this.selectedColor = AppColors.accentColor,
+    this.selectedColor = AppColors.myAppColor,
     this.unselectedColor = Colors.transparent,
     this.size = 22.0,
     this.onChangeIndex,

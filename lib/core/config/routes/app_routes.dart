@@ -3,7 +3,12 @@ import 'package:mehrab/features/authentication/presentation/views/login_screen.d
 import 'package:mehrab/features/my_profile/presentation/screens/my_profile_screen.dart';
 import '../../../features/authentication/presentation/views/register_screen.dart';
 import '../../../features/home/presentation/views/home_layout.dart';
+import '../../../features/home/presentation/widgets/quran_web_view_screen.dart';
 import '../../../features/my_profile/presentation/screens/change_password_screen.dart';
+import '../../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
+import '../../../features/teachers/presentation/screens/add_teacher_screen.dart';
+import '../../../features/teachers/presentation/screens/teacher_profile_screen.dart';
+import '../../../features/teachers/presentation/screens/teachers_screen.dart';
 import '../../utilities/resources/strings.dart';
 import '../../widgets/gradient_scaffold.dart';
 import 'adaptive_page_route.dart';
@@ -14,6 +19,11 @@ abstract class AppRoutes {
   static const String registerRoute = 'registerRoute';
   static const String myProfileRoute = 'myProfileRoute';
   static const String changePasswordScreen = 'changePasswordScreen';
+  static const String addTeachersScreen = 'addTeachersScreen';
+  static const String teacherProfileScreen = 'teacherProfileScreen';
+  static const String teachersScreen = 'teachersScreen';
+  static const String quranWebView = 'quranWebView';
+  static const String prayerTimesScreen = 'prayerTimesScreen';
 }
 
 abstract class RouteGenerator {
@@ -42,6 +52,31 @@ abstract class RouteGenerator {
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const ChangePasswordScreen(),
+        );
+        case AppRoutes.addTeachersScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const AddTeacherScreen(),
+        );
+        case AppRoutes.teacherProfileScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const TeacherProfileScreen(),
+        );
+        case AppRoutes.teachersScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const TeachersScreen(),
+        );
+        case AppRoutes.quranWebView:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const QuranWebView(),
+        );
+        case AppRoutes.prayerTimesScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const PrayerTimesScreen(),
         );
 
       default:

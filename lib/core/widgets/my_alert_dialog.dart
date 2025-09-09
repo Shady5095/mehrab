@@ -106,7 +106,7 @@ class MyAlertDialog extends StatelessWidget {
                   label: AppStrings.yes.tr(context),
                   width: 23.wR,
                   height: 3.5.hR,
-                  color: AppColors.accentColor,
+                  color: AppColors.myAppColor,
                 ),
               ),
             ],

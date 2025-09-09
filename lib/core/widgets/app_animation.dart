@@ -39,7 +39,7 @@ class ListItemAnimation extends StatelessWidget {
     return AnimationConfiguration.staggeredList(
       position: index,
       child: SlideAnimation(
-        verticalOffset: 50.0,
+        horizontalOffset: 50.0,
         duration: const Duration(milliseconds: 500),
         child: FadeInAnimation(child: child),
       ),

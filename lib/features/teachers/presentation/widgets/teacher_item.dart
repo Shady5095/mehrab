@@ -1,0 +1,122 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:mehrab/core/config/routes/extension.dart';
+import 'package:mehrab/core/utilities/functions/format_date_and_time.dart';
+import 'package:mehrab/core/utilities/resources/colors.dart';
+import 'package:mehrab/core/utilities/resources/constants.dart';
+import 'package:mehrab/core/utilities/resources/strings.dart';
+import 'package:mehrab/features/teachers/presentation/manager/teachers_cubit/teachers_cubit.dart';
+import 'package:mehrab/features/teachers/presentation/widgets/teachers_bottom_sheet_actions.dart';
+import '../../../../core/config/routes/app_routes.dart';
+import '../../data/models/teachers_model.dart';
+import 'build_teacher_photo.dart';
+
+class TeacherItem extends StatelessWidget {
+  final TeacherModel teacher;
+
+  const TeacherItem({super.key, required this.teacher});
+
+  @override
+  Widget build(BuildContext context) {
+    List<dynamic> args = ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [];
+    final bool isFav = args.isNotEmpty ? args[0] as bool : false;
+    return Card(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(15),
+        onTap: () {
+          context.navigateTo(
+            pageName: AppRoutes.teacherProfileScreen,
+            arguments: [teacher],
+          );
+        },
+        onLongPress: () {
+          if (!AppConstants.isAdmin || isFav) return;
+          showModalBottomSheet(
+            context: context,
+            builder:
+                (newContext) => TeachersBottomSheetActions(
+                  teacherModel: teacher,
+                  oldContext: context,
+                  onFinish: (value) {
+                    if (value != null) {
+                      // Handle any actions after finishing
+                    }
+                  },
+                ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.white,
+          ),
+          child: Row(
+            children: [
+              BuildTeacherPhoto(
+                imageUrl: teacher.imageUrl,
+                radius: 29.sp,
+                imageColor: AppColors.myAppColor.withValues(alpha: 0.5),
+                isOnline: teacher.isOnline,
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    teacher.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Center(
+                    child: RatingBar.builder(
+                      minRating: 1,
+                      unratedColor: Colors.black.withValues(alpha: 0.3),
+                      itemSize: 15.sp,
+                      initialRating: teacher.averageRating,
+                      ignoreGestures: true,
+                      itemPadding: const EdgeInsets.symmetric(horizontal: 0.0),
+                      itemBuilder:
+                          (context, _) =>
+                              const Icon(Icons.star, color: Colors.amber),
+                      onRatingUpdate: (rating) {},
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}",
+                    style: TextStyle(fontSize: 12.sp, color: Colors.black54),
+                  ),
+                ],
+              ),
+              Spacer(),
+              IconButton(
+                onPressed: () async {
+
+                 await TeachersCubit.get(context).toggleTeacherFav(teacher.uid);
+                 if(!context.mounted) return;
+                  TeachersCubit.get(context).addStudentInTeacherCollection(teacher.uid);
+                  TeachersCubit.get(context).addTeacherInStudentCollection(teacher.copyWith(
+                    favoriteStudentsUid: isTeacherInMyFavorites
+                        ? (teacher.favoriteStudentsUid..remove(myUid))
+                        : (teacher.favoriteStudentsUid..add(myUid)),
+                  ));
+                },
+                icon: Icon(isTeacherInMyFavorites ? Icons.favorite : Icons.favorite_border_outlined, size: 22.sp,color: isTeacherInMyFavorites ? AppColors.redColor : Colors.black,),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  bool get isTeacherInMyFavorites {
+    if(teacher.favoriteStudentsUid.isNotEmpty) {
+      return teacher.favoriteStudentsUid.contains(myUid);
+    }
+    return false; // Placeholder return value
+  }
+}

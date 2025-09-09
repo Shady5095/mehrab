@@ -109,7 +109,7 @@ abstract class AppStyle {
   );
   static TextStyle textStyle14AccentColor = TextStyle(
     fontSize: 14.sp,
-    color: AppColors.accentColor,
+    color: AppColors.myAppColor,
     fontWeight: FontWeight.w600,
   );
 

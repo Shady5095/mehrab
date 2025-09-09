@@ -63,7 +63,7 @@ abstract class AppColors {
   static const darkPink = Color(0xFFE91E63);
   static const lightGreytwo = Color(0xFF667C91);
   static const offlineBlack = Color(0xFF313131);
-  static const offlineWhite = Color(0xFFD8D8D8);
+  static const offlineWhite = Color(0xFFF6F6FA);
   static const offlineNavy = Color(0xFF33516C);
   static const offlineBlue = Color(0xFF002547);
    static const teal = Color(0xFF025D60);

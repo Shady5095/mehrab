@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/countries.dart';
 import 'dart:io';
+
+import 'package:mehrab/features/authentication/data/user_model.dart';
 class AppConstants {
   static const androidDownloadDirectory = '/storage/emulated/0/Download';
 
@@ -121,6 +123,7 @@ class AppConstants {
   static const cacheCourseInteractive = 'cacheCourseInteractive';
   static const cacheCourseVirtual= 'cacheCourseVirtual';
   static const cacheMaxSize = 50;
+  static  bool isAdmin = false;
 
   /// question Bank
   static const mcq = 'MCQ';
@@ -742,3 +745,5 @@ class AppConstants {
   ];
 
 }
+String myUid = '';
+UserModel? currentUserModel;

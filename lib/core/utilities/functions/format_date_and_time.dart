@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
@@ -5,34 +6,34 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import '../../../app/app_locale/app_locale.dart';
 import '../resources/strings.dart';
 
-String formatDate(BuildContext context, String date) {
-  if (date.isNotEmpty) {
+String formatDate(BuildContext context, Timestamp? timestamp) {
+  if (timestamp != null) {
     return DateFormat(
       'MMMM dd, yyyy',
       isArabic(context) ? 'ar' : 'en',
-    ).format(DateTime.parse(date));
+    ).format(timestamp.toDate());
   }
-  return '';
+  return '----';
 }
 
-String formatDate2(BuildContext context, String date) {
-  if (date.isNotEmpty) {
+String formatDate2(BuildContext context, Timestamp? timestamp) {
+  if (timestamp != null) {
     return DateFormat(
       'MMM dd, yyyy',
       isArabic(context) ? 'ar' : 'en',
-    ).format(DateTime.parse(date));
+    ).format(timestamp.toDate());
   }
-  return '';
+  return '----';
 }
 
-String formatDate3(BuildContext context, String date) {
-  if (date.isNotEmpty) {
+String formatDate3(BuildContext context, Timestamp? timestamp) {
+  if (timestamp != null) {
     return DateFormat(
       'dd.MM.yy',
       isArabic(context) ? 'ar' : 'en',
-    ).format(DateTime.parse(date));
+    ).format(timestamp.toDate());
   }
-  return '';
+  return '----';
 }
 
 String formatVirtualDateTime({

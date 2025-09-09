@@ -1365,4 +1365,25 @@ class AppStrings {
   static const String currentPassword = 'currentPassword';
   static const String passwordChangedSuccessfully = 'passwordChangedSuccessfully';
   static const String currentPasswordIncorrect = 'currentPasswordIncorrect';
+  static const String addTeacher = 'addTeacher';
+  static const String experience = 'experience';
+  static const String yearExperience = 'yearExperience';
+  static const String specialization = 'specialization';
+  static const String foundationalTexts = 'foundationalTexts';
+  static const String categories = 'categories';
+  static const String tracks = 'tracks';
+  static const String compositions = 'compositions';
+  static const String curriculum = 'curriculum';
+  static const String lastActive = 'lastActive';
+  static const String editTeacher = 'editTeacher';
+  static const String favoriteTeachers = 'favoriteTeachers';
+  static const String compatibility = 'compatibility';
+  static const String universityDegree = 'universityDegree';
+  static const String igaz = 'igaz';
+  static const String teachersEmpty = 'teachersEmpty';
+  static const String teachersEmptyDescription = 'teachersEmptyDescription';
+  static const String teachersFavEmpty = 'teachersFavEmpty';
+  static const String teachersEmptyFavDescription = 'teachersEmptyFavDescription';
+  static const String quran = 'quran';
+
 }

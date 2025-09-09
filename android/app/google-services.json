@@ -56,6 +56,58 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:736983329149:android:7a1d0cf38ac37f2b1f4414",
+        "android_client_info": {
+          "package_name": "com.mehrab.mehrab"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "736983329149-3ocpqb6b31r1v0bl92en91uljlgsel51.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mehrab.mehrab",
+            "certificate_hash": "bb58d4f95574757a450768e05b4e6152ca4710af"
+          }
+        },
+        {
+          "client_id": "736983329149-94s8t2pngoc80djie5co1c9ndkor257p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mehrab.mehrab",
+            "certificate_hash": "ee74ed2aa11f9578bf5b87665c981e862bd5379b"
+          }
+        },
+        {
+          "client_id": "736983329149-epjd22jmhd68d49hf33rjdjqr18hk9jn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTJRX6ZtamN2_thEmFJ0vhdunKm7u2CjA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "736983329149-epjd22jmhd68d49hf33rjdjqr18hk9jn.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "736983329149-3eijfkj3t1c5tgq9etdukjesefol9ffe.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mehrab"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

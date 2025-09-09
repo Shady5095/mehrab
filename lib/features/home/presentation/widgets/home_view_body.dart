@@ -9,6 +9,8 @@ import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.
 import 'package:mehrab/features/home/presentation/widgets/user_name_and_photo_widget.dart';
 
 import '../../../../core/widgets/app_filter_icon.dart';
+import 'home_items_icons.dart';
+import 'home_items_icons_shimmer.dart';
 
 class HomeViewBody extends StatelessWidget {
   const HomeViewBody({super.key});
@@ -17,6 +19,7 @@ class HomeViewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
+        final cubit = HomeCubit.instance(context);
         return Column(
           children: [
             Container(
@@ -96,6 +99,8 @@ class HomeViewBody extends StatelessWidget {
             ),
             SizedBox(height: 20),
             UserNameAndPhotoWidget(),
+            SizedBox(height: 20),
+            Expanded(child: cubit.userModel == null ? HomeItemsIconsShimmer() : HomeItemsIcons()),
           ],
         );
       },
