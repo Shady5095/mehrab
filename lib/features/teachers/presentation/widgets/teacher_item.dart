@@ -20,6 +20,7 @@ class TeacherItem extends StatelessWidget {
     List<dynamic> args = ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [];
     final bool isFav = args.isNotEmpty ? args[0] as bool : false;
     return Card(
+      color: Colors.white,
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
         onTap: () {
@@ -90,7 +91,7 @@ class TeacherItem extends StatelessWidget {
                     SizedBox(height: 5),
                     if(!isFav)
                     Text(
-                        teacher.isOnline ? AppStrings.availableNow.tr(context) :  "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}",
+                        teacher.isOnline ? AppStrings.availableNow.tr(context) :  "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}  : ${formatTime(context, teacher.lastActive)}",
                       style: TextStyle(fontSize: 12.sp, color:teacher.isOnline ?AppColors.coolGreen : Colors.black54),
                     ),
                   ],

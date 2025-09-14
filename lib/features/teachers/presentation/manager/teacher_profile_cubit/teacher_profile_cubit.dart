@@ -1,7 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
+import 'package:mehrab/features/teachers/data/models/teacher_comment_model.dart';
 import 'package:meta/meta.dart';
 
 import '../../../../../core/utilities/functions/print_with_color.dart';
@@ -14,16 +16,14 @@ class TeacherProfileCubit extends Cubit<TeacherProfileState> {
 
   static TeacherProfileCubit get(context) => BlocProvider.of(context);
   FirebaseFirestore db = FirebaseFirestore.instance;
-  void toggleTeacherFav(String teacherUid){
-    if(state is ToggleTeacherFavLoadingState){
+
+  void toggleTeacherFav(String teacherUid) {
+    if (state is ToggleTeacherFavLoadingState) {
       return;
     }
-    // in db i have users collection and each teacher has a list of fav students that favorited him
-    // i need to add the current user uid to that list if not exist and remove it if exist
-    // // if the list is null i need to create it
     emit(ToggleTeacherFavLoadingState());
     final userUid = currentUserModel?.uid;
-    if(userUid == null || userUid.isEmpty){
+    if (userUid == null || userUid.isEmpty) {
       return;
     }
     final teacherRef = db.collection("users").doc(teacherUid);
@@ -47,9 +47,10 @@ class TeacherProfileCubit extends Cubit<TeacherProfileState> {
       emit(ToggleTeacherFavErrorState(error.toString()));
     });
   }
-  void addStudentInTeacherCollection(String teacherUid){
+
+  void addStudentInTeacherCollection(String teacherUid) {
     final userUid = currentUserModel?.uid;
-    if(userUid == null || userUid.isEmpty){
+    if (userUid == null || userUid.isEmpty) {
       return;
     }
     final teacherRef = db.collection("users").doc(teacherUid).collection("favoriteStudents").doc(userUid);
@@ -63,9 +64,10 @@ class TeacherProfileCubit extends Cubit<TeacherProfileState> {
       printWithColor(error);
     });
   }
-  void addTeacherInStudentCollection(TeacherModel model){
+
+  void addTeacherInStudentCollection(TeacherModel model) {
     final userUid = currentUserModel?.uid;
-    if(userUid == null || userUid.isEmpty){
+    if (userUid == null || userUid.isEmpty) {
       return;
     }
     final studentRef = db.collection("users").doc(userUid).collection("favoriteTeachers").doc(model.uid);
@@ -78,5 +80,86 @@ class TeacherProfileCubit extends Cubit<TeacherProfileState> {
     }).catchError((error) {
       printWithColor(error);
     });
+  }
+
+  PageController pageController = PageController();
+  int currentIndex = 0;
+  void changeIndex(int index) {
+    currentIndex = index;
+    pageController.animateToPage(index,
+        duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    emit(ChangeTeacherProfileIndexState());
+  }
+
+  void rateTeacher(String teacherUid, num newRating, {String? comment}) async {
+    if (state is RateTeacherLoadingState) {
+      return;
+    }
+    emit(RateTeacherLoadingState());
+    final userUid = currentUserModel?.uid;
+    if (userUid == null || userUid.isEmpty) {
+      emit(RateTeacherErrorState("User UID is invalid"));
+      return;
+    }
+
+    try {
+      // Find existing comment by the user
+      final commentsSnapshot = await db
+          .collection("users")
+          .doc(teacherUid)
+          .collection("comments")
+          .where('userUid', isEqualTo: userUid)
+          .limit(1)
+          .get();
+
+      if (commentsSnapshot.docs.isNotEmpty) {
+        // Update existing comment
+        final commentDoc = commentsSnapshot.docs.first;
+        final updatedComment = TeacherCommentsModel(
+          userUid: userUid,
+          teacherUid: teacherUid,
+          comment: comment ?? commentDoc.data()['comment'],
+          rating: newRating,
+          timestamp: Timestamp.now(),
+          userName: currentUserModel?.name,
+          userImage: currentUserModel?.imageUrl,
+          commentId: commentDoc.id,
+        );
+        await commentDoc.reference.update(updatedComment.toJson());
+      } else {
+        // Add new comment with commentId
+        final commentRef = db.collection("users").doc(teacherUid).collection("comments").doc();
+        final newComment = TeacherCommentsModel(
+          userUid: userUid,
+          teacherUid: teacherUid,
+          comment: comment,
+          rating: newRating,
+          timestamp: Timestamp.now(),
+          userName: currentUserModel?.name,
+          userImage: currentUserModel?.imageUrl,
+          commentId: commentRef.id,
+        );
+        await commentRef.set(newComment.toJson());
+      }
+
+      // Recalculate average rating after comment is set/updated
+      final allCommentsSnapshot = await db
+          .collection("users")
+          .doc(teacherUid)
+          .collection("comments")
+          .get();
+      if (allCommentsSnapshot.docs.isNotEmpty) {
+        final totalRating = allCommentsSnapshot.docs
+            .map((doc) => (doc.data()['rating'] as num))
+            .reduce((a, b) => a + b);
+        final averageRating = totalRating / allCommentsSnapshot.docs.length;
+        // Update teacher document with new average rating
+        await db.collection("users").doc(teacherUid).update({'averageRating': averageRating});
+      }
+      emit(RateTeacherSuccessState());
+    } catch (error) {
+      printWithColor(error);
+      emit(RateTeacherErrorState(error.toString()));
+    }
   }
 }

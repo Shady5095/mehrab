@@ -97,7 +97,7 @@ class TeachersCubit extends Cubit<TeachersState> {
   Stream<QuerySnapshot> getTeachersStream({required bool isFav, String? searchQuery}) {
     Query queryRef = isFav
         ? db.collection('users').doc(myUid).collection('favoriteTeachers').where("userRole", isEqualTo: "teacher")
-        : db.collection('users').where("userRole", isEqualTo: "teacher").orderBy("isOnline", descending: true).orderBy("name", descending: false);
+        : AppConstants.isAdmin ? db.collection('users').where("userRole", isEqualTo: "teacher").orderBy("isOnline", descending: true).orderBy("name", descending: false) : db.collection('users').where("userRole", isEqualTo: "teacher").where("isMale",isEqualTo: currentUserModel?.isMale??true).orderBy("isOnline", descending: true).orderBy("name", descending: false);
 
     if (searchQuery != null && searchQuery.isNotEmpty) {
       queryRef = queryRef.where("name", isGreaterThanOrEqualTo: searchQuery).where("name", isLessThanOrEqualTo: '$searchQuery\uf8ff');

@@ -16,6 +16,7 @@ class StudentItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Colors.white,
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
         onTap: () {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
-import 'package:mehrab/features/teachers/presentation/widgets/profile_data_item.dart';
+import 'package:mehrab/features/students/presentation/widgets/student_profile_data_item.dart';
 
 import '../../../../core/utilities/resources/strings.dart';
 
@@ -67,7 +67,7 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
             child: ListView.builder(
               itemCount: profileDataTitles.length,
               itemBuilder:
-                  (context, index) => ProfileDataItem(
+                  (context, index) => StudentProfileDataItem(
                 title: profileDataTitles[index],
                 description:index == 4 || index == 5 ? profileDataDescriptions[index]?.tr(context) : profileDataDescriptions[index],
               ),

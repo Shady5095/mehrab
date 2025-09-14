@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
+import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
 import 'package:mehrab/features/teachers/presentation/widgets/profile_data_item.dart';
+import 'package:mehrab/features/teachers/presentation/widgets/teachers_comments_view.dart';
 
 import '../../../../core/utilities/resources/strings.dart';
+import '../manager/teacher_profile_cubit/teacher_profile_cubit.dart';
 
 class UserProfileData extends StatefulWidget {
   const UserProfileData({
@@ -20,6 +23,7 @@ class _UserProfileDataState extends State<UserProfileData> {
   late List<String?> profileDataDescriptions;
   late final List<String> profileDataTitles = [
     AppStrings.name,
+    if(AppConstants.isAdmin)
     AppStrings.phone,
     AppStrings.experience,
     AppStrings.specialization,
@@ -31,7 +35,9 @@ class _UserProfileDataState extends State<UserProfileData> {
     AppStrings.compatibility,
     AppStrings.universityDegree,
     AppStrings.igaz,
+    if(AppConstants.isAdmin)
     AppStrings.email,
+    if(AppConstants.isAdmin)
     AppStrings.password,
   ];
 
@@ -52,6 +58,7 @@ class _UserProfileDataState extends State<UserProfileData> {
   void _setProfileDataDescriptions() {
     profileDataDescriptions = [
       widget.model.name,
+      if(AppConstants.isAdmin)
       widget.model.phone,
       "${widget.model.experience} عاما",
       widget.model.specialization,
@@ -63,13 +70,16 @@ class _UserProfileDataState extends State<UserProfileData> {
       widget.model.compatibility,
       widget.model.school,
       widget.model.igazah,
+      if(AppConstants.isAdmin)
       widget.model.email,
+      if(AppConstants.isAdmin)
       widget.model.password,
     ];
   }
 
   @override
   Widget build(BuildContext context) {
+    final cubit = TeacherProfileCubit.get(context);
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -80,13 +90,20 @@ class _UserProfileDataState extends State<UserProfileData> {
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
-            child: ListView.builder(
-              itemCount: profileDataTitles.length,
-              itemBuilder:
-                  (context, index) => ProfileDataItem(
-                    title: profileDataTitles[index],
-                    description: profileDataDescriptions[index],
-                  ),
+            child: PageView(
+              controller: cubit.pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                ListView.builder(
+                  itemCount: profileDataTitles.length,
+                  itemBuilder:
+                      (context, index) => ProfileDataItem(
+                        title: profileDataTitles[index],
+                        description: profileDataDescriptions[index],
+                      ),
+                ),
+                TeachersCommentsView(model: widget.model,),
+              ],
             ),
           ),
         ),

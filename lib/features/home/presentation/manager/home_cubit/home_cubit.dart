@@ -35,6 +35,7 @@ class HomeCubit extends Cubit<HomeState> {
       if(index == 0){
         getFavoriteTeachersCount();
         getStudentsCount();
+        //getNotificationsCount();
       }
       emit(ChangeNavBarState(currentIndex: currentScreenIndex));
     }
@@ -50,7 +51,8 @@ class HomeCubit extends Cubit<HomeState> {
     if(userModel != null) {
       return;
     }
-    db.collection("users").doc(uid).get().then((value) async {
+    emit(GetUserDataWaitingState());
+   await db.collection("users").doc(uid).get().then((value) async {
       if (value.exists) {
         userModel = UserModel.fromJson(value.data()??{});
         await cacheRole(userModel?.userRole??'');
@@ -58,9 +60,14 @@ class HomeCubit extends Cubit<HomeState> {
         currentUserModel = userModel;
         if(userModel?.userRole == "admin"){
           AppConstants.isAdmin = true;
+        }else if(userModel?.userRole == "teacher") {
+          AppConstants.isTeacher = true;
+        }else{
+          AppConstants.isStudent = true;
         }
         await getFavoriteTeachersCount();
         getStudentsCount();
+        getNotificationsCount();
         emit(GetUserDataSuccessState());
       } else {
         emit(GetUserDataErrorState("User data not found"));
@@ -118,5 +125,40 @@ class HomeCubit extends Cubit<HomeState> {
     } catch (e) {
       printWithColor('Error getting students count: $e');
     }
+  }
+  int? notificationsCount;
+  Future<void> getNotificationsCount() async {
+    if(AppConstants.isAdmin){
+      return;
+    }
+    try {
+      getNotificationsCurrentQuery.then((snapshot) {
+        notificationsCount = snapshot.count??0;
+        emit(ToggleTeacherFavSuccessState());
+      });
+    } catch (e) {
+      printWithColor('$e');
+    }
+  }
+  Future<AggregateQuerySnapshot> get getNotificationsCurrentQuery {
+    final studentsQuery =  FirebaseFirestore.instance
+        .collection('notifications')
+        .where('role', whereIn: ['all', 'students',myUid])
+        .orderBy("timestamp", descending: true)
+        .count().get();
+    final teachersQuery =  FirebaseFirestore.instance
+        .collection('notifications')
+        .where('role', whereIn: ['all', 'teachers'])
+        .orderBy("timestamp", descending: true)
+        .count().get();
+    if(AppConstants.isStudent) {
+      return studentsQuery;
+    }else{
+      return teachersQuery;
+    }
+  }
+
+  void refreshNotifications() {
+    emit(NotificationsRefresh());
   }
 }

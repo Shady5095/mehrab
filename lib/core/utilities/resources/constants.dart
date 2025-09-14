@@ -124,6 +124,8 @@ class AppConstants {
   static const cacheCourseVirtual= 'cacheCourseVirtual';
   static const cacheMaxSize = 50;
   static  bool isAdmin = false;
+  static  bool isTeacher = false;
+  static  bool isStudent = false;
 
   /// question Bank
   static const mcq = 'MCQ';

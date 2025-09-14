@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mehrab/core/config/routes/app_routes.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
 import 'package:mehrab/features/students/presentation/manager/student_profile_cubit/students_profile_state.dart';
@@ -54,7 +55,7 @@ class BuildStudentProfileImageWithName extends StatelessWidget {
                         const Spacer(),
                         IconButton(
                           onPressed: () {
-
+                            context.navigateTo(pageName: AppRoutes.addNotificationScreen,arguments: [model]);
                           },
                           icon: Icon(Icons.notification_add_outlined,
                             size: 28.sp,

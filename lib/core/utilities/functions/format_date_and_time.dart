@@ -59,12 +59,12 @@ String formatVirtualDateTime({
   return formattedDate;
 }
 
-String formatTime(BuildContext context, String time) {
-  if (time.isNotEmpty) {
+String formatTime(BuildContext context, Timestamp? time) {
+  if (time != null) {
     return DateFormat(
       'jm',
       isArabic(context) ? 'ar' : 'en',
-    ).format(DateTime.parse(time));
+    ).format(time.toDate());
   }
   return '';
 }

@@ -1387,5 +1387,18 @@ class AppStrings {
   static const String quran = 'quran';
   static const String joinedDate = 'joinedDate';
   static const String availableNow = 'availableNow';
+  static const String addNotification = 'addNotification';
+  static const String notificationTitle = 'notificationTitle';
+  static const String notificationDetails = 'notificationDetails';
+  static const String sendNotificationTo = 'sendNotificationTo';
+  static const String notification = 'notification';
+  static const String comments = 'comments';
+  static const String noComments = 'noComments';
+  static const String noCommentsDescription = 'noCommentsDescription';
+  static const String addComment = 'addComment';
+  static const String howDoYouRateThisTeacher = 'howDoYouRateThisTeacher';
+  static const String send = 'send';
+  static const String contactUs = 'contactUs';
+  static const String hosniAbuOmar = 'hosniAbuOmar';
 
 }

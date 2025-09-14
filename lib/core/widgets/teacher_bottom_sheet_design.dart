@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
@@ -29,7 +28,7 @@ class TeacherBottomSheetDesign extends StatelessWidget {
             children: [
               const FirstBottomSheetItem(),
               ...children,
-              if (Platform.isIOS) SizedBox(height: 2.hR),
+              SizedBox(height: 2.hR),
             ],
           ),
         ),

@@ -10,4 +10,6 @@ class AppAssets {
   static const String welcome2 = 'assets/images/welcome2.png';
   static const String arabicLang = 'assets/images/arabicIcon.png';
   static const String englishLang = 'assets/images/englishIcon.png';
+  static const String notification = 'assets/images/notification.png';
+  static const String teacherComments = 'assets/images/teacher_comments.png';
 }

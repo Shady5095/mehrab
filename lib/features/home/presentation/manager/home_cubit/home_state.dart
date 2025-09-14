@@ -27,6 +27,7 @@ class ChangeSliderIndexState extends HomeState {
 class ToggleTeacherFavLoadingState extends HomeState {}
 
 class ToggleTeacherFavSuccessState extends HomeState {}
+class NotificationsRefresh extends HomeState {}
 
 class ToggleTeacherFavErrorState extends HomeState {
   final String error;

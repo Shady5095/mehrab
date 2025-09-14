@@ -6,6 +6,7 @@ import '../../../features/authentication/presentation/views/register_screen.dart
 import '../../../features/home/presentation/views/home_layout.dart';
 import '../../../features/home/presentation/widgets/quran_web_view_screen.dart';
 import '../../../features/my_profile/presentation/screens/change_password_screen.dart';
+import '../../../features/notifications/presentation/screens/add_notification_screen.dart';
 import '../../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
 import '../../../features/students/presentation/screens/students_profile_screen.dart';
 import '../../../features/students/presentation/screens/students_screen.dart';
@@ -30,6 +31,7 @@ abstract class AppRoutes {
   static const String allStudentsScreen = 'allStudentsScreen';
   static const String studentsProfileScreen = 'studentsProfileScreen';
   static const String notificationsScreen = 'notificationsScreen';
+  static const String addNotificationScreen = 'addNotificationScreen';
 }
 
 abstract class RouteGenerator {
@@ -108,6 +110,11 @@ abstract class RouteGenerator {
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const NotificationsScreen(),
+        );
+        case AppRoutes.addNotificationScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const AddNotificationScreen(),
         );
       default:
         return noRoute();

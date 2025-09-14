@@ -59,7 +59,7 @@ class MyApp extends StatelessWidget {
               theme: AppLightThemes.appLightTheme(context),
               builder: DevicePreview.appBuilder,
               darkTheme: AppDarkThemes.appDarkTheme(context),
-              themeMode: cubit.themeMode,
+              themeMode: ThemeMode.light,
 
               onGenerateRoute: RouteGenerator.generateRoute,
               initialRoute: cubit.checkNextRoute,

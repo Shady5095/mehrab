@@ -6,13 +6,15 @@ import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.dart';
 
+import '../../../../core/utilities/resources/constants.dart';
+
 class HomeItemsIcons extends StatelessWidget {
   const HomeItemsIcons({super.key});
 
   @override
   Widget build(BuildContext context) {
     final cubit = HomeCubit.instance(context);
-    final List<Map<String, dynamic>> items = [
+    final List<Map<String, dynamic>> adminItems = [
       {
         'name': AppStrings.favoriteTeachers,
         'icon': 'assets/images/teacher_fav.png',
@@ -38,6 +40,57 @@ class HomeItemsIcons extends StatelessWidget {
         'color': AppColors.purple,
       },
     ];
+    final List<Map<String, dynamic>> studentItems = [
+      {
+        'name': AppStrings.favoriteTeachers,
+        'icon': 'assets/images/teacher_fav.png',
+        'details': cubit.favoriteTeachersCount.toString(),
+        'color': AppColors.redColor,
+      },
+      {
+        'name': AppStrings.prayerTimes,
+        'icon': 'assets/images/pray.png',
+        'details': "prayerTimes",
+        'color': AppColors.coolGreen,
+      },
+      {
+        'name': AppStrings.quran,
+        'icon': 'assets/images/book.png',
+        'details': 'quran',
+        'color': AppColors.purple,
+      },
+    ];
+    final List<Map<String, dynamic>> teacherItems = [
+      {
+        'name': AppStrings.favoriteTeachers,
+        'icon': 'assets/images/teacher_fav.png',
+        'details': cubit.favoriteTeachersCount.toString(),
+        'color': AppColors.redColor,
+      },
+      {
+        'name': AppStrings.students,
+        'icon': 'assets/images/students.png',
+        'details': cubit.studentsCount.toString(),
+        'color': AppColors.accentColor,
+      },
+      {
+        'name': AppStrings.prayerTimes,
+        'icon': 'assets/images/pray.png',
+        'details': "prayerTimes",
+        'color': AppColors.coolGreen,
+      },
+      {
+        'name': AppStrings.quran,
+        'icon': 'assets/images/book.png',
+        'details': 'quran',
+        'color': AppColors.purple,
+      },
+    ];
+    final List<Map<String, dynamic>> items = AppConstants.isAdmin
+        ? adminItems
+        : AppConstants.isStudent
+            ? studentItems
+            : teacherItems;
     // make on tap for each item to navigate to a new screen
     List<Function()> onTapFunctions = [
       () {

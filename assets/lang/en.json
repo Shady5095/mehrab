@@ -1107,5 +1107,18 @@
   "teachersEmptyFavDescription": "You don't have any favorite teachers at the moment",
   "quran": "Quran",
   "joinedDate": "joinedDate",
-  "availableNow": "Available Now"
+  "availableNow": "Available Now",
+  "addNotification": "Add Notification",
+  "notificationTitle": "Notification Title",
+  "notificationDetails": "Notification Details",
+  "sendNotificationTo": "Send Notification To",
+  "notification": "Notification",
+  "comments": "Comments",
+  "noComments": "No Comments",
+  "noCommentsDescription": "No comments or ratings about this teacher yet",
+  "addComment": "Add Comment and Rating",
+  "howDoYouRateThisTeacher": "How do you rate this teacher ?"
+  "send": "Send",
+  "contactUs": "Contact Us",
+  "hosniAbuOmar": "Sheikh Hosni Abu Omar"
 }

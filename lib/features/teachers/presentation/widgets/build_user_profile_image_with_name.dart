@@ -5,7 +5,6 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
 import 'package:mehrab/features/teachers/presentation/manager/teacher_profile_cubit/teacher_profile_cubit.dart';
-
 import '../../../../core/config/routes/adaptive_page_route.dart';
 import '../../../../core/utilities/resources/assets.dart';
 import '../../../../core/utilities/resources/colors.dart';
@@ -68,15 +67,22 @@ class UserProfileImageWithName extends StatelessWidget {
                               teacher.favoriteStudentsUid.add(myUid);
                             }
                           },
-                          icon: Icon(
-                            isTeacherInMyFavorites(teacher)
-                                ? Icons.favorite
-                                : Icons.favorite_border_outlined,
-                            size: 28.sp,
-                            color:
-                                isTeacherInMyFavorites(teacher)
-                                    ? AppColors.redColor
-                                    : Colors.white,
+                          icon: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isTeacherInMyFavorites(teacher)
+                                  ? Icons.favorite
+                                  : Icons.favorite_border_outlined,
+                              size: 22.sp,
+                              color:
+                                  isTeacherInMyFavorites(teacher)
+                                      ? AppColors.redColor
+                                      : Colors.black54,
+                            ),
                           ),
                         ),
                       ],
@@ -127,6 +133,7 @@ class UserProfileImageWithName extends StatelessWidget {
                             onRatingUpdate: (rating) {},
                           ),
                         ),
+
                       ],
                     ),
                   ),

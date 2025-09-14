@@ -14,3 +14,15 @@ class ToggleTeacherFavErrorState extends TeacherProfileState {
 
   ToggleTeacherFavErrorState(this.error);
 }
+
+class ChangeTeacherProfileIndexState extends TeacherProfileState {}
+
+class RateTeacherLoadingState extends TeacherProfileState {}
+
+class RateTeacherSuccessState extends TeacherProfileState {}
+
+class RateTeacherErrorState extends TeacherProfileState {
+  final String error;
+
+  RateTeacherErrorState(this.error);
+}

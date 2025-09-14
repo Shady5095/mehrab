@@ -5,9 +5,11 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/resources/assets.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
+import 'package:mehrab/core/utilities/services/cache_service.dart';
 import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.dart';
 import 'package:mehrab/features/home/presentation/widgets/user_name_and_photo_widget.dart';
 
+import '../../../../core/config/routes/app_routes.dart';
 import '../../../../core/widgets/app_filter_icon.dart';
 import 'home_items_icons.dart';
 import 'home_items_icons_shimmer.dart';
@@ -20,88 +22,98 @@ class HomeViewBody extends StatelessWidget {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         final cubit = HomeCubit.instance(context);
-        return Column(
-          children: [
-            Container(
-              width: double.infinity,
-              height: 9.hR,
-              color: AppColors.myAppColor,
-              alignment: Alignment.bottomCenter,
-              padding: EdgeInsets.symmetric(horizontal: 15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Opacity(
-                    opacity: 0,
-                    child: AppFilterIconWithCounter(
+        return RefreshIndicator(
+          onRefresh: () async {
+            cubit.userModel = null;
+            cubit.getUserData();
+          },
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                height: 9.hR,
+                color: AppColors.myAppColor,
+                alignment: Alignment.bottomCenter,
+                padding: EdgeInsets.symmetric(horizontal: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Opacity(
+                      opacity: 0,
+                      child: AppFilterIconWithCounter(
+                        iconColor: AppColors.white,
+                        filterCounter: 2,
+                        onTap: () {},
+                      ),
+                    ),
+                    Text(
+                      AppStrings.home.tr(context),
+                      style: TextStyle(
+                        fontSize: 22.sp,
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    AppFilterIconWithCounter(
                       iconColor: AppColors.white,
-                      filterCounter: 2,
-                      onTap: () {},
+                      filterCounter: ((cubit.notificationsCount??0)- (CacheService.getData(key: "notificationCount")??0)).toInt(),
+                      onTap: () {
+                        context.navigateTo(pageName: AppRoutes.notificationsScreen).then((_) {
+                          cubit.refreshNotifications();
+                        });
+                      },
                     ),
+                  ],
+                ),
+              ),
+              CarouselSlider(
+                items: [
+                  Image(
+                    image: const AssetImage(AppAssets.unlimitedTime),
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
-                  Text(
-                    AppStrings.home.tr(context),
-                    style: TextStyle(
-                      fontSize: 22.sp,
-                      color: AppColors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  AppFilterIconWithCounter(
-                    iconColor: AppColors.white,
-                    filterCounter: 2,
-                    onTap: () {},
+                  Image(
+                    image: const AssetImage(AppAssets.welcome2),
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
                 ],
-              ),
-            ),
-            CarouselSlider(
-              items: [
-                Image(
-                  image: const AssetImage(AppAssets.unlimitedTime),
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+                options: CarouselOptions(
+                  viewportFraction: 1.0,
+                  autoPlay: true,
+                  height: 200,
+                  autoPlayInterval: const Duration(seconds: 15),
+                  autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                  autoPlayCurve: Curves.fastOutSlowIn,
+                  onPageChanged: (index, reason) {
+                    HomeCubit.instance(context).changeSliderIndex(index);
+                  },
                 ),
-                Image(
-                  image: const AssetImage(AppAssets.welcome2),
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ],
-              options: CarouselOptions(
-                viewportFraction: 1.0,
-                autoPlay: true,
-                height: 200,
-                autoPlayInterval: const Duration(seconds: 15),
-                autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                autoPlayCurve: Curves.fastOutSlowIn,
-                onPageChanged: (index, reason) {
-                  HomeCubit.instance(context).changeSliderIndex(index);
-                },
               ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(2, (index) {
-                final isActive = index == context.watch<HomeCubit>().sliderIndex;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: isActive ? 12 : 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: isActive ? AppColors.myAppColor : Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                );
-              }),
-            ),
-            SizedBox(height: 20),
-            UserNameAndPhotoWidget(),
-            SizedBox(height: 20),
-            Expanded(child: cubit.userModel == null ? HomeItemsIconsShimmer() : HomeItemsIcons()),
-          ],
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(2, (index) {
+                  final isActive = index == context.watch<HomeCubit>().sliderIndex;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: isActive ? 12 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: isActive ? AppColors.myAppColor : Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  );
+                }),
+              ),
+              SizedBox(height: 20),
+              UserNameAndPhotoWidget(),
+              SizedBox(height: 20),
+              Expanded(child: cubit.userModel == null ? HomeItemsIconsShimmer() : HomeItemsIcons()),
+            ],
+          ),
         );
       },
     );

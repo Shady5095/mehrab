@@ -343,7 +343,7 @@
   "attendanceReport": "تقرير الحضور",
   "course": "مادة",
   "attendanceType": "نوع الحضور",
-  "notifications": "إشعارات",
+  "notifications": "الاشعارات",
   "ago": "سابق",
   "chatHint": "اكتب رسالة ...",
   "search": "ابحث",
@@ -1107,5 +1107,18 @@
   "teachersEmptyFavDescription": "لا يوجد معلمين مفضلين في هذا الوقت",
   "quran": "القرآن الكريم",
   "joinedDate": "تاريخ الانضمام",
-  "availableNow": "متاح الآن"
+  "availableNow": "متاح الآن",
+  "addNotification": "اضافة اشعار",
+  "notificationTitle": "عنوان الاشعار",
+  "notificationDetails": "تفاصيل الاشعار",
+  "sendNotificationTo": "ارسال الاشعار الى",
+  "notification": "الاشعار",
+  "comments": "التعليقات",
+  "noComments": "لا توجد تعليقات",
+  "noCommentsDescription": "لا توجد تعليقات او تقييمات لهذا المعلم",
+  "addComment": "اضافة تقييم و تعليق",
+  "howDoYouRateThisTeacher": "ماهو تقييمك لهذا المعلم؟",
+  "send": "ارسال",
+  "contactUs": "تواصل معنا",
+  "hosniAbuOmar": "الشيخ حسني أبو عمر"
 }

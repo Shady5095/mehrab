@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 
 import '../../../../core/utilities/resources/colors.dart';
+import '../../../../core/utilities/resources/strings.dart';
 import '../../../../core/utilities/resources/styles.dart';
+import '../../../home/presentation/widgets/contact_us_dialog.dart';
 
-class ProfileDataItem extends StatelessWidget {
+class StudentProfileDataItem extends StatelessWidget {
   final String? title;
   final String? description;
   final bool isTitleTranslated;
   final Color? color;
 
-  const ProfileDataItem({
+  const StudentProfileDataItem({
     super.key,
     required this.title,
     required this.description,
@@ -58,13 +61,42 @@ class ProfileDataItem extends StatelessWidget {
       );
     }
 
-    return SelectableText(
-      description!,
-      textAlign: TextAlign.start,
-
-      style: AppStyle.textStyle14.copyWith(height: 1.5),
-      maxLines: 15,
-      minLines: 1,
+    return Row(
+      children: [
+        SelectableText(
+          description!,
+          textAlign: TextAlign.start,
+          style: AppStyle.textStyle14.copyWith(height: 1.5),
+          maxLines: 15,
+          minLines: 1,
+        ),
+        if (title == AppStrings.phone) ...[
+          Spacer(),
+          InkWell(
+            onTap: () {
+              openWhatsapp(phoneNumber: description.toString(), text: '');
+            },
+            child: Icon(
+              FontAwesomeIcons.whatsapp,
+              color: Colors.green,
+              size: 22.sp,
+            ),
+          ),
+          SizedBox(
+            width: 15,
+          ),
+          InkWell(
+            onTap: () {
+              callDial(description.toString());
+            },
+            child: Icon(
+              Icons.call,
+              color: Colors.blue,
+              size: 22.sp,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
