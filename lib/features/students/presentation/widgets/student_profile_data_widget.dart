@@ -45,7 +45,7 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
     profileDataDescriptions = [
       widget.model.name,
       widget.model.email,
-      widget.model.secureKey,
+      widget.model.password,
       "${widget.model.countryCodeNumber.replaceAll('+', '')}${widget.model.phoneNumber}",
       widget.model.nationality,
       widget.model.educationalLevel,

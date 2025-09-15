@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/format_date_and_time.dart';
@@ -57,7 +56,7 @@ class StudentItem extends StatelessWidget {
                     ),
                     SizedBox(height: 5),
                     Text(
-                      "${AppStrings.joinedDate.tr(context)} : ${formatDate(context, Timestamp.fromDate(userModel.createdAt))}",
+                      "${AppStrings.joinedDate.tr(context)} : ${formatDate(context, userModel.joinedAt)}",
                       style: TextStyle(fontSize: 12.sp, color: Colors.black54),
                     ),
                   ],

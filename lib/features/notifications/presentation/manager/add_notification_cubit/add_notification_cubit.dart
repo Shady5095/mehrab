@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
 
+import '../../../../../core/utilities/services/firebase_notification.dart';
 import 'add_notification_state.dart';
 
 class AddNotificationCubit extends Cubit<AddNotificationState> {
@@ -58,9 +59,26 @@ class AddNotificationCubit extends Cubit<AddNotificationState> {
               value.update({'id': value.id});
             });
         emit(AddNotificationSuccessState());
+        pushNotification();
       } catch (e) {
         emit(AddNotificationErrorState(errorMessage: e.toString()));
       }
     }
+  }
+
+  void pushNotification() {
+    AppFirebaseNotification.pushNotification(
+      title: nameController.text,
+      body: detailsController.text,
+      dataInNotification: {"type": "notification"},
+      topic:
+          oneUserModel == null
+              ? (isSendToStudents && isSendToTeachers
+                  ? 'all'
+                  : isSendToStudents
+                  ? 'student'
+                  : 'teacher')
+              : oneUserModel!.uid,
+    );
   }
 }

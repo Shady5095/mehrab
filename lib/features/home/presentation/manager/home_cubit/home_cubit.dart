@@ -65,6 +65,7 @@ class HomeCubit extends Cubit<HomeState> {
         }else{
           AppConstants.isStudent = true;
         }
+
         await getFavoriteTeachersCount();
         getStudentsCount();
         getNotificationsCount();
@@ -79,15 +80,19 @@ class HomeCubit extends Cubit<HomeState> {
     });
   }
   Future<void> cacheRole(String role) async {
+    if(CacheService.getData(key: AppConstants.userRole) == role){
+      return;
+    }
     await CacheService.setData(key: AppConstants.userRole, value: role).then((value) {
       if (value == true) {
         CacheService.userRole = CacheService.getData(key: AppConstants.userRole);
       }
     });
+    AppFirebaseNotification.subscribeToTopic(userModel?.userRole??'');
   }
 
   void setupFirebase(BuildContext context) {
-    AppFirebaseNotification.initNotification(context);
+    AppFirebaseNotification.initNotification(context,this);
   }
   void changeSliderIndex(int index) {
     sliderIndex = index;

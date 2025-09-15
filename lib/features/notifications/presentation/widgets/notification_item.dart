@@ -6,6 +6,7 @@ import 'package:mehrab/core/utilities/resources/strings.dart';
 
 import '../../../../core/utilities/functions/format_date_and_time.dart';
 import '../../data/models/notification_model.dart';
+import 'notifications_bottom_sheet_actions.dart';
 
 class NotificationItem extends StatelessWidget {
   final NotificationModel model;
@@ -18,6 +19,13 @@ class NotificationItem extends StatelessWidget {
       color: Colors.white,
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
+        onLongPress: (){
+          if(!AppConstants.isAdmin) return;
+          showModalBottomSheet(
+            context: context,
+            builder: (newContext) => NotificationsBottomSheetActions(oldContext: context,notificationModel: model,),
+          );
+        },
         child: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(

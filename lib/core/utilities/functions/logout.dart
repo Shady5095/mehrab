@@ -2,7 +2,7 @@ import '../resources/constants.dart';
 import '../services/cache_service.dart';
 import '../services/firebase_notification.dart';
 
-Future<void> deleteAppCache() async {
+/*Future<void> deleteAppCache() async {
   await Future.wait([
     CacheService.removeData(key: AppConstants.token),
     CacheService.removeData(key: AppConstants.isParentSelectChild),
@@ -12,4 +12,4 @@ Future<void> deleteAppCache() async {
     AppFirebaseNotification.deleteNotificationToken(),
     AppFirebaseNotification.unSubscribeFromTopic(),
   ]);
-}
+}*/

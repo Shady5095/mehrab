@@ -24,7 +24,7 @@ class NotificationModel {
       details: json['details'],
       role: json['role'],
       specificUserName: json['specificUserName'] ?? '',
-      timestamp: json['timestamp'] as Timestamp,
+      timestamp: json['timestamp'] as Timestamp? ?? Timestamp.now(),
     );
   }
 

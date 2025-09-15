@@ -141,10 +141,10 @@ class MoreScreenBody extends StatelessWidget {
 
 Future<void> deleteAppCache() async {
   await Future.wait([
+    AppFirebaseNotification.unSubscribeFromTopic(CacheService.userRole ?? ''),
     CacheService.removeData(key: AppConstants.uid),
     CacheService.removeData(key: AppConstants.userRole),
     AppFirebaseNotification.deleteNotificationToken(),
-    AppFirebaseNotification.unSubscribeFromTopic(),
   ]);
   CacheService.uid = null;
   CacheService.userRole = null;

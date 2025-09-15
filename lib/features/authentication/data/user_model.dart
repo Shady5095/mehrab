@@ -10,10 +10,10 @@ class UserModel {
   final String phoneNumber;
   final String educationalLevel;
   final String nationality;
-  final String secureKey;
+  final String password;
   final String userRole;
   final String signInMethod;
-  final DateTime createdAt;
+  final Timestamp joinedAt;
   final bool isMale;
 
   UserModel({
@@ -26,10 +26,10 @@ class UserModel {
     required this.countryCodeNumber,
     required this.educationalLevel,
     required this.nationality,
-    required this.secureKey,
+    required this.password,
     required this.userRole,
     required this.signInMethod,
-    required this.createdAt,
+    required this.joinedAt,
     required this.isMale,
   });
 
@@ -42,10 +42,10 @@ class UserModel {
       phoneNumber: json['phoneNumber'] as String? ?? '',
       educationalLevel: json['educationalLevel'] as String? ?? '',
       nationality: json['nationality'] as String? ?? '',
-      secureKey: json['secureKey'] as String? ?? '',
+      password: json['password'] as String? ?? '',
       userRole: json['userRole'] as String? ?? '',
       signInMethod: json['signInMethod'] as String? ?? '',
-      createdAt: (json['createdAt'] as Timestamp).toDate(),
+      joinedAt: json['joinedAt'] as Timestamp,
       isMale: json['isMale'] as bool,
       countryCode: json['countryCode'] as String? ?? '',
       countryCodeNumber: json['countryCodeNumber'] as String? ?? '',
@@ -61,10 +61,10 @@ class UserModel {
       'phoneNumber': phoneNumber,
       'educationalLevel': educationalLevel,
       'nationality': nationality,
-      'secureKey': secureKey,
+      'password': password,
       'userRole': userRole,
       'signInMethod': signInMethod,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'joinedAt': joinedAt,
       'isMale': isMale,
       'countryCode': countryCode,
       'countryCodeNumber': countryCodeNumber,
