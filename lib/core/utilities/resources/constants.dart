@@ -3,6 +3,7 @@ import 'package:intl_phone_field/countries.dart';
 import 'dart:io';
 
 import 'package:mehrab/features/authentication/data/user_model.dart';
+import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
 class AppConstants {
   static const androidDownloadDirectory = '/storage/emulated/0/Download';
 
@@ -749,3 +750,4 @@ class AppConstants {
 }
 String myUid = '';
 UserModel? currentUserModel;
+TeacherModel? currentTeacherModel;

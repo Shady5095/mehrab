@@ -1120,5 +1120,16 @@
   "howDoYouRateThisTeacher": "ماهو تقييمك لهذا المعلم؟",
   "send": "ارسال",
   "contactUs": "تواصل معنا",
-  "hosniAbuOmar": "الشيخ حسني أبو عمر"
+  "hosniAbuOmar": "الشيخ حسني أبو عمر",
+  "favStudents": "الطلاب المفضلين",
+  "reviewsAndComments": "التقييمات و التعليقات",
+  "noReviewsAndCommentsTitle": "لا توجد تقييمات او تعليقات",
+  "noReviewsAndCommentsDescription": "لا يوجد طلاب قامو بتقييمك او ترك تعليق لك",
+  "noFavStudentsTitle": "لا يوجد طلاب مفضلين",
+  "noFavStudentsDescription": "لا يوجد طلاب اضافوك في المفضلة حتي الان",
+  "studentWhoAreAddedYouInFav": "الطلاب الذين اضافوك في المفضلة",
+  "myReviewsAndComments": "التقييمات و التعليقات الخاصة بي",
+  "iAmAvailable": "انا متاح",
+  "youAreNowAvailable": "انت الان متاح",
+  "youAreNowNotAvailable": "انت الان غير متاح"
 }

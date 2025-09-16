@@ -1,3 +1,5 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
@@ -6,12 +8,15 @@ import '../../core/utilities/resources/colors.dart';
 import '../../core/utilities/resources/constants.dart';
 import '../../core/utilities/services/cache_service.dart';
 import '../../core/widgets/icon_broken.dart';
+import '../../features/prayer_times/domain/use_cases/get_loaction_info_use_case.dart';
 import 'main_app_state.dart';
 
 class MainAppCubit extends Cubit<MainAppStates> {
-  MainAppCubit()
+  MainAppCubit({
+    required this.getLocationInfoUseCase,
+})
     : super(MainAppInitial());
-
+  final GetLocationInfoUseCase getLocationInfoUseCase;
   static MainAppCubit instance(BuildContext context) =>
       BlocProvider.of(context);
 
@@ -142,10 +147,64 @@ class MainAppCubit extends Cubit<MainAppStates> {
     CacheService.userRole = CacheService.getData(key: AppConstants.userRole);
     CacheService.uid = CacheService.getData(key: AppConstants.uid);
     if(CacheService.uid != null){
-      if(CacheService.userRole == "student" || CacheService.userRole == "admin"){
+      if(CacheService.userRole == "student" || CacheService.userRole == "admin"|| CacheService.userRole == "teacher"){
         return AppRoutes.studentHomeLayoutRoute;
       }
     }
     return AppRoutes.loginRoute;
+  }
+  Future<void> getLocationInfo() async {
+    final currentCountryCode = CacheService.getData(key: 'currentCountryCode');
+    if(currentCountryCode != null){
+      CacheService.currentCountryCode = currentCountryCode;
+      return;
+    }
+    final result = await getLocationInfoUseCase.call(
+      ip: await getCurrentIpWithDio(),
+    );
+    result.fold((failure) {}, (location) {
+      CacheService.setData(key: 'currentCountryCode', value: location.countryCode);
+      CacheService.currentCountryCode = location.countryCode;
+    });
+  }
+  Future<String> getCurrentIpWithDio() async {
+    // Check the current connectivity status (Wi-Fi or mobile data)
+    final List<ConnectivityResult> results =
+    await Connectivity().checkConnectivity();
+
+    // Check if Wi-Fi is among the active connections
+    if (results.contains(ConnectivityResult.wifi)) {
+      // Get the local IP address when connected to Wi-Fi
+      return getLocalIpWithDio();
+    }
+    // Check if mobile data is among the active connections
+    else if (results.contains(ConnectivityResult.mobile)) {
+      // Get the public IP address when connected to mobile data
+      return getPublicIpWithDio();
+    } else {
+      return 'No Internet Connection';
+    }
+  }
+
+  Future<String> getLocalIpWithDio() async {
+    try {
+      final dio = Dio();
+      final response = await dio.get(
+        'http://api.ipify.org?format=json',
+      ); // Example of fetching public IP
+      return response.data['ip'];
+    } catch (e) {
+      return 'Failed to fetch local IP';
+    }
+  }
+
+  Future<String> getPublicIpWithDio() async {
+    try {
+      final dio = Dio();
+      final response = await dio.get('https://api.ipify.org?format=json');
+      return response.data['ip'];
+    } catch (e) {
+      return 'Failed to fetch public IP';
+    }
   }
 }

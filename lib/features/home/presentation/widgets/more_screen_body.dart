@@ -36,20 +36,38 @@ class MoreScreenBody extends StatelessWidget {
                       HomeCubit.instance(context).userModel == null) {
                     return;
                   }
-                  context
-                      .navigateTo(
-                        pageName: AppRoutes.myProfileRoute,
-                        arguments: [HomeCubit.instance(context).userModel],
-                      )
-                      .then((value) {
-                        if (value == true) {
-                          if (!context.mounted) {
-                            return;
-                          }
-                          HomeCubit.instance(context).userModel = null;
-                          HomeCubit.instance(context).getUserData();
+                  if (currentUserModel?.userRole == "teacher") {
+                    context
+                        .navigateTo(
+                      pageName: AppRoutes.myProfileScreenTeacher,
+                      arguments: [HomeCubit.instance(context).teacherModel],
+                    )
+                        .then((value) {
+                      if (value == true) {
+                        if (!context.mounted) {
+                          return;
                         }
-                      });
+                        HomeCubit.instance(context).userModel = null;
+                        HomeCubit.instance(context).teacherModel = null;
+                        HomeCubit.instance(context).getUserData();
+                      }
+                    });
+                  }else{
+                    context
+                        .navigateTo(
+                      pageName: AppRoutes.myProfileRoute,
+                      arguments: [HomeCubit.instance(context).userModel],
+                    )
+                        .then((value) {
+                      if (value == true) {
+                        if (!context.mounted) {
+                          return;
+                        }
+                        HomeCubit.instance(context).userModel = null;
+                        HomeCubit.instance(context).getUserData();
+                      }
+                    });
+                  }
                 },
                 contentPadding: const EdgeInsets.all(10),
                 leading: Icon(Icons.person_outline, size: 24.sp),
@@ -153,4 +171,5 @@ Future<void> deleteAppCache() async {
   AppConstants.isStudent = false;
   currentUserModel = null;
   myUid = '';
+  currentTeacherModel = null;
 }

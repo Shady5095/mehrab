@@ -10,6 +10,7 @@ class CacheService {
   static int? themeMode;
   static String? userRole;
   static String? schoolImage;
+  static String? currentCountryCode;
   static bool? isParentSelectChild;
   static String? uid;
 

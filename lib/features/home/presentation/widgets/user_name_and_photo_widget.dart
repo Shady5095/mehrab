@@ -7,6 +7,7 @@ import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.
 
 import '../../../../core/config/routes/app_routes.dart';
 import '../../../../core/utilities/resources/assets.dart';
+import '../../../../core/utilities/resources/constants.dart';
 import '../../../../core/widgets/my_cached_image_widget.dart';
 
 class UserNameAndPhotoWidget extends StatelessWidget {
@@ -41,10 +42,38 @@ class UserNameAndPhotoWidget extends StatelessWidget {
                       HomeCubit.instance(context).userModel == null) {
                     return;
                   }
-                  context.navigateTo(
-                    pageName: AppRoutes.myProfileRoute,
-                    arguments: [HomeCubit.instance(context).userModel],
-                  );
+                  if (currentUserModel?.userRole == "teacher") {
+                    context
+                        .navigateTo(
+                      pageName: AppRoutes.myProfileScreenTeacher,
+                      arguments: [HomeCubit.instance(context).teacherModel],
+                    )
+                        .then((value) {
+                      if (value == true) {
+                        if (!context.mounted) {
+                          return;
+                        }
+                        HomeCubit.instance(context).userModel = null;
+                        HomeCubit.instance(context).teacherModel = null;
+                        HomeCubit.instance(context).getUserData();
+                      }
+                    });
+                  }else{
+                    context
+                        .navigateTo(
+                      pageName: AppRoutes.myProfileRoute,
+                      arguments: [HomeCubit.instance(context).userModel],
+                    )
+                        .then((value) {
+                      if (value == true) {
+                        if (!context.mounted) {
+                          return;
+                        }
+                        HomeCubit.instance(context).userModel = null;
+                        HomeCubit.instance(context).getUserData();
+                      }
+                    });
+                  }
                 },
                 child: Hero(tag: "myProfile" ,child: buildPhoto(context)),
               ),

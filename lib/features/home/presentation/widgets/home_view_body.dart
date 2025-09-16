@@ -66,29 +66,38 @@ class HomeViewBody extends StatelessWidget {
                   ],
                 ),
               ),
-              CarouselSlider(
-                items: [
-                  Image(
-                    image: const AssetImage(AppAssets.unlimitedTime),
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+              InkWell(
+                /*onTap: () async {
+                  GoogleSignInAccount? account = await cubit.signInUser();
+                  if (account != null) {
+                    cubit.openMeet(await cubit.createGoogleMeetEvent(account)??'');
+                  }
+
+                },*/
+                child: CarouselSlider(
+                  items: [
+                    Image(
+                      image: const AssetImage(AppAssets.unlimitedTime),
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                    Image(
+                      image: const AssetImage(AppAssets.welcome2),
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ],
+                  options: CarouselOptions(
+                    viewportFraction: 1.0,
+                    autoPlay: true,
+                    height: 200,
+                    autoPlayInterval: const Duration(seconds: 15),
+                    autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                    autoPlayCurve: Curves.fastOutSlowIn,
+                    onPageChanged: (index, reason) {
+                      HomeCubit.instance(context).changeSliderIndex(index);
+                    },
                   ),
-                  Image(
-                    image: const AssetImage(AppAssets.welcome2),
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ],
-                options: CarouselOptions(
-                  viewportFraction: 1.0,
-                  autoPlay: true,
-                  height: 200,
-                  autoPlayInterval: const Duration(seconds: 15),
-                  autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                  autoPlayCurve: Curves.fastOutSlowIn,
-                  onPageChanged: (index, reason) {
-                    HomeCubit.instance(context).changeSliderIndex(index);
-                  },
                 ),
               ),
               const SizedBox(height: 8),
@@ -110,7 +119,36 @@ class HomeViewBody extends StatelessWidget {
               ),
               SizedBox(height: 20),
               UserNameAndPhotoWidget(),
-              SizedBox(height: 20),
+              SizedBox(height: 15),
+              if(cubit.userModel != null && cubit.userModel?.userRole == "teacher")
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Row(
+                  children: [
+                    Text(
+                      AppStrings.iAmAvailable.tr(context),
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    Transform.scale(
+                      scale: 0.8,
+                      child: Switch(
+                        value: cubit.teacherAvailability,
+                        activeColor: AppColors.coolGreen,
+                        //inactiveTrackColor: AppColors.redColor.withOpacity(0.3),
+                        //inactiveThumbColor: AppColors.redColor,
+
+                        onChanged: (value) {
+                          cubit.changeTeacherAvailability(value,context);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               Expanded(child: cubit.userModel == null ? HomeItemsIconsShimmer() : HomeItemsIcons()),
             ],
           ),

@@ -1400,5 +1400,16 @@ class AppStrings {
   static const String send = 'send';
   static const String contactUs = 'contactUs';
   static const String hosniAbuOmar = 'hosniAbuOmar';
+  static const String favStudents = 'favStudents';
+  static const String reviewsAndComments = 'reviewsAndComments';
+  static const String noReviewsAndCommentsTitle = 'noReviewsAndCommentsTitle';
+  static const String noReviewsAndCommentsDescription = 'noReviewsAndCommentsDescription';
+  static const String noFavStudentsTitle = 'noFavStudentsTitle';
+  static const String noFavStudentsDescription = 'noFavStudentsDescription';
+  static const String studentWhoAreAddedYouInFav = 'studentWhoAreAddedYouInFav';
+  static const String myReviewsAndComments = 'myReviewsAndComments';
+  static const String iAmAvailable = 'iAmAvailable';
+  static const String youAreNowAvailable = 'youAreNowAvailable';
+  static const String youAreNowNotAvailable = 'youAreNowNotAvailable';
 
 }

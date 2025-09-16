@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_phone_field/phone_number.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/core/utilities/resources/dimens.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
+import 'package:mehrab/core/utilities/services/cache_service.dart';
 import 'package:mehrab/core/utilities/validator.dart';
 import 'package:mehrab/core/widgets/my_appbar.dart';
 import 'package:mehrab/core/widgets/my_text_field.dart';
@@ -32,9 +34,16 @@ class RegisterScreenBody extends StatelessWidget {
         child: BlocConsumer<RegisterCubit, RegisterState>(
           listener: (context, state) {
             if (state is RegisterSuccessState) {
-              context.navigateAndRemoveUntil(pageName: AppRoutes.studentHomeLayoutRoute);
-            } if (state is RegisterErrorState) {
-              myToast(msg: state.errorMessage, state: ToastStates.error,toastLength: Toast.LENGTH_LONG);
+              context.navigateAndRemoveUntil(
+                pageName: AppRoutes.studentHomeLayoutRoute,
+              );
+            }
+            if (state is RegisterErrorState) {
+              myToast(
+                msg: state.errorMessage,
+                state: ToastStates.error,
+                toastLength: Toast.LENGTH_LONG,
+              );
             }
           },
           builder: (context, state) {
@@ -42,259 +51,333 @@ class RegisterScreenBody extends StatelessWidget {
             return Form(
               key: cubit.formKey,
               child: CustomScrollView(
-                slivers: [SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Column(
-                    spacing: 10,
-                    children: [
-                      MyAppBar(title: cubit.googleSignInModel == null ? AppStrings.registerStudent : AppStrings.completeRegistration,),
-                      RegisterProfilePhotoBuild(),
-                      MyTextField(
-                        label: AppStrings.fullName.tr(context),
-                        controller: cubit.nameController,
-                        keyboardType: TextInputType.name,
-                        textInputAction: TextInputAction.next,
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Column(
+                      spacing: 10,
+                      children: [
+                        MyAppBar(
+                          title:
+                              cubit.googleSignInModel == null
+                                  ? AppStrings.registerStudent
+                                  : AppStrings.completeRegistration,
                         ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        errorBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.red),
-                        ),
-                        disabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        validator:
-                            (String? value) => AppValidator.emptyFiled(
-                              value,
-                              context,
-                              AppStrings.name,
-                            ),
-                      ),
-                      MyTextField(
-                        label: AppStrings.email.tr(context),
-                        controller: cubit.emailController,
-                        enabled: cubit.googleSignInModel == null,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        errorBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.red),
-                        ),
-                        disabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-
-                        validator:
-                            (String? value) => AppValidator.emailValidator(
-                          value,
-                          context,
-                        ),
-                      ),
-                      IntlPhoneField(
-                        autovalidateMode: AutovalidateMode.onUnfocus,
-                        controller: cubit.phoneController,
-                        initialValue: "us",
-                        languageCode: isArabic(context)?  "ar" : "en",
-                        decoration: InputDecoration(
-
-                          label: FittedBox(child: Text(AppStrings.phone.tr(context), maxLines: 1)),
+                        RegisterProfilePhotoBuild(),
+                        MyTextField(
+                          label: AppStrings.fullName.tr(context),
+                          controller: cubit.nameController,
+                          keyboardType: TextInputType.name,
+                          textInputAction: TextInputAction.next,
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
                           ),
                           disabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
-                          border: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                          validator:
+                              (String? value) => AppValidator.emptyFiled(
+                                value,
+                                context,
+                                AppStrings.name,
+                              ),
+                        ),
+                        MyTextField(
+                          label: AppStrings.email.tr(context),
+                          controller: cubit.emailController,
+                          enabled: cubit.googleSignInModel == null,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
-                          focusedErrorBorder: UnderlineInputBorder(
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
+                          ),
+                          errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
                           ),
-                        ),
-                        textAlign: isArabic(context) ? TextAlign.right : TextAlign.left,
-                        initialCountryCode: 'EG',
+                          disabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
+                          ),
 
-                        onChanged: (phone) {
-                          cubit.countryCode = phone.countryISOCode;
-                          cubit.countryCodeNumber = phone.countryCode;
-                        },
-                        countries: AppConstants.arabCountries,
-                      ),
-                      if(cubit.googleSignInModel == null)
-                      MyTextField(
-                        label: AppStrings.password.tr(context),
-                        controller: cubit.passwordController,
-                        keyboardType: TextInputType.visiblePassword,
-                        textInputAction: TextInputAction.next,
-                        obsceure: cubit.isPasswordObscured,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            cubit.isPasswordObscured ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
-                            color: Colors.grey,
+                          validator:
+                              (String? value) =>
+                                  AppValidator.emailValidator(value, context),
+                        ),
+                        IntlPhoneField(
+                          validator: (value) {
+                            if (value == null || value.number.isEmpty) {
+                              return "${AppStrings.mustHaveValue.tr(context)} ${AppStrings.phone.tr(context)}";
+                            }
+                            try {
+                              if (!value.isValidNumber()) {
+                                return 'رقم الهاتف غير صالح';
+                              }
+                            } on NumberTooShortException {
+                              return 'رقم الهاتف قصير جدا';
+                            } catch (e) {
+                              return 'رقم الهاتف غير صالح';
+                            }
+                            return null; // Valid input
+                          },
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          controller: cubit.phoneController,
+                          //initialValue: "us",
+                          languageCode: isArabic(context) ? "ar" : "en",
+                          decoration: InputDecoration(
+                            label: FittedBox(
+                              child: Text(
+                                AppStrings.phone.tr(context),
+                                maxLines: 1,
+                              ),
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
+                            ),
+                            errorBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.red),
+                            ),
+                            disabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
+                            ),
+                            border: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
+                            ),
+                            focusedErrorBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.red),
+                            ),
                           ),
-                          onPressed: () => cubit.togglePasswordVisibility(),
+                          textAlign:
+                              isArabic(context)
+                                  ? TextAlign.right
+                                  : TextAlign.left,
+                          initialCountryCode:
+                              CacheService.currentCountryCode ?? "EG",
+
+                          onChanged: (phone) {
+                            cubit.countryCode = phone.countryISOCode;
+                            cubit.countryCodeNumber = phone.countryCode;
+                          },
+                          //countries: AppConstants.arabCountries,
                         ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        errorBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.red),
-                        ),
-                        disabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        validator: (String? value) {
-                          if (value == null || value.isEmpty) {
-                            return AppStrings.passRequired.tr(context);
-                          } else if (value.length < 6) {
-                            return AppStrings.passwordShort.tr(context);
-                          }
-                          return null;
-                        },
-                      ),
-                      if(cubit.googleSignInModel == null)
-                      MyTextField(
-                        label: AppStrings.confirmPassword.tr(context),
-                        controller: cubit.confirmPasswordController,
-                        keyboardType: TextInputType.visiblePassword,
-                        textInputAction: TextInputAction.done,
-                        obsceure: cubit.isConfirmPasswordObscured,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            cubit.isConfirmPasswordObscured ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
-                            color: Colors.grey,
+                        if (cubit.googleSignInModel == null)
+                          MyTextField(
+                            label: AppStrings.password.tr(context),
+                            controller: cubit.passwordController,
+                            keyboardType: TextInputType.visiblePassword,
+                            textInputAction: TextInputAction.next,
+                            obsceure: cubit.isPasswordObscured,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                cubit.isPasswordObscured
+                                    ? CupertinoIcons.eye_slash
+                                    : CupertinoIcons.eye,
+                                color: Colors.grey,
+                              ),
+                              onPressed: () => cubit.togglePasswordVisibility(),
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
+                            ),
+                            errorBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.red),
+                            ),
+                            disabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
+                            ),
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return AppStrings.passRequired.tr(context);
+                              } else if (value.length < 6) {
+                                return AppStrings.passwordShort.tr(context);
+                              }
+                              return null;
+                            },
                           ),
-                          onPressed: () => cubit.toggleConfirmPasswordVisibility(),
+                        if (cubit.googleSignInModel == null)
+                          MyTextField(
+                            label: AppStrings.confirmPassword.tr(context),
+                            controller: cubit.confirmPasswordController,
+                            keyboardType: TextInputType.visiblePassword,
+                            textInputAction: TextInputAction.done,
+                            obsceure: cubit.isConfirmPasswordObscured,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                cubit.isConfirmPasswordObscured
+                                    ? CupertinoIcons.eye_slash
+                                    : CupertinoIcons.eye,
+                                color: Colors.grey,
+                              ),
+                              onPressed:
+                                  () => cubit.toggleConfirmPasswordVisibility(),
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
+                            ),
+                            errorBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.red),
+                            ),
+                            disabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
+                            ),
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return AppStrings.passRequired.tr(context);
+                              } else if (value !=
+                                  cubit.passwordController.text) {
+                                return AppStrings.passNotMatch.tr(context);
+                              }
+                              return null;
+                            },
+                          ),
+                        CustomDropDownMenu(
+                          dropdownItems:
+                              isArabic(context)
+                                  ? AppConstants.arabicNationalities
+                                  : AppConstants.nationalities,
+                          value: cubit.selectedNationality,
+                          isTextTranslated: true,
+                          onChanged: (value) {
+                            cubit.selectedNationality = value;
+                          },
+                          label: AppStrings.nationality.tr(context),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
+                          ),
+                          disabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
+                          ),
+                          errorBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.red),
+                          ),
+                          validator:
+                              (String? value) => AppValidator.emptyFiled(
+                                value,
+                                context,
+                                AppStrings.nationality,
+                              ),
                         ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
+                        CustomDropDownMenu(
+                          dropdownItems: AppConstants.educationLevelKeys,
+                          value: cubit.selectedEducationLevel,
+                          isTextTranslated: true,
+                          onChanged: (value) {
+                            cubit.selectedEducationLevel = value;
+                          },
+                          label: AppStrings.educationLevel.tr(context),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
+                          ),
+                          disabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
+                          ),
+                          errorBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.red),
+                          ),
+                          validator:
+                              (String? value) => AppValidator.emptyFiled(
+                                value,
+                                context,
+                                AppStrings.educationLevel,
+                              ),
                         ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
+                        CircleToggleButtonGridView(
+                          height: 5.hR,
+                          length: 2,
+                          titles: const [AppStrings.male, AppStrings.female],
+                          selectedColor: AppColors.myAppColor,
+                          onChangeIndex: (int index) {
+                            if (index == 0) {
+                              cubit.isMale = true;
+                            } else {
+                              cubit.isMale = false;
+                            }
+                          },
+                          initialIndex: cubit.isMale ? 0 : 1,
                         ),
-                        errorBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.red),
+                        Expanded(child: SizedBox(height: 20)),
+                        ButtonWidget(
+                          onPressed: () {
+                            cubit.onTabRegister(context);
+                          },
+                          height: 40,
+                          label:
+                              cubit.googleSignInModel == null
+                                  ? AppStrings.register.tr(context)
+                                  : AppStrings.register2.tr(context),
+                          isLoading: state is RegisterLoadingState,
                         ),
-                        disabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        validator: (String? value) {
-                          if (value == null || value.isEmpty) {
-                            return AppStrings.passRequired.tr(context);
-                          } else if (value != cubit.passwordController.text) {
-                            return AppStrings.passNotMatch.tr(context);
-                          }
-                          return null;
-                        },
-                      ),
-                      CustomDropDownMenu(
-                        dropdownItems:
-                            isArabic(context)
-                                ? AppConstants.arabicNationalities
-                                : AppConstants.nationalities,
-                        value: cubit.selectedNationality,
-                        isTextTranslated: true,
-                        onChanged: (value) {
-                          cubit.selectedNationality = value;
-                        },
-                        label: AppStrings.nationality.tr(context),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        disabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        errorBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.red),
-                        ),
-                        validator:
-                            (String? value) => AppValidator.emptyFiled(
-                          value,
-                          context,
-                          AppStrings.nationality,
-                        ),
-                      ),
-                      CustomDropDownMenu(
-                        dropdownItems: AppConstants.educationLevelKeys,
-                        value: cubit.selectedEducationLevel,
-                        isTextTranslated: true,
-                        onChanged: (value) {
-                          cubit.selectedEducationLevel = value;
-                        },
-                        label: AppStrings.educationLevel.tr(context),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        disabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: context.invertedColor),
-                        ),
-                        errorBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.red),
-                        ),
-                        validator:
-                            (String? value) => AppValidator.emptyFiled(
-                          value,
-                          context,
-                          AppStrings.educationLevel,
-                        ),
-                      ),
-                      CircleToggleButtonGridView(
-                        height: 5.hR,
-                        length: 2,
-                        titles: const [AppStrings.male, AppStrings.female],
-                        selectedColor: AppColors.myAppColor,
-                        onChangeIndex: (int index) {
-                          if (index == 0) {
-                            cubit.isMale = true;
-                          } else {
-                            cubit.isMale = false;
-                          }
-                        },
-                        initialIndex: cubit.isMale ? 0 : 1,
-                      ),
-                      Expanded(
-                       child: SizedBox(
-                         height: 20,
-                       ),
-                     ),
-                      ButtonWidget(
-                        onPressed: () {
-                          cubit.onTabRegister(context);
-                        },
-                        height: 40,
-                        label:  cubit.googleSignInModel == null ? AppStrings.register.tr(context) : AppStrings.register2.tr(context),
-                        isLoading: state is RegisterLoadingState,
-                      ),
-                      SizedBox(
-                        height: 5,
-                      ),
-                    ],
+                        SizedBox(height: 5),
+                      ],
+                    ),
                   ),
-                ),
-              ]
+                ],
               ),
             );
           },

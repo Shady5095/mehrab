@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
+import 'package:mehrab/core/utilities/resources/constants.dart';
 import '../manager/home_cubit/home_cubit.dart';
 import '../widgets/home_bottom_navigation_bar.dart';
 
@@ -37,7 +38,7 @@ class _HomeLayoutBodyState extends State<HomeLayoutBody> {
             },
             child: KeyedSubtree(
               key: ValueKey(cubit.currentScreenIndex),
-              child: cubit.homeLayoutScreens[cubit.currentScreenIndex],
+              child: AppConstants.isTeacher ? cubit.homeLayoutScreensForTeachers[cubit.currentScreenIndex]:cubit.homeLayoutScreens[cubit.currentScreenIndex],
             ),
           ),
           bottomNavigationBar: HomeBottomNavigationBar(),

@@ -92,10 +92,16 @@ class TeacherItem extends StatelessWidget {
                     if(!isFav)
                     Text(
                         teacher.isOnline ? AppStrings.availableNow.tr(context) :  "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}  : ${formatTime(context, teacher.lastActive)}",
-                      style: TextStyle(fontSize: 12.sp, color:teacher.isOnline ?AppColors.coolGreen : Colors.black54),
+                      style: TextStyle(fontSize: 11.5.sp, color:teacher.isOnline ?AppColors.coolGreen : Colors.black54),
                     ),
                   ],
                 ),
+              ),
+              IconButton(
+                onPressed: () async {
+
+                },
+                icon: Icon(Icons.call,size: 22.sp,color: teacher.isOnline ? AppColors.coolGreen : Colors.grey,),
               ),
               IconButton(
                 onPressed: () async {

@@ -3,13 +3,17 @@ import 'package:mehrab/features/authentication/presentation/views/login_screen.d
 import 'package:mehrab/features/my_profile/presentation/screens/my_profile_screen.dart';
 import 'package:mehrab/features/notifications/presentation/screens/notifications_screen.dart';
 import '../../../features/authentication/presentation/views/register_screen.dart';
+import '../../../features/favorite_students/presentation/screens/favorite_students_screen.dart';
 import '../../../features/home/presentation/views/home_layout.dart';
 import '../../../features/home/presentation/widgets/quran_web_view_screen.dart';
 import '../../../features/my_profile/presentation/screens/change_password_screen.dart';
+import '../../../features/my_profile/presentation/screens/change_password_screen_teacher.dart';
+import '../../../features/my_profile/presentation/screens/my_profile_screen_teacher.dart';
 import '../../../features/notifications/presentation/screens/add_notification_screen.dart';
 import '../../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
 import '../../../features/students/presentation/screens/students_profile_screen.dart';
 import '../../../features/students/presentation/screens/students_screen.dart';
+import '../../../features/teaacher_reviews/presentation/screens/teacher_reviews_screen.dart';
 import '../../../features/teachers/presentation/screens/add_teacher_screen.dart';
 import '../../../features/teachers/presentation/screens/teacher_profile_screen.dart';
 import '../../../features/teachers/presentation/screens/teachers_screen.dart';
@@ -22,7 +26,9 @@ abstract class AppRoutes {
   static const String loginRoute = 'loginRoute';
   static const String registerRoute = 'registerRoute';
   static const String myProfileRoute = 'myProfileRoute';
+  static const String myProfileScreenTeacher = 'myProfileScreenTeacher';
   static const String changePasswordScreen = 'changePasswordScreen';
+  static const String changePasswordScreenTeacher = 'changePasswordScreenTeacher';
   static const String addTeachersScreen = 'addTeachersScreen';
   static const String teacherProfileScreen = 'teacherProfileScreen';
   static const String teachersScreen = 'teachersScreen';
@@ -32,6 +38,9 @@ abstract class AppRoutes {
   static const String studentsProfileScreen = 'studentsProfileScreen';
   static const String notificationsScreen = 'notificationsScreen';
   static const String addNotificationScreen = 'addNotificationScreen';
+  static const String favoriteStudentsScreen = 'favoriteStudentsScreen';
+  static const String teacherReviewsScreen = 'teacherReviewsScreen';
+  static const String teacherCallScreen = 'teacherCallScreen';
 }
 
 abstract class RouteGenerator {
@@ -56,10 +65,20 @@ abstract class RouteGenerator {
           settings: settings,
           builder: (BuildContext context) => const MyProfileScreen(),
         );
+        case AppRoutes.myProfileScreenTeacher:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const MyProfileScreenTeacher(),
+        );
       case AppRoutes.changePasswordScreen:
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const ChangePasswordScreen(),
+        );
+        case AppRoutes.changePasswordScreenTeacher:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const ChangePasswordScreenTeacher(),
         );
       case AppRoutes.addTeachersScreen:
         return getPageRoute(
@@ -115,6 +134,16 @@ abstract class RouteGenerator {
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const AddNotificationScreen(),
+        );
+        case AppRoutes.favoriteStudentsScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const FavoriteStudentsScreen(),
+        );
+        case AppRoutes.teacherReviewsScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const TeacherReviewsScreen(),
         );
       default:
         return noRoute();

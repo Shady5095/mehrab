@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
-
 import '../utilities/resources/strings.dart';
 import '../utilities/resources/styles.dart';
 import 'height_sized_box.dart';

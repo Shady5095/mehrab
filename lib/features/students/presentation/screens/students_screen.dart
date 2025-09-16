@@ -5,7 +5,8 @@ import '../../../../core/utilities/resources/colors.dart';
 import '../widgets/students_screen_body.dart';
 
 class StudentsScreen extends StatelessWidget {
-  const StudentsScreen({super.key});
+  final bool isShowBackButton;
+  const StudentsScreen({super.key, this.isShowBackButton = true});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +14,7 @@ class StudentsScreen extends StatelessWidget {
       create: (context) => StudentsCubit(),
       child: Scaffold(
         backgroundColor: AppColors.offlineWhite,
-        body: StudentsScreenBody(),
+        body: StudentsScreenBody(isShowBackButton: isShowBackButton,),
       ),
     );
   }

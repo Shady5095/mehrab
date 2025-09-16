@@ -62,15 +62,15 @@ class HomeItemsIcons extends StatelessWidget {
     ];
     final List<Map<String, dynamic>> teacherItems = [
       {
-        'name': AppStrings.favoriteTeachers,
-        'icon': 'assets/images/teacher_fav.png',
-        'details': cubit.favoriteTeachersCount.toString(),
+        'name': AppStrings.favStudents,
+        'icon': 'assets/images/student_fav.png',
+        'details': cubit.favoriteStudentsCount.toString(),
         'color': AppColors.redColor,
       },
       {
-        'name': AppStrings.students,
-        'icon': 'assets/images/students.png',
-        'details': cubit.studentsCount.toString(),
+        'name': AppStrings.reviewsAndComments,
+        'icon': 'assets/images/teacher_comments.png',
+        'details': cubit.teacherRatingAndComments.toString(),
         'color': AppColors.accentColor,
       },
       {
@@ -91,13 +91,39 @@ class HomeItemsIcons extends StatelessWidget {
         : AppConstants.isStudent
             ? studentItems
             : teacherItems;
-    // make on tap for each item to navigate to a new screen
-    List<Function()> onTapFunctions = [
+
+
+    List<Function()> adminOnTapFunctions = [
       () {
         context.navigateTo(pageName: AppRoutes.teachersScreen,arguments: [true]).then((value) => cubit.getFavoriteTeachersCount());
       },
       () {
         context.navigateTo(pageName: AppRoutes.allStudentsScreen).then((value) => cubit.getStudentsCount());
+      },
+      () {
+        context.navigateTo(pageName: AppRoutes.prayerTimesScreen);
+      },
+      () {
+        context.navigateTo(pageName: AppRoutes.quranWebView);
+      },
+    ];
+    List<Function()> studentOnTapFunctions = [
+      () {
+        context.navigateTo(pageName: AppRoutes.teachersScreen,arguments: [true]).then((value) => cubit.getFavoriteTeachersCount());
+      },
+      () {
+        context.navigateTo(pageName: AppRoutes.prayerTimesScreen);
+      },
+      () {
+        context.navigateTo(pageName: AppRoutes.quranWebView);
+      },
+    ];
+    List<Function()> teacherOnTapFunctions = [
+      () {
+        context.navigateTo(pageName: AppRoutes.favoriteStudentsScreen,arguments: [true]);
+      },
+      () {
+        context.navigateTo(pageName: AppRoutes.teacherReviewsScreen);
       },
       () {
         context.navigateTo(pageName: AppRoutes.prayerTimesScreen);
@@ -132,7 +158,11 @@ class HomeItemsIcons extends StatelessWidget {
                   items[index]['icon']!,
                   items[index]['details'],
                   items[index]['color'] ?? Colors.black,
-                  onTap: onTapFunctions[index],
+                  onTap: AppConstants.isAdmin
+                      ? adminOnTapFunctions[index]
+                      : AppConstants.isStudent
+                          ? studentOnTapFunctions[index]
+                          : teacherOnTapFunctions[index],
                 ),
               ),
             ),
@@ -176,7 +206,7 @@ class HomeItemsIcons extends StatelessWidget {
                     iconPath,
                     width: 30.sp,
                     height: 30.sp,
-                    color: color,
+                    color: name == AppStrings.reviewsAndComments ? null : color,
                     errorBuilder: (context, error, stackTrace) {
                       // Fallback if asset image fails to load
                       return Icon(Icons.error, size: 30.sp, color: color);
@@ -193,14 +223,14 @@ class HomeItemsIcons extends StatelessWidget {
               const SizedBox(height: 10.0),
               Text(
                 name.tr(context),
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize:  13.5.sp, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               if (details != null)
                 Text(
                   details == "quran" ? "اقرأ وتعلّم مع التفسير" : details == "prayerTimes" ? "إن الصلاة كانت على المؤمنين كتابًا موقوتًا" : details,
                   style: TextStyle(
-                    fontSize:details == "prayerTimes" ? 10.5.sp : details == "quran" ? 12.sp : 14.sp,
+                    fontSize:details == "prayerTimes" ? 9.5.sp : details == "quran" ? 12.sp : 14.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.grey,
                     fontFamily: 'Amiri'

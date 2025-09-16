@@ -1,16 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
+import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/print_with_color.dart';
+import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/utilities/services/cache_service.dart';
 import 'package:mehrab/core/utilities/services/firebase_notification.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
+import 'package:mehrab/features/students/presentation/screens/students_screen.dart';
+import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../../core/utilities/functions/toast.dart';
 import '../../../../../core/utilities/resources/constants.dart';
 import '../../../../teachers/presentation/screens/teachers_screen.dart';
 import '../../views/home_view.dart';
 import '../../views/more_screen.dart';
-
+import 'package:googleapis/calendar/v3.dart' as calendar;
+import 'package:googleapis_auth/googleapis_auth.dart';
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
@@ -21,6 +30,12 @@ class HomeCubit extends Cubit<HomeState> {
   List<Widget> homeLayoutScreens = [
     HomeView(),
     TeachersScreen(),
+    Container(),
+    MoreScreen(),
+  ];
+  List<Widget> homeLayoutScreensForTeachers = [
+    HomeView(),
+    StudentsScreen(isShowBackButton: false,),
     Container(),
     MoreScreen(),
   ];
@@ -42,7 +57,7 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   UserModel? userModel;
-
+  TeacherModel? teacherModel;
   Future<void> getUserData() async {
     String? uid = CacheService.uid;
     if(uid == null || uid.isEmpty){
@@ -62,6 +77,11 @@ class HomeCubit extends Cubit<HomeState> {
           AppConstants.isAdmin = true;
         }else if(userModel?.userRole == "teacher") {
           AppConstants.isTeacher = true;
+          teacherModel = TeacherModel.fromJson(value.data()??{});
+          currentTeacherModel = teacherModel;
+          favoriteStudentsCount = teacherModel?.favoriteStudentsUid.length??0;
+          teacherAvailability = teacherModel?.isOnline??false;
+          getTeacherRatingAndComments();
         }else{
           AppConstants.isStudent = true;
         }
@@ -102,6 +122,9 @@ class HomeCubit extends Cubit<HomeState> {
   int favoriteTeachersCount = 0;
   int studentsCount = 0;
   Future<void> getFavoriteTeachersCount() async {
+    if(AppConstants.isTeacher){
+      return;
+    }
     try {
       final snapshot = await db
           .collection('users')
@@ -165,5 +188,95 @@ class HomeCubit extends Cubit<HomeState> {
 
   void refreshNotifications() {
     emit(NotificationsRefresh());
+  }
+  int favoriteStudentsCount = 0;
+  int teacherRatingAndComments = 0;
+  Future<void> getTeacherRatingAndComments() async {
+    try {
+      final snapshot = await db
+          .collection('users')
+          .doc(myUid).collection("comments")
+          .count()
+          .get();
+      teacherRatingAndComments = snapshot.count??0;
+      emit(ToggleTeacherFavSuccessState());
+    } catch (e) {
+      printWithColor('Error getting students count: $e');
+    }
+  }
+
+  bool teacherAvailability = false;
+  void changeTeacherAvailability(bool value,BuildContext context) {
+    teacherAvailability = value;
+    db.collection('users').doc(myUid).update({
+      "isOnline": teacherAvailability,
+    }).then((value) {
+      if(!context.mounted)return;
+      if(teacherAvailability){
+        myToast(msg: AppStrings.youAreNowAvailable.tr(context), state: ToastStates.success);
+      }else{
+        myToast(msg: AppStrings.youAreNowNotAvailable.tr(context), state: ToastStates.normal);
+        setLastActive();
+      }
+    }).catchError((error){
+      teacherAvailability = !teacherAvailability;
+      myToast(msg: "Failed to update availability", state: ToastStates.error);
+    });
+    emit(ChangeTeacherAvailabilityState());
+  }
+  void setLastActive(){
+    db.collection('users').doc(myUid).update({
+      "lastActive": FieldValue.serverTimestamp(),
+    });
+  }
+
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: [
+      'email',
+      'https://www.googleapis.com/auth/calendar.events',
+    ],
+  );
+
+  Future<GoogleSignInAccount?> signInUser() async {
+    return await _googleSignIn.signIn();
+  }
+  Future<String?> createGoogleMeetEvent(GoogleSignInAccount user) async {
+    final authHeaders = await user.authHeaders;
+    final client = authenticatedClient(
+      http.Client(),
+      AccessCredentials(
+        AccessToken('Bearer', authHeaders['Authorization']!.split(" ").last, DateTime.now().toUtc()),
+        null,
+        ['https://www.googleapis.com/auth/calendar.events'],
+      ),
+    );
+
+    var calendarApi = calendar.CalendarApi(client);
+
+    var event = calendar.Event(
+      summary: "My Flutter Meeting",
+      start: calendar.EventDateTime(dateTime: DateTime.now().toUtc().add(Duration(minutes: 1)), timeZone: "UTC"),
+      end: calendar.EventDateTime(dateTime: DateTime.now().toUtc().add(Duration(hours: 1)), timeZone: "UTC"),
+      conferenceData: calendar.ConferenceData(
+        createRequest: calendar.CreateConferenceRequest(
+          requestId: DateTime.now().millisecondsSinceEpoch.toString(),
+          conferenceSolutionKey: calendar.ConferenceSolutionKey(type: "hangoutsMeet"),
+        ),
+      ),
+    );
+
+    var createdEvent = await calendarApi.events.insert(
+      event,
+      "primary",
+      conferenceDataVersion: 1,
+    );
+    return createdEvent.conferenceData?.entryPoints?.first.uri;
+  }
+
+  Future<void> openMeet(String url) async {
+    final Uri meetUrl = Uri.parse(url);
+    if (await canLaunchUrl(meetUrl)) {
+      await launchUrl(meetUrl, mode: LaunchMode.externalApplication);
+    }
   }
 }

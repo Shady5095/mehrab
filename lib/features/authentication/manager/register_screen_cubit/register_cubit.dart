@@ -101,6 +101,10 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   void onTabRegister(BuildContext context) {
     if (formKey.currentState!.validate()) {
+      if(phoneController.text.trim().isEmpty){
+        myToast(msg: "${AppStrings.mustHaveValue.tr(context)} ${AppStrings.phone.tr(context)}", state: ToastStates.error);
+        return;
+      }
       if(googleSignInModel != null){
         registerUserWithGoogle(context);
       }else{

@@ -1117,8 +1117,19 @@
   "noComments": "No Comments",
   "noCommentsDescription": "No comments or ratings about this teacher yet",
   "addComment": "Add Comment and Rating",
-  "howDoYouRateThisTeacher": "How do you rate this teacher ?"
+  "howDoYouRateThisTeacher": "How do you rate this teacher ?",
   "send": "Send",
   "contactUs": "Contact Us",
-  "hosniAbuOmar": "Sheikh Hosni Abu Omar"
+  "hosniAbuOmar": "Sheikh Hosni Abu Omar",
+  "favStudents": "Favorite Students",
+  "reviewsAndComments": "My Reviews",
+  "noReviewsAndCommentsTitle": "No Reviews or Comments",
+  "noReviewsAndCommentsDescription": "You have no reviews or comments yet.",
+  "noFavStudentsTitle": "No Favorite Students",
+  "noFavStudentsDescription": "No students have added you to their favorites yet.",
+  "studentWhoAreAddedYouInFav": "Students who have added you to favorites",
+  "myReviewsAndComments": "My Reviews and Comments",
+  "iAmAvailable": "iAmAvailable",
+  "youAreNowAvailable": "You are now available",
+    "youAreNowNotAvailable": "You are now unavailable"
 }

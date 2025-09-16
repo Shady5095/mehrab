@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
+import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
 import 'package:mehrab/features/students/presentation/widgets/student_profile_data_item.dart';
 
@@ -20,8 +21,11 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
   late List<String?> profileDataDescriptions;
   late final List<String> profileDataTitles = [
     AppStrings.name,
+    if(AppConstants.isAdmin)
     AppStrings.email,
+    if(AppConstants.isAdmin)
     AppStrings.password,
+    if(AppConstants.isAdmin)
     AppStrings.phone,
     AppStrings.nationality,
     AppStrings.educationLevel,
@@ -44,8 +48,11 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
   void _setProfileDataDescriptions() {
     profileDataDescriptions = [
       widget.model.name,
+      if(AppConstants.isAdmin)
       widget.model.email,
+      if(AppConstants.isAdmin)
       widget.model.password,
+      if(AppConstants.isAdmin)
       "${widget.model.countryCodeNumber.replaceAll('+', '')}${widget.model.phoneNumber}",
       widget.model.nationality,
       widget.model.educationalLevel,
@@ -67,10 +74,13 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
             child: ListView.builder(
               itemCount: profileDataTitles.length,
               itemBuilder:
-                  (context, index) => StudentProfileDataItem(
+                  (context, index) {
+                bool isLastTwoItems = index == profileDataTitles.length - 1 || index == profileDataTitles.length - 2;
+                    return StudentProfileDataItem(
                 title: profileDataTitles[index],
-                description:index == 4 || index == 5 ? profileDataDescriptions[index]?.tr(context) : profileDataDescriptions[index],
-              ),
+                description: isLastTwoItems ? profileDataDescriptions[index]?.tr(context) : profileDataDescriptions[index],
+              );
+                  },
             ),
           ),
         ),

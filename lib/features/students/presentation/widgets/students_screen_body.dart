@@ -6,7 +6,9 @@ import 'package:mehrab/features/students/presentation/widgets/student_search_bar
 import 'package:mehrab/features/students/presentation/widgets/students_list.dart';
 
 class StudentsScreenBody extends StatelessWidget {
-  const StudentsScreenBody({super.key});
+  final bool isShowBackButton;
+
+  const StudentsScreenBody({super.key, this.isShowBackButton = true});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +17,7 @@ class StudentsScreenBody extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimens.screenPadding),
         child: Column(
           children: [
-            MyAppBar(title: AppStrings.students,),
+            MyAppBar(title: AppStrings.students,isShowBackButton: isShowBackButton,),
             const SizedBox(height: 10,),
             const StudentSearchBar(),
             const SizedBox(height: 10),

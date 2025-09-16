@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/config/routes/app_routes.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
+import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
 import 'package:mehrab/features/students/presentation/manager/student_profile_cubit/students_profile_state.dart';
 import '../../../../core/config/routes/adaptive_page_route.dart';
@@ -53,6 +54,7 @@ class BuildStudentProfileImageWithName extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
+                        if(AppConstants.isAdmin)
                         IconButton(
                           onPressed: () {
                             context.navigateTo(pageName: AppRoutes.addNotificationScreen,arguments: [model]);
