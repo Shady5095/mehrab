@@ -25,7 +25,7 @@ class HomeViewBody extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: () async {
             cubit.userModel = null;
-            cubit.getUserData();
+            cubit.getUserData(context);
           },
           child: Column(
             children: [

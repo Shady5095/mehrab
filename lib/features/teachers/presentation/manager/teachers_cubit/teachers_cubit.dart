@@ -6,6 +6,7 @@ import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:meta/meta.dart';
 
 import '../../../../../core/utilities/functions/print_with_color.dart';
+import '../../../../../core/utilities/services/firebase_notification.dart';
 import '../../../data/models/teachers_model.dart';
 
 part 'teachers_state.dart';
@@ -39,6 +40,7 @@ class TeachersCubit extends Cubit<TeachersState> {
         favStudents.remove(userUid);
       } else {
         favStudents.add(userUid);
+        addInFavoritePushNotification(teacherUid);
       }
       transaction.update(teacherRef, {'favoriteStudentsUid': favStudents});
     }).then((value) {
@@ -82,7 +84,14 @@ class TeachersCubit extends Cubit<TeachersState> {
       printWithColor(error);
     });
   }
-
+  void addInFavoritePushNotification(String teacherUid) {
+    AppFirebaseNotification.pushNotification(
+      title: "لديك طالب جديد ضمك الي المفضلة",
+      body:  'الطالب ${currentUserModel?.name ?? ''} قام باضافتك الي قائمة المفضلة الخاصه به',
+      dataInNotification: {"type": "studentFavorite"},
+      topic: teacherUid,
+    );
+  }
   void setSearchText(String query) {
     searchQuery = query.trim();
     emit(TeachersSearchUpdatedState());

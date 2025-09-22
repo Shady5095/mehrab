@@ -58,9 +58,8 @@ class FavoriteStudentsList extends StatelessWidget {
         return AnimationLimiter(
           child: ListView.separated(
             separatorBuilder:
-                (context, index) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2.0),
-                  child: const Divider(),
+                (context, index) => SizedBox(
+                  height: 10,
                 ),
             itemCount: students.length,
             itemBuilder: (context, index) {

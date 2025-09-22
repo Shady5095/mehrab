@@ -15,6 +15,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../core/utilities/functions/toast.dart';
 import '../../../../../core/utilities/resources/constants.dart';
+import '../../../../teacher_call/data/models/call_model.dart';
+import '../../../../teacher_call/presentation/widgets/incoming_call_dialog.dart';
 import '../../../../teachers/presentation/screens/teachers_screen.dart';
 import '../../views/home_view.dart';
 import '../../views/more_screen.dart';
@@ -58,7 +60,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   UserModel? userModel;
   TeacherModel? teacherModel;
-  Future<void> getUserData() async {
+  Future<void> getUserData(BuildContext context) async {
     String? uid = CacheService.uid;
     if(uid == null || uid.isEmpty){
       return;
@@ -82,6 +84,7 @@ class HomeCubit extends Cubit<HomeState> {
           favoriteStudentsCount = teacherModel?.favoriteStudentsUid.length??0;
           teacherAvailability = teacherModel?.isOnline??false;
           getTeacherRatingAndComments();
+          listenToTeacherNewCalls(context);
         }else{
           AppConstants.isStudent = true;
         }
@@ -238,9 +241,10 @@ class HomeCubit extends Cubit<HomeState> {
   );
 
   Future<GoogleSignInAccount?> signInUser() async {
+    await _googleSignIn.signOut(); // Ensure previous sessions are cleared
     return await _googleSignIn.signIn();
   }
-  Future<String?> createGoogleMeetEvent(GoogleSignInAccount user) async {
+  Future<String?> createGoogleMeetEvent(GoogleSignInAccount user,String meetingName) async {
     final authHeaders = await user.authHeaders;
     final client = authenticatedClient(
       http.Client(),
@@ -254,7 +258,7 @@ class HomeCubit extends Cubit<HomeState> {
     var calendarApi = calendar.CalendarApi(client);
 
     var event = calendar.Event(
-      summary: "My Flutter Meeting",
+      summary: meetingName,
       start: calendar.EventDateTime(dateTime: DateTime.now().toUtc().add(Duration(minutes: 1)), timeZone: "UTC"),
       end: calendar.EventDateTime(dateTime: DateTime.now().toUtc().add(Duration(hours: 1)), timeZone: "UTC"),
       conferenceData: calendar.ConferenceData(
@@ -278,5 +282,77 @@ class HomeCubit extends Cubit<HomeState> {
     if (await canLaunchUrl(meetUrl)) {
       await launchUrl(meetUrl, mode: LaunchMode.externalApplication);
     }
+  }
+  bool _isDialogShowing = false; // Tracks if a dialog is currently shown
+
+  void listenToTeacherNewCalls(BuildContext context) {
+    db.collection("calls")
+        .where("teacherUid", isEqualTo: currentTeacherModel?.uid)
+        .orderBy("timestamp", descending: true)
+        .limit(1)
+        .snapshots()
+        .listen((event) {
+      if (event.docs.isNotEmpty) {
+        if (event.docs.first.data()['status'] == 'ringing' && !_isDialogShowing) {
+          if (!context.mounted) return;
+          _isDialogShowing = true; // Set flag to prevent multiple dialogs
+          showDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (context) {
+              return IncomingCallDialog(
+                cubit: this,
+                model: CallModel.fromJson({...event.docs.first.data(), 'callId': event.docs.first.id}),
+              );
+            },
+          ).then((_) {
+            _isDialogShowing = false; // Reset flag when dialog is dismissed
+          });
+        }
+        if (event.docs.first.data()['status'] == 'missed' && _isDialogShowing){
+          if (!context.mounted) return;
+          _isDialogShowing = false; // Reset flag when dialog is dismissed
+          Navigator.of(context).pop(); // Close the dialog if the call is missed
+        }
+      }
+    });
+  }
+
+  Future<void> declineCall(String callDocId) async {
+    await db.collection("calls").doc(callDocId).update({
+      "status": "declined",
+    }).then((value) {
+
+    }).catchError((error){
+
+    });
+  }
+  Future<void> acceptCall(String callDocId,String studentName) async {
+    await db.collection("calls").doc(callDocId).update({
+      "status": "answered",
+    }).then((value) async {
+      final user = await signInUser();
+      if(user != null){
+        createGoogleMeetEvent(user,"جلسة مع $studentName").then((meetingLink) {
+          if(meetingLink != null){
+            updateMeetingLink(callDocId, meetingLink);
+            openMeet(meetingLink);
+          }
+        }).catchError((error){
+          printWithColor("Error creating Google Meet event: $error");
+        });
+      }
+    }).catchError((error){
+
+    });
+  }
+  Future<void> updateMeetingLink(String callDocId, String meetingLink) async {
+    await db.collection("calls").doc(callDocId).update({
+      "meetingLink": meetingLink,
+    }).then((value) {
+
+    }).catchError((error){
+
+    });
   }
 }

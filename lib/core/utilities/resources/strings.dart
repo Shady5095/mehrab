@@ -1411,5 +1411,14 @@ class AppStrings {
   static const String iAmAvailable = 'iAmAvailable';
   static const String youAreNowAvailable = 'youAreNowAvailable';
   static const String youAreNowNotAvailable = 'youAreNowNotAvailable';
+  static const String ringing = 'ringing';
+  static const String callEnded = 'callEnded';
+  static const String callEndedDescription = 'callEndedDescription';
+  static const String lineBusy = 'lineBusy';
+  static const String lineBusyDescription = 'lineBusyDescription';
+  static const String callAccepted = 'callAccepted';
+  static const String incomingCall = 'incomingCall';
+  static const String wantsToJoinSession = 'wantsToJoinSession';
+
 
 }

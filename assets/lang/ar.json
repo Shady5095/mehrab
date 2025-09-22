@@ -1131,5 +1131,13 @@
   "myReviewsAndComments": "التقييمات و التعليقات الخاصة بي",
   "iAmAvailable": "انا متاح",
   "youAreNowAvailable": "انت الان متاح",
-  "youAreNowNotAvailable": "انت الان غير متاح"
+  "youAreNowNotAvailable": "انت الان غير متاح",
+  "ringing": "جاري الاتصال...",
+  "callEnded": "انتهى الاتصال",
+  "callEndedDescription": "انتهى الاتصال، لا يوجد رد من المعلم",
+  "lineBusy": "المعلم مشغول",
+  "lineBusyDescription": "المعلم مشغول في مكالمة أخرى، يرجى المحاولة لاحقًا",
+  "callAccepted": "تم قبول المكالمة، يرجى الانتظار، ستبدأ جلستك قريبًا وسيتم توجيهك إلى Google Meet",
+  "incomingCall": "مكالمة واردة",
+  "wantsToJoinSession": "يريد بدأ جلسة معك"
 }

@@ -148,7 +148,7 @@ class MainAppCubit extends Cubit<MainAppStates> {
     CacheService.uid = CacheService.getData(key: AppConstants.uid);
     if(CacheService.uid != null){
       if(CacheService.userRole == "student" || CacheService.userRole == "admin"|| CacheService.userRole == "teacher"){
-        return AppRoutes.studentHomeLayoutRoute;
+        return AppRoutes.homeLayoutRoute;
       }
     }
     return AppRoutes.loginRoute;
@@ -207,4 +207,6 @@ class MainAppCubit extends Cubit<MainAppStates> {
       return 'Failed to fetch public IP';
     }
   }
+
+
 }

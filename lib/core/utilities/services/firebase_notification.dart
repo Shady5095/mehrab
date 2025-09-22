@@ -69,9 +69,7 @@ class AppFirebaseNotification {
   ) async {
     await _instance.getInitialMessage().then((message) {
       if (message != null && context.mounted){
-        if(message.data['type'] == 'notification'){
-          context.navigateTo(pageName: AppRoutes.notificationsScreen);
-        }
+        onTabNotification(message, context);
       }
     });
   }
@@ -82,9 +80,7 @@ class AppFirebaseNotification {
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       if (message.data.isNotEmpty) {
         if (!context.mounted) return;
-        if(message.data['type'] == 'notification'){
-          context.navigateTo(pageName: AppRoutes.notificationsScreen);
-        }
+        onTabNotification(message, context);
       }
     });
   }
@@ -206,5 +202,16 @@ class AppFirebaseNotification {
 
   static logEvent(String eventName, Map<String, Object> eventParams) {
     _analyticsInstance.logEvent(name: eventName, parameters: eventParams);
+  }
+  static void onTabNotification(RemoteMessage? message,BuildContext context) {
+    if (message != null) {
+      if(message.data['type'] == 'notification'){
+        context.navigateTo(pageName: AppRoutes.notificationsScreen);
+      }else if(message.data['type'] == 'studentRate'){
+        context.navigateTo(pageName: AppRoutes.teacherReviewsScreen);
+      } else if(message.data['type'] == 'studentFavorite'){
+        context.navigateTo(pageName: AppRoutes.favoriteStudentsScreen);
+      }
+    }
   }
 }

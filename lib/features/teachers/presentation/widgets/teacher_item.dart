@@ -92,20 +92,25 @@ class TeacherItem extends StatelessWidget {
                     if(!isFav)
                     Text(
                         teacher.isOnline ? AppStrings.availableNow.tr(context) :  "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}  : ${formatTime(context, teacher.lastActive)}",
-                      style: TextStyle(fontSize: 11.5.sp, color:teacher.isOnline ?AppColors.coolGreen : Colors.black54),
+                      style: TextStyle(fontSize: 11.sp, color:teacher.isOnline ?AppColors.coolGreen : Colors.black54),
                     ),
                   ],
                 ),
               ),
               IconButton(
                 onPressed: () async {
-
+                  if(!teacher.isOnline) {
+                    return;
+                  }
+                  context.navigateTo(
+                    pageName: AppRoutes.teacherCallScreen,
+                    arguments: [teacher],
+                  );
                 },
                 icon: Icon(Icons.call,size: 22.sp,color: teacher.isOnline ? AppColors.coolGreen : Colors.grey,),
               ),
               IconButton(
                 onPressed: () async {
-
                  await TeachersCubit.get(context).toggleTeacherFav(teacher.uid);
                  if(!context.mounted) return;
                   TeachersCubit.get(context).addStudentInTeacherCollection(teacher.uid);

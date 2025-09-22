@@ -1129,7 +1129,15 @@
   "noFavStudentsDescription": "No students have added you to their favorites yet.",
   "studentWhoAreAddedYouInFav": "Students who have added you to favorites",
   "myReviewsAndComments": "My Reviews and Comments",
-  "iAmAvailable": "iAmAvailable",
+  "iAmAvailable": "I am available",
   "youAreNowAvailable": "You are now available",
-    "youAreNowNotAvailable": "You are now unavailable"
+    "youAreNowNotAvailable": "You are now unavailable",
+    "ringing": "Ringing...",
+    "callEnded": "Call Ended",
+    "callEndedDescription": "The call has ended, no answer from the Teacher",
+    "lineBusy": "Line Busy",
+    "lineBusyDescription": "The call has ended, the Teacher is busy on another call",
+    "callAccepted": "Call Accepted, please wait your session will start soon and redirect you to google meet",
+  "incomingCall" : "Incoming Call",
+  "wantsToJoinSession" : "Wants to join session with you"
 }

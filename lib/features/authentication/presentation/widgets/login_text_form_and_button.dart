@@ -24,7 +24,7 @@ class LoginTextFormAndButton extends StatelessWidget {
     return BlocListener<LoginCubit,LoginStates>(
       listener: (context, state) {
         if (state is LoginSuccessState || state is GoogleSignInUsersAlreadyExists) {
-          context.navigateAndRemoveUntil(pageName: AppRoutes.studentHomeLayoutRoute);
+          context.navigateAndRemoveUntil(pageName: AppRoutes.homeLayoutRoute);
         } else if (state is LoginErrorState) {
           myToast(msg: state.error, state: ToastStates.error,toastLength: Toast.LENGTH_LONG);
         } else if (state is GoogleSignInSuccessState) {

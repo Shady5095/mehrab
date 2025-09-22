@@ -49,7 +49,7 @@ class MoreScreenBody extends StatelessWidget {
                         }
                         HomeCubit.instance(context).userModel = null;
                         HomeCubit.instance(context).teacherModel = null;
-                        HomeCubit.instance(context).getUserData();
+                        HomeCubit.instance(context).getUserData(context);
                       }
                     });
                   }else{
@@ -64,7 +64,7 @@ class MoreScreenBody extends StatelessWidget {
                           return;
                         }
                         HomeCubit.instance(context).userModel = null;
-                        HomeCubit.instance(context).getUserData();
+                        HomeCubit.instance(context).getUserData(context);
                       }
                     });
                   }

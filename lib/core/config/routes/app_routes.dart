@@ -14,6 +14,7 @@ import '../../../features/prayer_times/presentation/screens/prayer_times_screen.
 import '../../../features/students/presentation/screens/students_profile_screen.dart';
 import '../../../features/students/presentation/screens/students_screen.dart';
 import '../../../features/teaacher_reviews/presentation/screens/teacher_reviews_screen.dart';
+import '../../../features/teacher_call/presentation/screens/teacher_call_screen.dart';
 import '../../../features/teachers/presentation/screens/add_teacher_screen.dart';
 import '../../../features/teachers/presentation/screens/teacher_profile_screen.dart';
 import '../../../features/teachers/presentation/screens/teachers_screen.dart';
@@ -22,7 +23,7 @@ import '../../widgets/gradient_scaffold.dart';
 import 'adaptive_page_route.dart';
 
 abstract class AppRoutes {
-  static const String studentHomeLayoutRoute = 'homeRoute';
+  static const String homeLayoutRoute = 'homeRoute';
   static const String loginRoute = 'loginRoute';
   static const String registerRoute = 'registerRoute';
   static const String myProfileRoute = 'myProfileRoute';
@@ -46,9 +47,9 @@ abstract class AppRoutes {
 abstract class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case AppRoutes.studentHomeLayoutRoute:
+      case AppRoutes.homeLayoutRoute:
         return getPageRoute(
-          builder: (BuildContext context) => const StudentHomeLayout(),
+          builder: (BuildContext context) => const HomeLayout(),
         );
       case AppRoutes.loginRoute:
         return getPageRoute(
@@ -144,6 +145,11 @@ abstract class RouteGenerator {
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const TeacherReviewsScreen(),
+        );
+        case AppRoutes.teacherCallScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const TeacherCallScreen(),
         );
       default:
         return noRoute();

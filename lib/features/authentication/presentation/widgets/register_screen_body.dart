@@ -35,7 +35,7 @@ class RegisterScreenBody extends StatelessWidget {
           listener: (context, state) {
             if (state is RegisterSuccessState) {
               context.navigateAndRemoveUntil(
-                pageName: AppRoutes.studentHomeLayoutRoute,
+                pageName: AppRoutes.homeLayoutRoute,
               );
             }
             if (state is RegisterErrorState) {

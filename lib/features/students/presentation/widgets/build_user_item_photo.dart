@@ -41,7 +41,7 @@ class BuildUserItemPhoto extends StatelessWidget {
             height: radius * 2,
             fit: BoxFit.cover,
             imageUrl: imageUrl!,
-            borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(120),
           ),
         ),
       ],
