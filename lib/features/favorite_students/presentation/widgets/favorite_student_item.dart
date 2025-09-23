@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/format_date_and_time.dart';
-import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
 import '../../../../core/config/routes/app_routes.dart';
@@ -37,7 +36,7 @@ class FavoriteStudentItem extends StatelessWidget {
                 child: BuildUserItemPhoto(
                   imageUrl: userModel.imageUrl,
                   radius: 29.sp,
-                  imageColor: AppColors.myAppColor.withValues(alpha: 0.5),
+                  imageColor: Colors.white,
                 ),
               ),
               const SizedBox(width: 10),

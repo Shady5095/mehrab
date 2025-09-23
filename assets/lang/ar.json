@@ -234,7 +234,6 @@
   "teachers": "المعلمين",
   "onGoing": "قيد العمل",
   "all": "الكل",
-  "ended": "انتهي ",
   "future": "مستقبل",
   "materials": "مواد",
   "interactive": "تفاعلي",
@@ -290,7 +289,6 @@
   "writeHere": "إكتب هنا...",
   "reviewAnswersTitle": "راجع إجاباتك",
   "reviewAnswersSubTitle": "تأكد من عدم تخطي اي سؤال قبل الإرسال",
-  "answered": "مجاب عنه",
   "notAnswered": "غير مجاب عنه",
   "submitQuiz": "إرسال الإختبار",
   "questions": " أسئلة",
@@ -1139,5 +1137,14 @@
   "lineBusyDescription": "المعلم مشغول في مكالمة أخرى، يرجى المحاولة لاحقًا",
   "callAccepted": "تم قبول المكالمة، يرجى الانتظار، ستبدأ جلستك قريبًا وسيتم توجيهك إلى Google Meet",
   "incomingCall": "مكالمة واردة",
-  "wantsToJoinSession": "يريد بدأ جلسة معك"
+  "wantsToJoinSession": "يريد بدأ جلسة معك",
+  "calls": "المكالمات",
+  "answered" : "جارية الان",
+  "missed" : "مكالمة فائتة",
+  "declined" : "مرفوضة",
+  "ended" : "منتهية",
+  "endCall" : "انهاء المكالمة",
+  "reJoin" : "اعادة الانضمام",
+  "noCallsTitle" : "لا توجد مكالمات",
+  "noCallsDescription" : "لا توجد مكالمات في هذا الوقت"
 }

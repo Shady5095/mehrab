@@ -214,7 +214,6 @@
   "teacher": "Teacher",
   "onGoing": "On going",
   "all": "All",
-  "ended": "Ended",
   "future": "Future",
   "materials": "Materials",
   "interactive": "Interactive",
@@ -274,7 +273,6 @@
   "writeHere": "Write here...",
   "reviewAnswersTitle": "Review your answers",
   "reviewAnswersSubTitle": "Make sure that you didn’t skip any question  before you submission",
-  "answered": "Answered",
   "notAnswered": "Not Answered",
   "submitQuiz": "Submit Quiz",
   "questions": " Questions",
@@ -1139,5 +1137,14 @@
     "lineBusyDescription": "The call has ended, the Teacher is busy on another call",
     "callAccepted": "Call Accepted, please wait your session will start soon and redirect you to google meet",
   "incomingCall" : "Incoming Call",
-  "wantsToJoinSession" : "Wants to join session with you"
+  "wantsToJoinSession" : "Wants to join session with you",
+  "calls" : "Calls",
+  "answered" : "Ongoing",
+    "missed" : "Missed",
+  "declined" : "Declined",
+  "ended" : "Ended",
+  "endCall" : "End Call",
+  "reJoin" : "Re-Join",
+  "noCallsTitle" : "No Calls",
+    "noCallsDescription" : "You have no calls at the moment"
 }

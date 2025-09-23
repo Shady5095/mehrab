@@ -5,7 +5,7 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
-import '../manager/teacher_call_cubit.dart';
+import '../manager/teacher_call_cubit/teacher_call_cubit.dart';
 
 class TeacherCallScreenBody extends StatelessWidget {
   const TeacherCallScreenBody({super.key});

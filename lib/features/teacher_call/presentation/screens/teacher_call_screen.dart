@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/widgets/gradient_scaffold.dart';
-import '../manager/teacher_call_cubit.dart';
+import '../manager/teacher_call_cubit/teacher_call_cubit.dart';
 import '../widgets/teacher_call_screen_body.dart';
 
 class TeacherCallScreen extends StatelessWidget {

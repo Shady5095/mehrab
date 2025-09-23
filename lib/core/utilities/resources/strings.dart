@@ -1419,6 +1419,12 @@ class AppStrings {
   static const String callAccepted = 'callAccepted';
   static const String incomingCall = 'incomingCall';
   static const String wantsToJoinSession = 'wantsToJoinSession';
+  static const String calls = 'calls';
+  static const String endCall = 'endCall';
+  static const String reJoin = 'reJoin';
+  static const String noCallsTitle = 'noCallsTitle';
+  static const String noCallsDescription = 'noCallsDescription';
+
 
 
 }
