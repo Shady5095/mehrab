@@ -2,11 +2,14 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mehrab/core/config/routes/app_routes.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/widgets/my_alert_dialog.dart';
 import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.dart';
 import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
-
+import '../../../../app/main_app_cubit/main_app_cubit.dart';
+import '../../../../core/utilities/functions/toast.dart';
+import '../../../../core/utilities/resources/colors.dart';
 import '../../../../core/utilities/resources/strings.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 
@@ -24,10 +27,11 @@ class IncomingCallDialog extends StatefulWidget {
   State<IncomingCallDialog> createState() => _IncomingCallDialogState();
 }
 
-
-
 class _IncomingCallDialogState extends State<IncomingCallDialog> {
   final AudioPlayer _player = AudioPlayer();
+  bool _isCallAccepted = false;
+  DateTime? _acceptTime;
+  String? googleMeetLink ;
 
   Future<void> playSound() async {
     _player.setReleaseMode(ReleaseMode.loop);
@@ -37,10 +41,21 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
   Future<void> stopSound() async {
     await _player.stop();
   }
+
   @override
   void initState() {
     playSound();
+    getAcceptedTime();
     super.initState();
+  }
+
+  void getAcceptedTime() {
+    if(widget.model.acceptedTime != null){
+      _isCallAccepted = true;
+      _acceptTime = widget.model.acceptedTime!.toDate();
+      setState(() {
+      });
+    }
   }
   @override
   void dispose() {
@@ -48,6 +63,13 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
     super.dispose();
   }
 
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = twoDigits(duration.inHours);
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$hours:$minutes:$seconds';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,17 +87,27 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    AppStrings.incomingCall.tr(context),
+                    _isCallAccepted ? AppStrings.ongoingCall.tr(context) : AppStrings.incomingCall.tr(context),
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  if(_isCallAccepted)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Icon(
+                        Icons.call,
+                        color: Colors.green,
+                        size: 35.sp,
+                      ),
+                    )
+                  else
                   Lottie.asset(
                     delegates: LottieDelegates(
                       values: [
                         ValueDelegate.color(
-                          const ['**'], // target all layers, or give a layer name
+                          const ['**'],
                           value: Colors.green,
                         ),
                       ],
@@ -98,11 +130,83 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
                 widget.model.studentName,
                 style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
               ),
-              Text(
-                AppStrings.wantsToJoinSession.tr(context),
-                style: TextStyle(fontSize: 16.sp, color: Colors.grey),
-              ),
+              if (!_isCallAccepted)
+                Text(
+                  AppStrings.wantsToJoinSession.tr(context),
+                  style: TextStyle(fontSize: 16.sp, color: Colors.grey),
+                )
+              else
+                StreamBuilder(
+                  stream: Stream.periodic(const Duration(seconds: 1)),
+                  builder: (context, snapshot) {
+                    final duration = widget.model.acceptedTime != null
+                        ? DateTime.now().difference(widget.model.acceptedTime!.toDate())
+                        : _acceptTime != null
+                        ? DateTime.now().difference(_acceptTime!)
+                        : Duration.zero;
+                    return Text(
+                      _formatDuration(duration),
+                      style: TextStyle(fontSize: 16.sp, color: Colors.grey),
+                    );
+                  },
+                ),
               SizedBox(height: 20.sp),
+              if(_isCallAccepted)
+                Row(
+                  children: [
+
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () {
+                            if(googleMeetLink != null ){
+                              widget.cubit.openMeet(googleMeetLink!).catchError((error) {
+                                myToast(msg: error.toString(), state: error);
+                              });
+                            }else{
+                              widget.cubit.acceptCall(widget.model.callId, widget.model.studentName).then((meetLink) {
+                                googleMeetLink = meetLink;
+                                setState(() {});
+                              }).catchError((error) {
+                                myToast(msg: error.toString(), state: error);
+                              });
+                            }
+
+                          },
+                          child: Text(
+                            AppStrings.reJoin.tr(context),
+                            style: TextStyle(
+                                color: AppColors.myAppColor.withValues(alpha: 0.8),
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: MainAppCubit.instance(context).setFontFamily()
+                            ),
+                          ),
+                        ),
+                      ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          widget.cubit.endCall(widget.model.callId).catchError((error) {
+                            myToast(msg: error.toString(), state: error);
+                          });
+                          context.pop();
+                          context.navigateTo(pageName: AppRoutes.rateSessionScreen, arguments: [widget.model,false]);
+                        },
+                        child: Text(
+                          AppStrings.endCall.tr(context),
+                          style: TextStyle(
+                              color: AppColors.redColor.withValues(alpha: 0.8),
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: MainAppCubit.instance(context).setFontFamily()
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -126,9 +230,18 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
                     backgroundColor: Colors.green,
                     child: IconButton(
                       icon: Icon(Icons.call, color: Colors.white, size: 25.sp),
-                      onPressed: () {
-                        widget.cubit.acceptCall(widget.model.callId,widget.model.studentName);
-                        context.pop();
+                      onPressed: () async {
+                        stopSound();
+                        setState(() {
+                          _isCallAccepted = true;
+                          _acceptTime = DateTime.now();
+                        });
+                        widget.cubit.acceptCall(widget.model.callId, widget.model.studentName).then((meetLink) {
+                          googleMeetLink = meetLink;
+                          setState(() {});
+                        }).catchError((error) {
+                          myToast(msg: error.toString(), state: error);
+                        });
                       },
                     ),
                   ),

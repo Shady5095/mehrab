@@ -4,8 +4,8 @@ import 'package:mehrab/core/config/routes/extension.dart';
 
 import '../utilities/resources/colors.dart';
 
-class TeacherBottomSheetDesign extends StatelessWidget {
-  const TeacherBottomSheetDesign({super.key, required this.children});
+class MyBottomSheetDesign extends StatelessWidget {
+  const MyBottomSheetDesign({super.key, required this.children});
 
   final List<Widget> children;
 

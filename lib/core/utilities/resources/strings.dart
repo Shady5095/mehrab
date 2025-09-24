@@ -1424,6 +1424,25 @@ class AppStrings {
   static const String reJoin = 'reJoin';
   static const String noCallsTitle = 'noCallsTitle';
   static const String noCallsDescription = 'noCallsDescription';
+  static const String ongoingCall = 'ongoingCall';
+ static const String sessionDetailsAndStudentRate = 'sessionDetailsAndStudentRate';
+  static const String fromSurah = 'fromSurah';
+  static const String toSurah = 'toSurah';
+  static const String ayah = 'ayah';
+  static const String numberOfFaces = 'numberOfFaces';
+  static const String wordErrors = 'wordErrors';
+  static const String theHesitation = 'theHesitation';
+  static const String tajweedErrors = 'tajweedErrors';
+  static const String comment = 'comment';
+  static const String sessionDetailsAddedSuccessfully = 'sessionDetailsAddedSuccessfully';
+  static const String noSessionsDescription = 'noSessionsDescription';
+  static const String noSessionsTitle = 'noSessionsTitle';
+  static const String endTime = 'endTime';
+  static const String startTime = 'startTime';
+  static const String seeMore = 'seeMore';
+  static const String seeLess = 'seeLess';
+  static const String editSessionDetails = 'editSessionDetails';
+
 
 
 

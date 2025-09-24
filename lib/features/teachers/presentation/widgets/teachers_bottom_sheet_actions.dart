@@ -43,7 +43,7 @@ class TeachersBottomSheetActions extends StatelessWidget {
           }*/
         },
         builder: (context, state) {
-          return TeacherBottomSheetDesign(
+          return MyBottomSheetDesign(
             children: [
               BottomSheetItem(
                 onTap: () {

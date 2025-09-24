@@ -33,7 +33,9 @@ Future<DateTime?> showMyDateTimePicker(
           );
         },
         context: context,
-        initialTime: TimeOfDay.now(),
+        initialTime: initialDate != null
+            ? TimeOfDay(hour: initialDate.hour, minute: initialDate.minute)
+            : TimeOfDay.now(),
       ).then((timeValue) {
         if (timeValue != null) {
           final TimeOfDay time = timeValue;
@@ -136,14 +138,14 @@ ThemeData myDateTimePickerTheme(BuildContext context) {
 
 String formatDateTimePicker(BuildContext context, DateTime dateTime) {
   //bool isArabic = !MainAppCubit.instance(context).isEnglish;
-  final String formattedDate = DateFormat.yMd('en').format(dateTime);
-  final String formattedTime = DateFormat.jm('en').format(dateTime);
+  final String formattedDate = DateFormat.yMd('ar').format(dateTime);
+  final String formattedTime = DateFormat.jm('ar').format(dateTime);
   return '$formattedDate, $formattedTime';
 }
 
 String formatDatePicker(BuildContext context, DateTime dateTime) {
   //bool isArabic = !MainAppCubit.instance(context).isEnglish;
-  final String formattedDate = DateFormat.yMd('en').format(dateTime);
+  final String formattedDate = DateFormat.yMd('ar').format(dateTime);
   return formattedDate;
 }
 

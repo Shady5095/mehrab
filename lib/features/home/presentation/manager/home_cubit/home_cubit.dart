@@ -374,7 +374,7 @@ class HomeCubit extends Cubit<HomeState> {
         .snapshots()
         .listen((event) {
           if (event.docs.isNotEmpty) {
-            if (event.docs.first.data()['status'] == 'ringing' &&
+            if ((event.docs.first.data()['status'] == 'ringing'|| event.docs.first.data()['status'] == 'answered') &&
                 !_isDialogShowing) {
               if (!context.mounted) return;
               _isDialogShowing = true; // Set flag to prevent multiple dialogs
@@ -394,7 +394,7 @@ class HomeCubit extends Cubit<HomeState> {
                 _isDialogShowing = false; // Reset flag when dialog is dismissed
               });
             }
-            if (event.docs.first.data()['status'] == 'missed' &&
+            if ((event.docs.first.data()['status'] == 'missed') &&
                 _isDialogShowing) {
               if (!context.mounted) return;
               _isDialogShowing = false; // Reset flag when dialog is dismissed
@@ -416,17 +416,19 @@ class HomeCubit extends Cubit<HomeState> {
         .catchError((error) {});
   }
 
-  Future<void> acceptCall(String callDocId, String studentName) async {
+  Future<String?> acceptCall(String callDocId, String studentName) async {
+    String? googleMeetingLink ;
     await db
         .collection("calls")
         .doc(callDocId)
-        .update({"status": "answered"})
+        .update({"status": "answered", "acceptedTime": FieldValue.serverTimestamp()})
         .then((value) async {
           final user = await signInUser();
           if (user != null) {
-            createGoogleMeetEvent(user, "جلسة مع $studentName")
+           await createGoogleMeetEvent(user, "جلسة مع $studentName")
                 .then((meetingLink) {
                   if (meetingLink != null) {
+                    googleMeetingLink = meetingLink;
                     updateMeetingLink(callDocId, meetingLink);
                     openMeet(meetingLink);
                   }
@@ -437,6 +439,7 @@ class HomeCubit extends Cubit<HomeState> {
           }
         })
         .catchError((error) {});
+    return googleMeetingLink;
   }
 
   Future<void> updateMeetingLink(String callDocId, String meetingLink) async {
@@ -446,5 +449,12 @@ class HomeCubit extends Cubit<HomeState> {
         .update({"meetingLink": meetingLink})
         .then((value) {})
         .catchError((error) {});
+  }
+  Future<void> endCall(String callId) async {
+    try {
+      await db.collection('calls').doc(callId).update({'status': 'ended', 'endedTime': FieldValue.serverTimestamp()});
+    } catch (e) {
+      printWithColor('Error ending call: $e');
+    }
   }
 }

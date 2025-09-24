@@ -11,6 +11,20 @@ class CallModel {
   final String? teacherPhoto;
   final String status;
   final String? meetingLink;
+  final Timestamp? acceptedTime;
+  final Timestamp? endedTime;
+  final num? rating;
+  final String? record;
+  final String? fromSurah;
+  final String? toSurah;
+  final String? fromAyah;
+  final String? toAyah;
+  final String? numberOfFaces;
+  final String? wordErrors;
+  final String? theHesitation;
+  final String? tajweedErrors;
+  final String? comment;
+
 
   CallModel({
     required this.callId,
@@ -23,6 +37,19 @@ class CallModel {
     this.teacherPhoto,
     this.meetingLink,
     required this.status,
+    this.acceptedTime,
+    this.endedTime,
+    this.rating,
+    this.record,
+    this.fromSurah,
+    this.toSurah,
+    this.fromAyah,
+    this.toAyah,
+    this.numberOfFaces,
+    this.wordErrors,
+    this.theHesitation,
+    this.tajweedErrors,
+    this.comment,
   });
 
   factory CallModel.fromJson(Map<String, dynamic> map) {
@@ -36,7 +63,20 @@ class CallModel {
       studentPhoto: map['studentPhoto'],
       teacherPhoto: map['teacherPhoto'],
       status: map['status'] ?? '',
-      meetingLink: map['meetingLink']
+      meetingLink: map['meetingLink'],
+      acceptedTime: map['acceptedTime'],
+      rating: map['rating'],
+      endedTime: map['endedTime'],
+      record: map['record'],
+      fromSurah: map['fromSurah'],
+      toSurah: map['toSurah'],
+      fromAyah: map['fromAyah'],
+      toAyah: map['toAyah'],
+      numberOfFaces: map['numberOfFaces'],
+      wordErrors: map['wordErrors'],
+      theHesitation: map['theHesitation'],
+      tajweedErrors: map['tajweedErrors'],
+      comment: map['comment'],
     );
   }
 

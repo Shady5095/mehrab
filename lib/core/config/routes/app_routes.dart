@@ -14,6 +14,7 @@ import '../../../features/prayer_times/presentation/screens/prayer_times_screen.
 import '../../../features/students/presentation/screens/students_profile_screen.dart';
 import '../../../features/students/presentation/screens/students_screen.dart';
 import '../../../features/teaacher_reviews/presentation/screens/teacher_reviews_screen.dart';
+import '../../../features/teacher_call/presentation/screens/rate_session_screen.dart';
 import '../../../features/teacher_call/presentation/screens/teacher_call_screen.dart';
 import '../../../features/teachers/presentation/screens/add_teacher_screen.dart';
 import '../../../features/teachers/presentation/screens/teacher_profile_screen.dart';
@@ -42,6 +43,8 @@ abstract class AppRoutes {
   static const String favoriteStudentsScreen = 'favoriteStudentsScreen';
   static const String teacherReviewsScreen = 'teacherReviewsScreen';
   static const String teacherCallScreen = 'teacherCallScreen';
+  static const String rateSessionScreen = 'rateSessionScreen';
+
 }
 
 abstract class RouteGenerator {
@@ -150,6 +153,11 @@ abstract class RouteGenerator {
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const TeacherCallScreen(),
+        );
+        case AppRoutes.rateSessionScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const RateSessionScreen(),
         );
       default:
         return noRoute();

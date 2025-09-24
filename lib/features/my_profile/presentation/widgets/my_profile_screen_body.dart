@@ -213,6 +213,7 @@ class MyProfileScreenBody extends StatelessWidget {
                           label:  AppStrings.updateMyProfile.tr(context),
                           isLoading: state is UpdateProfileLoadingState,
                         ),
+                        if(cubit.userModel.signInMethod != "google")
                         ButtonWidget(
                           onPressed: () {
                             context.navigateTo(pageName: AppRoutes.changePasswordScreen,arguments: [context]);

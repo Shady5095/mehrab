@@ -5,22 +5,25 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/format_date_and_time.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/list_empty_widget.dart';
+import 'package:mehrab/features/sessions/presentation/widgets/session_item.dart';
 
 import '../../../../core/utilities/resources/constants.dart';
-import '../../../../core/utilities/services/cache_service.dart';
-import '../../data/models/call_model.dart';
-import 'call_item.dart';
+import '../../../teacher_call/data/models/call_model.dart';
 
-class CallsList extends StatelessWidget {
-  const CallsList({super.key});
+class SessionsList extends StatelessWidget {
+  const SessionsList({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('calls')
-            .where('teacherUid', isEqualTo: myUid)
-            .orderBy('timestamp', descending: true).snapshots(),
+        stream:
+            FirebaseFirestore.instance
+                .collection('calls')
+                .where('teacherUid', isEqualTo: myUid)
+                .where('status', isEqualTo: 'ended')
+                .orderBy('timestamp', descending: true)
+                .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
@@ -29,9 +32,9 @@ class CallsList extends StatelessWidget {
           final calls = snapshot.data!.docs;
           if (calls.isEmpty) {
             return ListEmptyWidget(
-              icon: "assets/images/phone-call.png",
-              title: AppStrings.noCallsTitle,
-              description: AppStrings.noCallsDescription,
+              icon: "assets/images/session.png",
+              title: AppStrings.noSessionsTitle,
+              description: AppStrings.noSessionsDescription,
             );
           }
 
@@ -51,14 +54,6 @@ class CallsList extends StatelessWidget {
             }
             groupedCalls[dateKey]!.add(call);
           }
-          // cache missed calls count
-          int missedCallsCount = calls.where((doc) {
-            CallModel call = CallModel.fromJson(
-              doc.data() as Map<String, dynamic>,
-            );
-            return call.status == 'missed';
-          }).length;
-          CacheService.setData(key: "missedCallCount", value: missedCallsCount);
           return CustomScrollView(
             slivers:
                 groupedCalls.entries.map((entry) {
@@ -71,7 +66,7 @@ class CallsList extends StatelessWidget {
                           children: [
                             Expanded(child: Container()),
                             Container(
-
+                              margin: EdgeInsets.symmetric(vertical: 5),
                               width: 40.wR,
                               padding: EdgeInsets.symmetric(
                                 horizontal: 16.0,
@@ -79,7 +74,7 @@ class CallsList extends StatelessWidget {
                               ),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: Color.fromRGBO(240, 240, 240, 1.0),
+                                color: Color.fromRGBO(230, 230, 230, 1.0),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -96,9 +91,9 @@ class CallsList extends StatelessWidget {
                         ),
                     sliver: SliverList.separated(
                       itemBuilder: (context, index) {
-                        return CallItem(model: dailyCalls[index]);
+                        return SessionItem(model: dailyCalls[index]);
                       },
-                      separatorBuilder: (context, index) => Divider(),
+                      separatorBuilder: (context, index) => SizedBox(),
                       itemCount: dailyCalls.length,
                     ),
                   );
