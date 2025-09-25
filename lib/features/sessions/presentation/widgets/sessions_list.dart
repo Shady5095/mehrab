@@ -5,7 +5,8 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/format_date_and_time.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/list_empty_widget.dart';
-import 'package:mehrab/features/sessions/presentation/widgets/session_item.dart';
+import 'package:mehrab/features/sessions/presentation/widgets/session_item_for_students.dart';
+import 'package:mehrab/features/sessions/presentation/widgets/session_item_for_teachers.dart';
 
 import '../../../../core/utilities/resources/constants.dart';
 import '../../../teacher_call/data/models/call_model.dart';
@@ -17,13 +18,7 @@ class SessionsList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: StreamBuilder<QuerySnapshot>(
-        stream:
-            FirebaseFirestore.instance
-                .collection('calls')
-                .where('teacherUid', isEqualTo: myUid)
-                .where('status', isEqualTo: 'ended')
-                .orderBy('timestamp', descending: true)
-                .snapshots(),
+        stream: getSessionsStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
@@ -91,7 +86,11 @@ class SessionsList extends StatelessWidget {
                         ),
                     sliver: SliverList.separated(
                       itemBuilder: (context, index) {
-                        return SessionItem(model: dailyCalls[index]);
+                        if(AppConstants.isTeacher){
+                          return SessionItemForTeachers(model: dailyCalls[index]);
+                        }else{
+                          return SessionItemForStudents(model: dailyCalls[index]);
+                        }
                       },
                       separatorBuilder: (context, index) => SizedBox(),
                       itemCount: dailyCalls.length,
@@ -123,5 +122,23 @@ class SessionsList extends StatelessWidget {
     return date1.year == date2.year &&
         date1.month == date2.month &&
         date1.day == date2.day;
+  }
+
+  Stream<QuerySnapshot<Object?>> getSessionsStream() {
+    if (AppConstants.isTeacher) {
+      return FirebaseFirestore.instance
+          .collection('calls')
+          .where('teacherUid', isEqualTo: myUid)
+          .where('status', isEqualTo: 'ended')
+          .orderBy('timestamp', descending: true)
+          .snapshots();
+    } else {
+      return FirebaseFirestore.instance
+          .collection('calls')
+          .where('studentUid', isEqualTo: myUid)
+          .where('status', whereIn: ['ended', 'answered'])
+          .orderBy('timestamp', descending: true)
+          .snapshots();
+    }
   }
 }

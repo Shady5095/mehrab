@@ -450,11 +450,21 @@ class HomeCubit extends Cubit<HomeState> {
         .then((value) {})
         .catchError((error) {});
   }
-  Future<void> endCall(String callId) async {
+  Future<void> endCall(String callId,String studentUid, String teacherName) async {
     try {
       await db.collection('calls').doc(callId).update({'status': 'ended', 'endedTime': FieldValue.serverTimestamp()});
+      sendNotificationAfterEndingCall(studentUid, teacherName);
     } catch (e) {
       printWithColor('Error ending call: $e');
     }
+  }
+
+  void sendNotificationAfterEndingCall(String studentUid, String teacherName) {
+    AppFirebaseNotification.pushNotification(
+      topic: studentUid,
+      title: "سعدتنا بسماع صوتك",
+      dataInNotification: {},
+      body: "شكراً لك على حضور الجلسة مع $teacherName، نتمنى أن تكون قد استفدت."
+    );
   }
 }

@@ -11,16 +11,16 @@ import '../../../../core/utilities/functions/format_duration.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 import '../../../teacher_call/data/models/call_model.dart';
 
-class SessionItem extends StatefulWidget {
+class SessionItemForTeachers extends StatefulWidget {
   final CallModel model;
 
-  const SessionItem({super.key, required this.model});
+  const SessionItemForTeachers({super.key, required this.model});
 
   @override
-  State<SessionItem> createState() => _SessionItemState();
+  State<SessionItemForTeachers> createState() => _SessionItemForTeachersState();
 }
 
-class _SessionItemState extends State<SessionItem> {
+class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
   ExpansionTileController controller = ExpansionTileController();
   bool isExpanded = false;
   @override

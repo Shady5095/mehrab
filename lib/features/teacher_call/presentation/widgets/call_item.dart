@@ -92,7 +92,7 @@ class CallItem extends StatelessWidget {
               Expanded(
                 child: TextButton(
                   onPressed: () {
-                    cubit.endCall(model.callId).catchError((error) {
+                    cubit.endCall(model.callId,model.studentUid,model.teacherName).catchError((error) {
                       myToast(msg: error.toString(), state: error);
                     });
                   },

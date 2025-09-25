@@ -138,9 +138,9 @@ class MainAppCubit extends Cubit<MainAppStates> {
   }
 
   String setFontFamily() {
-    if (isEnglish) {
+    /*if (isEnglish) {
       return AppConstants.englishFont;
-    }
+    }*/
     return AppConstants.arabicFont;
   }
 

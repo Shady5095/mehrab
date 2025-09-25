@@ -78,6 +78,7 @@ class HomeBottomNavigationBar extends StatelessWidget {
               ],
             ),
             NavigationDestination(
+              enabled: cubit.userModel != null,
               icon: const Icon(Icons.live_tv_sharp),
               label: AppStrings.sessions.tr(context),
             ),

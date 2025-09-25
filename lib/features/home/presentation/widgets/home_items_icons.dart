@@ -135,6 +135,8 @@ class HomeItemsIcons extends StatelessWidget {
 
     return AnimationLimiter(
       child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.all(15.0),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2, // 2 items per row

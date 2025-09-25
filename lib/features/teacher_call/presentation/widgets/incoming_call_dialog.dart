@@ -53,6 +53,7 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
     if(widget.model.acceptedTime != null){
       _isCallAccepted = true;
       _acceptTime = widget.model.acceptedTime!.toDate();
+      stopSound();
       setState(() {
       });
     }
@@ -187,7 +188,7 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
                     Expanded(
                       child: TextButton(
                         onPressed: () {
-                          widget.cubit.endCall(widget.model.callId).catchError((error) {
+                          widget.cubit.endCall(widget.model.callId,widget.model.studentUid,widget.model.teacherName).catchError((error) {
                             myToast(msg: error.toString(), state: error);
                           });
                           context.pop();
