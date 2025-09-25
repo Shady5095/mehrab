@@ -12,4 +12,6 @@ class AppAssets {
   static const String englishLang = 'assets/images/englishIcon.png';
   static const String notification = 'assets/images/notification.png';
   static const String teacherComments = 'assets/images/teacher_comments.png';
+  static const String faceId = 'assets/images/face-id.png';
+  static const String fingerPrint = 'assets/images/fingerprint.png';
 }

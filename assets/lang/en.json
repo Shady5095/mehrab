@@ -1162,6 +1162,9 @@
     "endTime" : "End Time",
     "seeMore" : "See More",
     "seeLess" : "See Less",
-    "editSessionDetails" : "Edit Session Details"
+    "editSessionDetails" : "Edit Session Details",
+    "chooseAccountToSignIn" : "Choose an account to sign in",
+    "deleteAccount" : "Delete Account",
+    "areYouSureDeleteAccount" : "Are you sure you want to delete this account"
 
 }

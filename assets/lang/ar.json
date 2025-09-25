@@ -1164,5 +1164,8 @@
   "duration": "المدة",
   "seeMore": "أظهر المزيد",
   "seeLess": "أظهر أقل",
-  "editSessionDetails": "تعديل تفاصيل الجلسة"
+  "editSessionDetails": "تعديل تفاصيل الجلسة",
+  "chooseAccountToSignIn": "اختر حساب لتسجيل الدخول",
+  "deleteAccount" : "حذف الحساب",
+  "areYouSureDeleteAccount" : "هل أنت متأكد أنك تريد حذف هذا الحساب"
 }

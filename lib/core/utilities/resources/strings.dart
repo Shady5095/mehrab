@@ -1442,6 +1442,9 @@ class AppStrings {
   static const String seeMore = 'seeMore';
   static const String seeLess = 'seeLess';
   static const String editSessionDetails = 'editSessionDetails';
+  static const String chooseAccountToSignIn = 'chooseAccountToSignIn';
+  static const String areYouSureDeleteAccount = 'areYouSureDeleteAccount';
+  static const String deleteAccount = 'deleteAccount';
 
 
 

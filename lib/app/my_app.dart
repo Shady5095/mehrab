@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
                       cacheThemValue: CacheService.getData(
                         key: AppConstants.themeMode,
                       ),
-                    ),
+                    )..setStatusBarColor(),
         ),
       ],
       child: BlocBuilder<MainAppCubit, MainAppStates>(

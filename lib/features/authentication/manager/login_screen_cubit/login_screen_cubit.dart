@@ -1,12 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mehrab/app/app_locale/app_locale.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/print_with_color.dart';
 import 'package:mehrab/core/utilities/functions/toast.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import '../../../../core/utilities/resources/constants.dart';
+import '../../../../core/utilities/services/account_storage_service.dart';
+import '../../../../core/utilities/services/biometric_service.dart';
 import '../../../../core/utilities/services/cache_service.dart';
+import '../../../../core/widgets/account_selection_bottom_sheet.dart';
 import '../../data/google_sign_in_model.dart';
 import 'login_screen_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,6 +30,7 @@ class LoginCubit extends Cubit<LoginStates> {
   void buttonFunction(BuildContext context) {
     if (formKey.currentState?.validate() == true) {
       signInWithEmailAndPassword(context);
+
     }
   }
 
@@ -112,6 +118,10 @@ class LoginCubit extends Cubit<LoginStates> {
         password: passwordController.text.trim(),
       );
       await cacheUid(user.user?.uid ?? '');
+     AccountStorage.saveAccount(
+       emailController.text.trim(),
+       passwordController.text.trim(),
+     );
       emit(LoginSuccessState());
     } on FirebaseAuthException catch (e) {
       String errorMessage;
@@ -204,6 +214,50 @@ class LoginCubit extends Cubit<LoginStates> {
       }
     });
   }
+  Future<void> loginWithBiometrics(BuildContext context) async {
+    final authenticated = await BiometricService.authenticate(isArabic(context)); // أو false
+    if (!authenticated) return;
+
+    Map<String, String> accounts = await AccountStorage.getAccounts();
+
+    if (accounts.isEmpty) {
+      myToast(msg: "مفيش حسابات محفوظة", state: ToastStates.error);
+      return;
+    }
+
+    final selectedEmail = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return AccountSelectionBottomSheet(
+          accounts: accounts,
+          onSelect: (email) => Navigator.pop(context, email),
+          onDelete: (email) {
+            // لو عايز تعرض Toast أو تعمل أي رد فعل إضافي بعد الحذف
+          },
+        );
+      },
+    );
+
+    if (selectedEmail != null) {
+      final password = accounts[selectedEmail]!;
+      try {
+        emit(BiometricsLoginLoadingState());
+        final user = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: selectedEmail,
+          password: password,
+        );
+        await cacheUid(user.user?.uid ?? '');
+        emit(LoginSuccessState());
+      } catch (e) {
+        emit(LoginErrorState("فشل تسجيل الدخول: $e"));
+      }
+    }
+  }
+
 
   @override
   Future<void> close() {

@@ -38,3 +38,13 @@ class ResetPasswordErrorState extends LoginStates {
 }
 
 class ResetPasswordSuccessState extends LoginStates {}
+
+class BiometricsLoginLoadingState extends LoginStates {}
+
+class BiometricsLoginSuccessState extends LoginStates {}
+
+class BiometricsLoginErrorState extends LoginStates {
+  final String error;
+
+  BiometricsLoginErrorState(this.error);
+}
