@@ -89,7 +89,7 @@ class AppLightThemes {
       backgroundColor: AppColors.greyColor,
       contentTextStyle: AppStyle.textStyle14.copyWith(color: AppColors.white),
     ),
-    cardTheme: const CardTheme(
+    cardTheme: const CardThemeData(
       margin: EdgeInsets.zero,
       color: AppColors.duckEggBlue,
       surfaceTintColor: Colors.transparent,

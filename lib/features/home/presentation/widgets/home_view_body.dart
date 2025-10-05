@@ -132,7 +132,7 @@ class HomeViewBody extends StatelessWidget {
                                 scale: 0.8,
                                 child: Switch(
                                   value: cubit.teacherAvailability,
-                                  activeColor: AppColors.coolGreen,
+                                  activeThumbColor: AppColors.coolGreen,
                                   //inactiveTrackColor: AppColors.redColor.withOpacity(0.3),
                                   //inactiveThumbColor: AppColors.redColor,
 

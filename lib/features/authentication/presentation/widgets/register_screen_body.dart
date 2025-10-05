@@ -280,9 +280,9 @@ class RegisterScreenBody extends StatelessWidget {
                           ),
                         CustomDropDownMenu(
                           dropdownItems:
-                              isArabic(context)
-                                  ? AppConstants.arabicNationalities
-                                  : AppConstants.nationalities,
+                          isArabic(context)
+                              ? AppConstants.arabicNationalities
+                              : AppConstants.nationalities,
                           value: cubit.selectedNationality,
                           isTextTranslated: true,
                           onChanged: (value) {
@@ -309,10 +309,10 @@ class RegisterScreenBody extends StatelessWidget {
                           ),
                           validator:
                               (String? value) => AppValidator.emptyFiled(
-                                value,
-                                context,
-                                AppStrings.nationality,
-                              ),
+                            value,
+                            context,
+                            AppStrings.nationality,
+                          ),
                         ),
                         CustomDropDownMenu(
                           dropdownItems: AppConstants.educationLevelKeys,

@@ -14,6 +14,7 @@ import '../../../../core/utilities/functions/toast.dart';
 import '../../../../core/widgets/buttons_widget.dart';
 import '../../../../core/widgets/circle_toggle_button.dart';
 import 'add_teacher_profile_photo_build.dart';
+import 'add_teacher_sucsses_dialog.dart';
 
 class AddTeacherScreenBody extends StatelessWidget {
   const AddTeacherScreenBody({super.key});
@@ -27,7 +28,13 @@ class AddTeacherScreenBody extends StatelessWidget {
           listener: (context, state) {
             if (state is RegisterSuccessState) {
               Navigator.pop(context,true);
-              myToast(msg: "تم اضافة المعلم بنجاح", state: ToastStates.success);
+              showDialog(
+                context: context,
+                builder:
+                    (_) => AddTeacherSuccessDialog(
+                  teacher:  AddTeacherCubit.get(context).getUserModel,
+                ),
+              );
             } if (state is RegisterErrorState) {
               myToast(msg: state.errorMessage, state: ToastStates.error,toastLength: Toast.LENGTH_LONG);
             }
