@@ -21,7 +21,7 @@ class SessionItemForTeachers extends StatefulWidget {
 }
 
 class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
-  ExpansionTileController controller = ExpansionTileController();
+  ExpansibleController controller = ExpansibleController();
   bool isExpanded = false;
   @override
   Widget build(BuildContext context) {

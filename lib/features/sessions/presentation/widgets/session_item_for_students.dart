@@ -23,7 +23,7 @@ class SessionItemForStudents extends StatefulWidget {
 }
 
 class _SessionItemForStudentsState extends State<SessionItemForStudents> {
-  ExpansionTileController controller = ExpansionTileController();
+  ExpansibleController controller = ExpansibleController();
   bool isExpanded = false;
 
   @override
