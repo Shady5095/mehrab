@@ -47,6 +47,8 @@ class AppFirebaseNotification {
       _analyticsInstance.setAnalyticsCollectionEnabled(true);
       if (Platform.isAndroid) {
         androidNotificationChannelForPopUpNotification();
+      }else{
+         _instance.getAPNSToken();
       }
     }
   }

@@ -3,7 +3,6 @@ import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'app/my_app.dart';
 import 'core/utilities/functions/bloc_observer.dart';
@@ -21,7 +20,6 @@ void main() async {
       MyHttpOverrides(); // To handle android blew 8 http connection
   await Future.wait([
     LocalNotificationsService.init(),
-    FlutterDownloader.initialize(),
     CacheService.init(),
     Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
   ]);

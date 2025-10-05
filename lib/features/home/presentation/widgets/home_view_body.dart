@@ -31,7 +31,7 @@ class HomeViewBody extends StatelessWidget {
             children: [
               Container(
                 width: double.infinity,
-                height: 9.hR,
+                height: 11.hR,
                 color: AppColors.myAppColor,
                 alignment: Alignment.bottomCenter,
                 padding: EdgeInsets.symmetric(horizontal: 15),
@@ -132,7 +132,7 @@ class HomeViewBody extends StatelessWidget {
                                 scale: 0.8,
                                 child: Switch(
                                   value: cubit.teacherAvailability,
-                                  activeColor: AppColors.coolGreen,
+                                  activeThumbColor: AppColors.coolGreen,
                                   //inactiveTrackColor: AppColors.redColor.withOpacity(0.3),
                                   //inactiveThumbColor: AppColors.redColor,
 
