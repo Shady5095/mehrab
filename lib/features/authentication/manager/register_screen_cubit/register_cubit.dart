@@ -287,6 +287,16 @@ class RegisterCubit extends Cubit<RegisterState> {
       }
     });
   }
+
+  void autoSelectNationalityFromCache() {
+    final cachedCode = CacheService.currentCountryCode;
+    if (cachedCode != null) {
+      final nationality = AppConstants.countryCodeToNationality[cachedCode.toUpperCase()];
+      if (nationality != null && selectedNationality == null) { // Only if none chosen and mapping exists
+        selectedNationality = nationality;
+      }
+    }
+  }
   @override
   Future<void> close() {
     nameController.dispose();

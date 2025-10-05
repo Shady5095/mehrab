@@ -12,7 +12,7 @@ class RegisterScreen extends StatelessWidget {
     final List<dynamic> args =
     ModalRoute.of(context)!.settings.arguments as List<dynamic>;
     return BlocProvider(
-      create: (context) => RegisterCubit(googleSignInModel: args[0])..fillGoogleSignInData(),
+      create: (context) => RegisterCubit(googleSignInModel: args[0])..fillGoogleSignInData()..autoSelectNationalityFromCache(),
       child: Scaffold(
         body: RegisterScreenBody(),
       ),
