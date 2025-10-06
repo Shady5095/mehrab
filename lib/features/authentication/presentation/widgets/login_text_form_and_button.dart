@@ -124,8 +124,6 @@ class LoginTextFormAndButton extends StatelessWidget {
                       if (accounts.isEmpty) {
                         return const SizedBox.shrink(); // مفيش حسابات → متعرضش الزرار
                       }
-
-                      // لو فيه حسابات محفوظة → اعرض زرار البصمة/Face ID
                       return InkWell(
                         onTap: () {
                           cubit.loginWithBiometrics(context);

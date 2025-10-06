@@ -99,7 +99,6 @@ class HomeCubit extends Cubit<HomeState> {
             } else {
               AppConstants.isStudent = true;
             }
-
             await getFavoriteTeachersCount();
             getStudentsCount();
             getNotificationsCount();

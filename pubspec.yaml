@@ -40,7 +40,7 @@ dependencies:
   upgrader: 11.3.1
   device_preview: ^1.2.0
   custom_clippers: ^2.0.0
-  image_picker: ^1.1.2
+  image_picker: ^1.2.0
   image_cropper: ^9.0.0
   flutter_phoenix: ^1.1.1
   dropdown_button2: ^2.3.9

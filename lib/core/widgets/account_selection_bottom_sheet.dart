@@ -24,40 +24,47 @@ class AccountSelectionBottomSheet extends StatefulWidget {
 class _AccountSelectionBottomSheetState
     extends State<AccountSelectionBottomSheet> {
   late Map<String, String> accounts;
+  late ScrollController _scrollController; // ✅ Controller added
 
   @override
   void initState() {
     super.initState();
     accounts = {...widget.accounts};
+    _scrollController = ScrollController(); // ✅ Initialize controller
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose(); // ✅ Always dispose controllers
+    super.dispose();
   }
 
   Future<void> _deleteAccount(String email) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(AppStrings.deleteAccount.tr(context)),
-            content: Text(
-              "${AppStrings.areYouSureDeleteAccount.tr(context)} $email؟",
+      builder: (context) => AlertDialog(
+        title: Text(AppStrings.deleteAccount.tr(context)),
+        content: Text(
+          "${AppStrings.areYouSureDeleteAccount.tr(context)} $email؟",
+          style: TextStyle(color: Colors.black, fontSize: 14.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              AppStrings.cancel.tr(context),
               style: TextStyle(color: Colors.black, fontSize: 14.sp),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(
-                  AppStrings.cancel.tr(context),
-                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(
-                  AppStrings.delete.tr(context),
-                  style: TextStyle(color: Colors.red, fontSize: 14.sp),
-                ),
-              ),
-            ],
           ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              AppStrings.delete.tr(context),
+              style: TextStyle(color: Colors.red, fontSize: 14.sp),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirm == true) {
@@ -78,9 +85,10 @@ class _AccountSelectionBottomSheetState
           const SizedBox(height: 10),
           Text(
             AppStrings.chooseAccountToSignIn.tr(context),
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           ConstrainedBox(
@@ -88,8 +96,10 @@ class _AccountSelectionBottomSheetState
               maxHeight: MediaQuery.of(context).size.height * 0.4,
             ),
             child: Scrollbar(
+              controller: _scrollController, // ✅ Same controller used here
               thumbVisibility: true,
               child: ListView.separated(
+                controller: _scrollController, // ✅ Same controller used here
                 itemCount: accountKeys.length,
                 shrinkWrap: true,
                 separatorBuilder: (context, index) => const Divider(height: 1),
@@ -101,7 +111,7 @@ class _AccountSelectionBottomSheetState
                     title: Text(email, style: TextStyle(fontSize: 14.sp)),
                     onTap: () => widget.onSelect(email),
                     trailing: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red,size: 25.sp,),
+                      icon: Icon(Icons.delete, color: Colors.red, size: 25.sp),
                       onPressed: () => _deleteAccount(email),
                     ),
                   );

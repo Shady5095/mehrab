@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/app/app_locale/app_locale.dart';
@@ -215,8 +216,10 @@ class LoginCubit extends Cubit<LoginStates> {
     });
   }
   Future<void> loginWithBiometrics(BuildContext context) async {
-    final authenticated = await BiometricService.authenticate(isArabic(context)); // أو false
-    if (!authenticated) return;
+    if (!kDebugMode) {
+      final authenticated = await BiometricService.authenticate(isArabic(context)); // أو false
+      if (!authenticated) return;
+    }
 
     Map<String, String> accounts = await AccountStorage.getAccounts();
 

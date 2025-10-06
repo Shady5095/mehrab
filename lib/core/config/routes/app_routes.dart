@@ -10,6 +10,8 @@ import '../../../features/my_profile/presentation/screens/change_password_screen
 import '../../../features/my_profile/presentation/screens/change_password_screen_teacher.dart';
 import '../../../features/my_profile/presentation/screens/my_profile_screen_teacher.dart';
 import '../../../features/notifications/presentation/screens/add_notification_screen.dart';
+import '../../../features/onboarding/screens/onboarding_screen.dart';
+import '../../../features/onboarding/screens/start_screen.dart';
 import '../../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
 import '../../../features/students/presentation/screens/students_profile_screen.dart';
 import '../../../features/students/presentation/screens/students_screen.dart';
@@ -44,6 +46,8 @@ abstract class AppRoutes {
   static const String teacherReviewsScreen = 'teacherReviewsScreen';
   static const String teacherCallScreen = 'teacherCallScreen';
   static const String rateSessionScreen = 'rateSessionScreen';
+  static const String startScreenRoute = 'startScreenRoute';
+  static const String onboardingRoute = 'onboardingScreen';
 
 }
 
@@ -158,6 +162,16 @@ abstract class RouteGenerator {
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const RateSessionScreen(),
+        );
+        case AppRoutes.startScreenRoute:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const StartScreen(),
+        );
+        case AppRoutes.onboardingRoute:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const OnboardingScreen(),
         );
       default:
         return noRoute();
