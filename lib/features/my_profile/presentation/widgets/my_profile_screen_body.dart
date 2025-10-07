@@ -19,8 +19,8 @@ import '../../../../core/widgets/my_text_field.dart';
 import 'delete_account_dialog.dart';
 import 'my_profile_profile_photo_build.dart';
 
-class MyProfileScreenBody extends StatelessWidget { 
-  const MyProfileScreenBody({super.key}); 
+class MyProfileScreenBody extends StatelessWidget {
+  const MyProfileScreenBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,14 +30,19 @@ class MyProfileScreenBody extends StatelessWidget {
         child: BlocConsumer<MyProfileCubit, MyProfileState>(
           listener: (context, state) {
             if (state is UpdateProfileSuccessState) {
-              Navigator.pop(context,true);
+              Navigator.pop(context, true);
               myToast(
                 msg: AppStrings.yourProfileUpdated.tr(context),
                 state: ToastStates.success,
                 toastLength: Toast.LENGTH_LONG,
               );
-            } if (state is UpdateProfileErrorState) {
-              myToast(msg: state.errorMessage, state: ToastStates.error,toastLength: Toast.LENGTH_LONG);
+            }
+            if (state is UpdateProfileErrorState) {
+              myToast(
+                msg: state.errorMessage,
+                state: ToastStates.error,
+                toastLength: Toast.LENGTH_LONG,
+              );
             }
           },
           builder: (context, state) {
@@ -45,12 +50,13 @@ class MyProfileScreenBody extends StatelessWidget {
             return Form(
               key: cubit.formKey,
               child: CustomScrollView(
-                  slivers: [SliverFillRemaining(
+                slivers: [
+                  SliverFillRemaining(
                     hasScrollBody: false,
                     child: Column(
                       spacing: 10,
                       children: [
-                        MyAppBar(title: AppStrings.myProfile,),
+                        MyAppBar(title: AppStrings.myProfile),
                         MyProfileProfilePhotoBuild(),
                         MyTextField(
                           label: AppStrings.fullName.tr(context),
@@ -58,23 +64,29 @@ class MyProfileScreenBody extends StatelessWidget {
                           keyboardType: TextInputType.name,
                           textInputAction: TextInputAction.next,
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
                           ),
                           disabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           validator:
                               (String? value) => AppValidator.emptyFiled(
-                            value,
-                            context,
-                            AppStrings.name,
-                          ),
+                                value,
+                                context,
+                                AppStrings.name,
+                              ),
                         ),
                         MyTextField(
                           label: AppStrings.email.tr(context),
@@ -83,50 +95,69 @@ class MyProfileScreenBody extends StatelessWidget {
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
                           ),
                           disabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           validator:
-                              (String? value) => AppValidator.emailValidator(
-                            value,
-                            context,
-                          ),
+                              (String? value) =>
+                                  AppValidator.emailValidator(value, context),
                         ),
                         IntlPhoneField(
                           autovalidateMode: AutovalidateMode.onUnfocus,
                           controller: cubit.phoneController,
-                          languageCode: isArabic(context)?  "ar" : "en",
+                          languageCode: isArabic(context) ? "ar" : "en",
                           decoration: InputDecoration(
-
-                            label: FittedBox(child: Text(AppStrings.phone.tr(context), maxLines: 1)),
+                            label: FittedBox(
+                              child: Text(
+                                AppStrings.phone.tr(context),
+                                maxLines: 1,
+                              ),
+                            ),
                             focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: context.invertedColor),
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
                             ),
                             enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: context.invertedColor),
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
                             ),
                             errorBorder: UnderlineInputBorder(
                               borderSide: BorderSide(color: Colors.red),
                             ),
                             disabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: context.invertedColor),
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
                             ),
                             border: UnderlineInputBorder(
-                              borderSide: BorderSide(color: context.invertedColor),
+                              borderSide: BorderSide(
+                                color: context.invertedColor,
+                              ),
                             ),
                             focusedErrorBorder: UnderlineInputBorder(
                               borderSide: BorderSide(color: Colors.red),
                             ),
                           ),
-                          textAlign: isArabic(context) ? TextAlign.right : TextAlign.left,
+                          textAlign:
+                              isArabic(context)
+                                  ? TextAlign.right
+                                  : TextAlign.left,
                           initialCountryCode: cubit.countryCode,
 
                           onChanged: (phone) {
@@ -137,9 +168,9 @@ class MyProfileScreenBody extends StatelessWidget {
                         ),
                         CustomDropDownMenu(
                           dropdownItems:
-                          isArabic(context)
-                              ? AppConstants.arabicNationalities
-                              : AppConstants.nationalities,
+                              isArabic(context)
+                                  ? AppConstants.arabicNationalities
+                                  : AppConstants.nationalities,
                           value: cubit.selectedNationality,
                           isTextTranslated: true,
                           onChanged: (value) {
@@ -147,13 +178,19 @@ class MyProfileScreenBody extends StatelessWidget {
                           },
                           label: AppStrings.nationality.tr(context),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           disabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
@@ -168,13 +205,19 @@ class MyProfileScreenBody extends StatelessWidget {
                           },
                           label: AppStrings.educationLevel.tr(context),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           disabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: context.invertedColor),
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
                           ),
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
@@ -189,64 +232,72 @@ class MyProfileScreenBody extends StatelessWidget {
                             initialIndex: cubit.isMale ? 0 : 1,
                           ),
                         ),
-                        Expanded(
-                          child: SizedBox(
-                            height: 20,
-                          ),
-                        ),
+                        Expanded(child: SizedBox(height: 20)),
                         ButtonWidget(
                           onPressed: () {
                             cubit.onClickUpdateProfile();
                           },
                           height: 40,
-                          label:  AppStrings.updateMyProfile.tr(context),
+                          label: AppStrings.updateMyProfile.tr(context),
                           isLoading: state is UpdateProfileLoadingState,
                         ),
-                        if(cubit.userModel.signInMethod != "google")
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ButtonWidget(
-                                onPressed: () {
-                                  context.navigateTo(pageName: AppRoutes.changePasswordScreen,arguments: [context]);
-                                },
-                                height: 40,
-                                color: Colors.grey,
-                                label:  AppStrings.changePassword.tr(context),
-                              ),
-                            ),
-                            SizedBox(width: 10,),
-                            Expanded(
-                              child: ButtonWidget(
-                                onPressed: () {
-                                  showDialog(context: context, builder: (_){
-                                    return DeleteAccountDialog(oldContext: context,);
-                                  });
-                                },
-                                height: 40,
-                                color: Colors.red,
-                                label:  AppStrings.deleteAccount.tr(context),
-                              ),
-                            ),
-                          ],
-                        )else
+                        if (cubit.userModel.signInMethod != "email")
                           ButtonWidget(
                             onPressed: () {
-                              showDialog(context: context, builder: (_){
-                                return DeleteAccountDialog(oldContext: context,);
-                              });
+                              showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return DeleteAccountDialog(
+                                    oldContext: context,
+                                  );
+                                },
+                              );
                             },
                             height: 40,
                             color: Colors.red,
-                            label:  AppStrings.deleteAccount.tr(context),
+                            label: AppStrings.deleteAccount.tr(context),
+                          )
+                        else
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ButtonWidget(
+                                  onPressed: () {
+                                    context.navigateTo(
+                                      pageName: AppRoutes.changePasswordScreen,
+                                      arguments: [context],
+                                    );
+                                  },
+                                  height: 40,
+                                  color: Colors.grey,
+                                  label: AppStrings.changePassword.tr(context),
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: ButtonWidget(
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) {
+                                        return DeleteAccountDialog(
+                                          oldContext: context,
+                                        );
+                                      },
+                                    );
+                                  },
+                                  height: 40,
+                                  color: Colors.red,
+                                  label: AppStrings.deleteAccount.tr(context),
+                                ),
+                              ),
+                            ],
                           ),
-                        SizedBox(
-                          height: 5,
-                        ),
+                        SizedBox(height: 5),
                       ],
                     ),
                   ),
-                  ]
+                ],
               ),
             );
           },

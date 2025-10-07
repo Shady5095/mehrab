@@ -63,6 +63,7 @@ class MoreScreenBody extends StatelessWidget {
                         if (!context.mounted) {
                           return;
                         }
+                        HomeCubit.instance(context).currentScreenIndex = 0;
                         HomeCubit.instance(context).userModel = null;
                         HomeCubit.instance(context).getUserData(context);
                       }
