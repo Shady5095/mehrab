@@ -240,4 +240,23 @@ class MyProfileCubit extends Cubit<MyProfileState> {
       emit(UpdatePasswordErrorState(AppStrings.currentPasswordIncorrect.tr(context)));
     });
   }
+
+  Future<void> deleteMyAccount() async {
+    emit(DeleteAccountLoadingState());
+    try {
+      if (userModel.signInMethod == 'email') {
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: userModel.email,
+          password: userModel.password,
+        );
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        await FirebaseAuth.instance.currentUser?.delete();
+      }
+      await db.collection('users').doc(userModel.uid).delete();
+      emit(DeleteAccountSuccessState());
+    } catch (error) {
+      emit(DeleteAccountErrorState(error.toString()));
+      printWithColor("Error deleting account: $error");
+    }
+  }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -94,6 +96,7 @@ class RegisterScreenBody extends StatelessWidget {
                                 AppStrings.name,
                               ),
                         ),
+                        if(!Platform.isIOS || cubit.socialSignInModel != null)
                         MyTextField(
                           label: AppStrings.email.tr(context),
                           controller: cubit.emailController,
@@ -126,7 +129,7 @@ class RegisterScreenBody extends StatelessWidget {
                         IntlPhoneField(
                           validator: (value) {
                             if (value == null || value.number.isEmpty) {
-                              return "${AppStrings.mustHaveValue.tr(context)} ${AppStrings.phone.tr(context)}";
+                              return null;
                             }
                             try {
                               if (!value.isValidNumber()) {
@@ -307,12 +310,6 @@ class RegisterScreenBody extends StatelessWidget {
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
                           ),
-                          validator:
-                              (String? value) => AppValidator.emptyFiled(
-                            value,
-                            context,
-                            AppStrings.nationality,
-                          ),
                         ),
                         CustomDropDownMenu(
                           dropdownItems: AppConstants.educationLevelKeys,
@@ -340,12 +337,6 @@ class RegisterScreenBody extends StatelessWidget {
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
                           ),
-                          validator:
-                              (String? value) => AppValidator.emptyFiled(
-                                value,
-                                context,
-                                AppStrings.educationLevel,
-                              ),
                         ),
                         CircleToggleButtonGridView(
                           height: 5.hR,

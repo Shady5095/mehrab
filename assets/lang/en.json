@@ -1166,6 +1166,9 @@
     "chooseAccountToSignIn" : "Choose an account to sign in",
     "deleteAccount" : "Delete Account",
     "areYouSureDeleteAccount" : "Are you sure you want to delete this account",
+    "areYouSureDeleteYourAccount" : "Are you sure you want to delete your account",
+    "areYouSureDeleteYourAccountDescription" : "This action will delete all your data and you will not be able to recover it",
+    "yourAccountDeletedSuccessfully" : "Your account deleted successfully",
     "singInWithApple" : "Sign in with Apple"
 
 }

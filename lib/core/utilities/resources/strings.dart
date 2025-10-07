@@ -1444,8 +1444,11 @@ class AppStrings {
   static const String editSessionDetails = 'editSessionDetails';
   static const String chooseAccountToSignIn = 'chooseAccountToSignIn';
   static const String areYouSureDeleteAccount = 'areYouSureDeleteAccount';
+  static const String areYouSureDeleteYourAccount = 'areYouSureDeleteYourAccount';
+  static const String areYouSureDeleteYourAccountDescription = 'areYouSureDeleteYourAccountDescription';
   static const String deleteAccount = 'deleteAccount';
   static const String singInWithApple = 'singInWithApple';
+  static const String yourAccountDeletedSuccessfully = 'yourAccountDeletedSuccessfully';
 
 
 
