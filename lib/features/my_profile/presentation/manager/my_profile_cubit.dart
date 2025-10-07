@@ -225,7 +225,7 @@ class MyProfileCubit extends Cubit<MyProfileState> {
         .reauthenticateWithCredential(credential)
         .then((value) {
       db.collection('users').doc(userModel.uid).update({
-        'secureKey' : passwordController.text,
+        'password' : passwordController.text,
       });
       // updatePassword
       FirebaseAuth.instance.currentUser

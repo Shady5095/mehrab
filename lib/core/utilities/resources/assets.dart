@@ -5,6 +5,7 @@ class AppAssets {
   static const String appLogoWhite = 'assets/images/logo_white.png';
   static const String appLogo2 = 'assets/images/logo2.png';
   static const String googleLogo = 'assets/images/google_logo.png';
+  static const String appleLogo = 'assets/images/apple-logo.png';
   static const String profilePlaceholder = 'assets/images/chatImagePlaceholder.png';
   static const String unlimitedTime = 'assets/images/unlimited_time.png';
   static const String welcome2 = 'assets/images/welcome2.png';

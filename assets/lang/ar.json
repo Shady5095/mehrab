@@ -878,7 +878,7 @@
   "welcomeText": "اهلا بك في منصة محراب القرآن",
   "welcomeTextDescription": "برجاء تسجيل الدخول لبدء رحلتك معنا",
   "emailValue": "لايمكنك ترك البريد الالكتروني فارغ",
-  "signInWithGoogle": "تسجيل الدخول باستخدام جوجل",
+  "signInWithGoogle": "تسجيل باستخدام جوجل",
   "doNotHaveAccount": "ليس لديك حساب؟",
   "register": "تسجيل حساب جديد",
   "registerStudent": "تسجيل طالب جديد",
@@ -1167,5 +1167,6 @@
   "editSessionDetails": "تعديل تفاصيل الجلسة",
   "chooseAccountToSignIn": "اختر حساب لتسجيل الدخول",
   "deleteAccount" : "حذف الحساب",
-  "areYouSureDeleteAccount" : "هل أنت متأكد أنك تريد حذف هذا الحساب"
+  "areYouSureDeleteAccount" : "هل أنت متأكد أنك تريد حذف هذا الحساب",
+  "singInWithApple" : "تسجيل باستخدام أبل"
 }

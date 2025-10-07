@@ -31,6 +31,22 @@ class GoogleSignInErrorState extends LoginStates {
   GoogleSignInErrorState(this.error);
 }
 
+class AppleSignInWaitingState extends LoginStates {}
+
+class AppleSignInSuccessState extends LoginStates {
+  final GoogleSignInModel data;
+
+  AppleSignInSuccessState(this.data);
+}
+
+class AppleSignInUsersAlreadyExists extends LoginStates {}
+
+class AppleSignInErrorState extends LoginStates {
+  final String error;
+
+  AppleSignInErrorState(this.error);
+}
+
 class ResetPasswordErrorState extends LoginStates {
   final String error;
 

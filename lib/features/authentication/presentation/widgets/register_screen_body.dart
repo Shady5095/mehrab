@@ -59,7 +59,7 @@ class RegisterScreenBody extends StatelessWidget {
                       children: [
                         MyAppBar(
                           title:
-                              cubit.googleSignInModel == null
+                              cubit.socialSignInModel == null
                                   ? AppStrings.registerStudent
                                   : AppStrings.completeRegistration,
                         ),
@@ -97,7 +97,7 @@ class RegisterScreenBody extends StatelessWidget {
                         MyTextField(
                           label: AppStrings.email.tr(context),
                           controller: cubit.emailController,
-                          enabled: cubit.googleSignInModel == null,
+                          enabled: cubit.socialSignInModel == null,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           focusedBorder: UnderlineInputBorder(
@@ -190,7 +190,7 @@ class RegisterScreenBody extends StatelessWidget {
                           },
                           //countries: AppConstants.arabCountries,
                         ),
-                        if (cubit.googleSignInModel == null)
+                        if (cubit.socialSignInModel == null)
                           MyTextField(
                             label: AppStrings.password.tr(context),
                             controller: cubit.passwordController,
@@ -233,7 +233,7 @@ class RegisterScreenBody extends StatelessWidget {
                               return null;
                             },
                           ),
-                        if (cubit.googleSignInModel == null)
+                        if (cubit.socialSignInModel == null)
                           MyTextField(
                             label: AppStrings.confirmPassword.tr(context),
                             controller: cubit.confirmPasswordController,
@@ -368,7 +368,7 @@ class RegisterScreenBody extends StatelessWidget {
                           },
                           height: 40,
                           label:
-                              cubit.googleSignInModel == null
+                              cubit.socialSignInModel == null
                                   ? AppStrings.register.tr(context)
                                   : AppStrings.register2.tr(context),
                           isLoading: state is RegisterLoadingState,
