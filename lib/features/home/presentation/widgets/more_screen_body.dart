@@ -126,8 +126,7 @@ class MoreScreenBody extends StatelessWidget {
                             onTapYes: () {
                               deleteAppCache();
                               FirebaseAuth.instance.signOut();
-                              HomeCubit.instance(context).userModel = null;
-                              HomeCubit.instance(context).teacherModel = null;
+                              //HomeCubit.instance(context).onSignOut();
                               if (!context.mounted) {
                                 return;
                               }

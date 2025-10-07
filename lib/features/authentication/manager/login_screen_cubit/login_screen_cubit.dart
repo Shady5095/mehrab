@@ -118,9 +118,10 @@ class LoginCubit extends Cubit<LoginStates> {
           .signInWithCredential(firebaseCredential);
 
       // بناء نفس الموديل (مع signInMethod = "apple" لاحقًا في RegisterCubit)
+      print("name: ${appleCredential.givenName}");
       final socialModel = GoogleSignInModel(  // نستخدم نفس الموديل للبساطة
         email: userCredential.user?.email ?? appleCredential.email,
-        displayName: userCredential.user?.displayName ?? '${appleCredential.givenName} ${appleCredential.familyName}',
+        displayName: userCredential.user?.displayName ??( (appleCredential.givenName == null || appleCredential.familyName == null) ? null :'${appleCredential.givenName} ${appleCredential.familyName}'),
         photoUrl: userCredential.user?.photoURL,
         uid: userCredential.user?.uid,
         phoneNumber: userCredential.user?.phoneNumber,

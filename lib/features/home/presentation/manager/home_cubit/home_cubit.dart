@@ -466,4 +466,11 @@ class HomeCubit extends Cubit<HomeState> {
       body: "شكراً لك على حضور الجلسة مع $teacherName، نتمنى أن تكون قد استفدت."
     );
   }
+
+  void onSignOut(){
+    userModel = null;
+    teacherModel = null;
+    currentScreenIndex = 0 ;
+    emit(NotificationsRefresh());
+  }
 }

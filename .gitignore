@@ -48,3 +48,4 @@ app.*.map.json
 lib/core/utilities/services/firebase_private_key.dart
 lib/firebase_options.dart
 ios/Runner/GoogleService-Info.plist
+/ios/build/
