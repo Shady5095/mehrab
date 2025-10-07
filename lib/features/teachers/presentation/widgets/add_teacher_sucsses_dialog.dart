@@ -13,6 +13,7 @@ class AddTeacherSuccessDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MyAlertDialog(
+        makeIosAndAndroidSameDialog: true,
       actions: [],
       content: Column(
         mainAxisSize: MainAxisSize.min,

@@ -79,6 +79,7 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
       child: BlocProvider.value(
         value: widget.cubit,
         child: MyAlertDialog(
+          makeIosAndAndroidSameDialog: true,
           actions: [],
           width: 70.wR,
           content: Column(

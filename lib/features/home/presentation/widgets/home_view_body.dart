@@ -27,127 +27,133 @@ class HomeViewBody extends StatelessWidget {
             cubit.userModel = null;
             cubit.getUserData(context);
           },
-          child: Column(
+          child: Stack(
             children: [
-              Container(
-                width: double.infinity,
-                height: 11.hR,
-                color: AppColors.myAppColor,
-                alignment: Alignment.bottomCenter,
-                padding: EdgeInsets.symmetric(horizontal: 15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Opacity(
-                      opacity: 0,
-                      child: AppFilterIconWithCounter(
-                        iconColor: AppColors.white,
-                        filterCounter: 2,
-                        onTap: () {},
-                      ),
-                    ),
-                    Text(
-                      AppStrings.home.tr(context),
-                      style: TextStyle(
-                        fontSize: 22.sp,
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    AppFilterIconWithCounter(
-                      iconColor: AppColors.white,
-                      filterCounter: ((cubit.notificationsCount??0)- (CacheService.getData(key: "notificationCount")??0)).toInt(),
-                      onTap: () {
-                        context.navigateTo(pageName: AppRoutes.notificationsScreen).then((_) {
-                          cubit.refreshNotifications();
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      CarouselSlider(
-                        items: [
-                          Image(
-                            image: const AssetImage(AppAssets.unlimitedTime),
-                            width: double.infinity,
-                            fit: BoxFit.cover,
+              Container(color: AppColors.myAppColor,
+                height: 15.hR,),
+              Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 10.5.hR,
+                    color: AppColors.myAppColor,
+                    alignment: Alignment.bottomCenter,
+                    padding: EdgeInsets.symmetric(horizontal: 15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Opacity(
+                          opacity: 0,
+                          child: AppFilterIconWithCounter(
+                            iconColor: AppColors.white,
+                            filterCounter: 2,
+                            onTap: () {},
                           ),
-                          Image(
-                            image: const AssetImage(AppAssets.welcome2),
-                            width: double.infinity,
-                            fit: BoxFit.cover,
+                        ),
+                        Text(
+                          AppStrings.home.tr(context),
+                          style: TextStyle(
+                            fontSize: 22.sp,
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ],
-                        options: CarouselOptions(
-                          viewportFraction: 1.0,
-                          autoPlay: true,
-                          height: 200,
-                          autoPlayInterval: const Duration(seconds: 15),
-                          autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                          autoPlayCurve: Curves.fastOutSlowIn,
-                          onPageChanged: (index, reason) {
-                            HomeCubit.instance(context).changeSliderIndex(index);
+                        ),
+                        AppFilterIconWithCounter(
+                          iconColor: AppColors.white,
+                          filterCounter: ((cubit.notificationsCount??0)- (CacheService.getData(key: "notificationCount")??0)).toInt(),
+                          onTap: () {
+                            context.navigateTo(pageName: AppRoutes.notificationsScreen).then((_) {
+                              cubit.refreshNotifications();
+                            });
                           },
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(2, (index) {
-                          final isActive = index == context.watch<HomeCubit>().sliderIndex;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: isActive ? 12 : 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: isActive ? AppColors.myAppColor : Colors.grey.shade400,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          );
-                        }),
-                      ),
-                      SizedBox(height: 20),
-                      UserNameAndPhotoWidget(),
-                      SizedBox(height: 15),
-                      if(cubit.userModel != null && cubit.userModel?.userRole == "teacher")
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Row(
-                            children: [
-                              Text(
-                                AppStrings.iAmAvailable.tr(context),
-                                style: TextStyle(
-                                  fontSize: 20.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          CarouselSlider(
+                            items: [
+                              Image(
+                                image: const AssetImage(AppAssets.unlimitedTime),
+                                width: double.infinity,
+                                fit: BoxFit.cover,
                               ),
-                              const Spacer(),
-                              Transform.scale(
-                                scale: 0.8,
-                                child: Switch(
-                                  value: cubit.teacherAvailability,
-                                  activeThumbColor: AppColors.coolGreen,
-                                  //inactiveTrackColor: AppColors.redColor.withOpacity(0.3),
-                                  //inactiveThumbColor: AppColors.redColor,
-
-                                  onChanged: (value) {
-                                    cubit.changeTeacherAvailability(value,context);
-                                  },
-                                ),
+                              Image(
+                                image: const AssetImage(AppAssets.welcome2),
+                                width: double.infinity,
+                                fit: BoxFit.cover,
                               ),
                             ],
+                            options: CarouselOptions(
+                              viewportFraction: 1.0,
+                              autoPlay: true,
+                              height: 200,
+                              autoPlayInterval: const Duration(seconds: 15),
+                              autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                              autoPlayCurve: Curves.fastOutSlowIn,
+                              onPageChanged: (index, reason) {
+                                HomeCubit.instance(context).changeSliderIndex(index);
+                              },
+                            ),
                           ),
-                        ),
-                      cubit.userModel == null ? HomeItemsIconsShimmer() : HomeItemsIcons(),
-                    ],
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(2, (index) {
+                              final isActive = index == context.watch<HomeCubit>().sliderIndex;
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                width: isActive ? 12 : 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: isActive ? AppColors.myAppColor : Colors.grey.shade400,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              );
+                            }),
+                          ),
+                          SizedBox(height: 20),
+                          UserNameAndPhotoWidget(),
+                          SizedBox(height: 15),
+                          if(cubit.userModel != null && cubit.userModel?.userRole == "teacher")
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    AppStrings.iAmAvailable.tr(context),
+                                    style: TextStyle(
+                                      fontSize: 20.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Transform.scale(
+                                    scale: 0.8,
+                                    child: Switch(
+                                      value: cubit.teacherAvailability,
+                                      activeThumbColor: AppColors.coolGreen,
+                                      //inactiveTrackColor: AppColors.redColor.withOpacity(0.3),
+                                      //inactiveThumbColor: AppColors.redColor,
+
+                                      onChanged: (value) {
+                                        cubit.changeTeacherAvailability(value,context);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          cubit.userModel == null ? HomeItemsIconsShimmer() : HomeItemsIcons(),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),

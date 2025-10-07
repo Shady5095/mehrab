@@ -14,6 +14,7 @@ class ContactUsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MyAlertDialog(
+      makeIosAndAndroidSameDialog: true,
       width: 75.wR,
       actions: [],
       content: Column(

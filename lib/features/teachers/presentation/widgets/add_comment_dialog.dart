@@ -58,6 +58,7 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
         builder: (context, state) {
           final cubit = TeacherProfileCubit.get(context);
           return MyAlertDialog(
+            makeIosAndAndroidSameDialog: true,
             width: 75.wR,
             title: AppStrings.addComment.tr(context),
             content: Column(
