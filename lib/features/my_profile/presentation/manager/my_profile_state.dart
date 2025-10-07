@@ -26,4 +26,13 @@ final class UpdatePasswordErrorState extends MyProfileState {
   UpdatePasswordErrorState(this.errorMessage);
 }
 
+final class DeleteAccountLoadingState extends MyProfileState {}
+
+final class DeleteAccountSuccessState extends MyProfileState {}
+
+final class DeleteAccountErrorState extends MyProfileState {
+  final String errorMessage;
+
+  DeleteAccountErrorState(this.errorMessage);
+}
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -59,7 +61,7 @@ class RegisterScreenBody extends StatelessWidget {
                       children: [
                         MyAppBar(
                           title:
-                              cubit.googleSignInModel == null
+                              cubit.socialSignInModel == null
                                   ? AppStrings.registerStudent
                                   : AppStrings.completeRegistration,
                         ),
@@ -94,10 +96,11 @@ class RegisterScreenBody extends StatelessWidget {
                                 AppStrings.name,
                               ),
                         ),
+                        if(!Platform.isIOS || cubit.socialSignInModel != null)
                         MyTextField(
                           label: AppStrings.email.tr(context),
                           controller: cubit.emailController,
-                          enabled: cubit.googleSignInModel == null,
+                          enabled: cubit.socialSignInModel == null,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           focusedBorder: UnderlineInputBorder(
@@ -126,7 +129,7 @@ class RegisterScreenBody extends StatelessWidget {
                         IntlPhoneField(
                           validator: (value) {
                             if (value == null || value.number.isEmpty) {
-                              return "${AppStrings.mustHaveValue.tr(context)} ${AppStrings.phone.tr(context)}";
+                              return null;
                             }
                             try {
                               if (!value.isValidNumber()) {
@@ -190,7 +193,7 @@ class RegisterScreenBody extends StatelessWidget {
                           },
                           //countries: AppConstants.arabCountries,
                         ),
-                        if (cubit.googleSignInModel == null)
+                        if (cubit.socialSignInModel == null)
                           MyTextField(
                             label: AppStrings.password.tr(context),
                             controller: cubit.passwordController,
@@ -233,7 +236,7 @@ class RegisterScreenBody extends StatelessWidget {
                               return null;
                             },
                           ),
-                        if (cubit.googleSignInModel == null)
+                        if (cubit.socialSignInModel == null)
                           MyTextField(
                             label: AppStrings.confirmPassword.tr(context),
                             controller: cubit.confirmPasswordController,
@@ -307,12 +310,6 @@ class RegisterScreenBody extends StatelessWidget {
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
                           ),
-                          validator:
-                              (String? value) => AppValidator.emptyFiled(
-                            value,
-                            context,
-                            AppStrings.nationality,
-                          ),
                         ),
                         CustomDropDownMenu(
                           dropdownItems: AppConstants.educationLevelKeys,
@@ -340,12 +337,6 @@ class RegisterScreenBody extends StatelessWidget {
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
                           ),
-                          validator:
-                              (String? value) => AppValidator.emptyFiled(
-                                value,
-                                context,
-                                AppStrings.educationLevel,
-                              ),
                         ),
                         CircleToggleButtonGridView(
                           height: 5.hR,
@@ -368,7 +359,7 @@ class RegisterScreenBody extends StatelessWidget {
                           },
                           height: 40,
                           label:
-                              cubit.googleSignInModel == null
+                              cubit.socialSignInModel == null
                                   ? AppStrings.register.tr(context)
                                   : AppStrings.register2.tr(context),
                           isLoading: state is RegisterLoadingState,

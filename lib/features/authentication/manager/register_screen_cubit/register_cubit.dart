@@ -1,3 +1,4 @@
+// 3. تعديل RegisterCubit (جعل googleSignInModel عامًا لدعم Apple، وتعيين signInMethod = "apple")
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,13 +18,14 @@ import 'package:http/http.dart' as http;
 import '../../../../core/utilities/functions/toast.dart';
 import '../../../../core/utilities/resources/constants.dart';
 import '../../../../core/utilities/resources/strings.dart';
+import '../../../../core/utilities/services/account_storage_service.dart';
 import '../../../../core/utilities/services/cache_service.dart';
 
 part 'register_state.dart';
 
 class RegisterCubit extends Cubit<RegisterState> {
-  RegisterCubit({this.googleSignInModel}) : super(RegisterInitial());
-  final GoogleSignInModel? googleSignInModel;
+  RegisterCubit({this.socialSignInModel}) : super(RegisterInitial());  // تغيير الاسم إلى socialSignInModel للعامية
+  final GoogleSignInModel? socialSignInModel;  // نفس الموديل، لكن عام
 
   static RegisterCubit instance(context) =>
       BlocProvider.of<RegisterCubit>(context);
@@ -101,12 +103,8 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   void onTabRegister(BuildContext context) {
     if (formKey.currentState!.validate()) {
-      if(phoneController.text.trim().isEmpty){
-        myToast(msg: "${AppStrings.mustHaveValue.tr(context)} ${AppStrings.phone.tr(context)}", state: ToastStates.error);
-        return;
-      }
-      if(googleSignInModel != null){
-        registerUserWithGoogle(context);
+      if(socialSignInModel != null){  // تغيير من googleSignInModel
+        registerUserWithSocial(context);  // دالة عامة جديدة
       }else{
         registerUserWithEmailPassword(context);
       }
@@ -129,13 +127,13 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   String? uid;
 
-  void fillGoogleSignInData() {
-    if (googleSignInModel != null) {
-      nameController.text = googleSignInModel!.displayName ?? '';
-      emailController.text = googleSignInModel!.email ?? '';
-      phoneController.text = googleSignInModel!.phoneNumber ?? '';
-      //imageUrl = googleSignInModel!.photoUrl;
-      uid = googleSignInModel!.uid;
+  void fillSocialSignInData() {  // تغيير الاسم للعامية
+    if (socialSignInModel != null) {  // تغيير من googleSignInModel
+      nameController.text = socialSignInModel!.displayName ?? '';
+      emailController.text = socialSignInModel!.email ?? '';
+      phoneController.text = socialSignInModel!.phoneNumber ?? '';
+      //imageUrl = socialSignInModel!.photoUrl;
+      uid = socialSignInModel!.uid;
     }
     emit(ProfileImagePickedState());
   }
@@ -149,7 +147,7 @@ class RegisterCubit extends Cubit<RegisterState> {
       uid: uid ?? '',
       isMale: isMale,
       userRole: "student",
-      signInMethod: googleSignInModel != null ? "google" : "email",
+      signInMethod: socialSignInModel != null ? socialSignInModel?.singInMethod??'' : "email",
       joinedAt: Timestamp.now(),
       nationality: selectedNationality ?? "unkonwn",
       educationalLevel: selectedEducationLevel ?? "unkonwn",
@@ -174,9 +172,9 @@ class RegisterCubit extends Cubit<RegisterState> {
     try {
       await auth
           .createUserWithEmailAndPassword(
-            email: emailController.text.trim(),
-            password: passwordController.text.trim(),
-          )
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      )
           .then((userCredential) => {uid = userCredential.user!.uid});
     } on FirebaseAuthException catch (e) {
       if (!context.mounted) return;
@@ -241,12 +239,12 @@ class RegisterCubit extends Cubit<RegisterState> {
         .doc(getUserModel.uid)
         .set(getUserModel.toJson())
         .then((value) {
-          printWithColor("User data added successfully");
-        })
+      printWithColor("User data added successfully");
+    })
         .catchError((error) {
-          printWithColor("Error adding user data: $error");
-          emit(RegisterErrorState(error.toString()));
-        });
+      printWithColor("Error adding user data: $error");
+      emit(RegisterErrorState(error.toString()));
+    });
   }
 
   Future<void> registerUserWithEmailPassword(BuildContext context) async {
@@ -271,15 +269,23 @@ class RegisterCubit extends Cubit<RegisterState> {
     await uploadImageToImageKit();
     await addUserDataToFireStore();
     await cacheUid(uid??'');
+    AccountStorage.saveAccount(
+      emailController.text.trim(),
+      passwordController.text.trim(),
+    );
     emit(RegisterSuccessState());
   }
-  Future<void> registerUserWithGoogle(BuildContext context) async {
+
+  // إضافة جديدة: دالة عامة لـ Social (Google أو Apple)
+  Future<void> registerUserWithSocial(BuildContext context) async {
     emit(RegisterLoadingState());
+    uid = socialSignInModel!.uid;  // تعيين UID من الموديل
     await uploadImageToImageKit();
     await addUserDataToFireStore();
     await cacheUid(uid??'');
     emit(RegisterSuccessState());
   }
+
   Future<void> cacheUid(String uid) async {
     await CacheService.setData(key: AppConstants.uid, value: uid).then((value) {
       if (value == true) {

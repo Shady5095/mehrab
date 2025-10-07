@@ -111,12 +111,10 @@ class LoginTextFormAndButton extends StatelessWidget {
                       },
                     ),
                   ),
-                  const SizedBox(width: 5),
                   FutureBuilder<Map<String, String>>(
                     future: AccountStorage.getAccounts(),
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState ==
-                          ConnectionState.waiting) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
                         return const SizedBox.shrink(); // لسه بيجيب الداتا
                       }
 
@@ -128,37 +126,113 @@ class LoginTextFormAndButton extends StatelessWidget {
                         onTap: () {
                           cubit.loginWithBiometrics(context);
                         },
-                        child: Container(
-                          width: 13.wR,
-                          height: 50,
-                          padding: const EdgeInsets.all(7.5),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: AppColors.myAppColor),
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withValues(alpha: 0.2),
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                                offset: const Offset(0, 3),
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 5),
+                            Container(
+                              width: 13.wR,
+                              height: 50,
+                              padding: const EdgeInsets.all(7.5),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(color: AppColors.myAppColor),
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withValues(alpha: 0.2),
+                                    spreadRadius: 1,
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: Image(
-                            image: AssetImage(
-                              Platform.isIOS
-                                  ? AppAssets.faceId
-                                  : AppAssets.fingerPrint,
+                              child: Image(
+                                image: AssetImage(
+                                  Platform.isIOS
+                                      ? AppAssets.faceId
+                                      : AppAssets.fingerPrint,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       );
                     },
                   ),
                 ],
               ),
-              const HeightSizedBox(height: 1.5),
+              const HeightSizedBox(height: 1),
+              if(Platform.isIOS)
+              Row(
+                children: [
+                  Expanded(
+                    child: MaterialButton(
+                      onPressed: () {
+                        cubit.signInWithGoogle();
+                      },
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      color: AppColors.white,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            AppStrings.signInWithGoogle.tr(context),
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Image.asset(
+                            AppAssets.googleLogo,
+                            height: 20.sp,
+                            width: 20.sp,
+                            fit: BoxFit.cover,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 1.wR),
+                  Expanded(
+                    child: MaterialButton(
+                      onPressed: () {
+                        cubit.signInWithApple();
+                      },
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      color: AppColors.white,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            AppStrings.singInWithApple.tr(context),
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Image.asset(
+                            AppAssets.appleLogo,
+                            height: 20.sp,
+                            width: 20.sp,
+                            fit: BoxFit.cover,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              )
+              else
               MaterialButton(
                 onPressed: () {
                   cubit.signInWithGoogle();
@@ -172,16 +246,16 @@ class LoginTextFormAndButton extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Text(
+                      AppStrings.signInWithGoogle.tr(context),
+                      style: TextStyle(fontSize: 14.sp, color: Colors.black),
+                    ),
+                    const SizedBox(width: 10),
                     Image.asset(
                       AppAssets.googleLogo,
                       height: 25.sp,
                       width: 25.sp,
                       fit: BoxFit.cover,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      AppStrings.signInWithGoogle.tr(context),
-                      style: TextStyle(fontSize: 14.sp, color: Colors.black),
                     ),
                   ],
                 ),

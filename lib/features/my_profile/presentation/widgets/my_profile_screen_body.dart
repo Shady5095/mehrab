@@ -16,6 +16,7 @@ import '../../../../core/widgets/app_cusstom_drop_down_menu.dart';
 import '../../../../core/widgets/buttons_widget.dart';
 import '../../../../core/widgets/circle_toggle_button.dart';
 import '../../../../core/widgets/my_text_field.dart';
+import 'delete_account_dialog.dart';
 import 'my_profile_profile_photo_build.dart';
 
 class MyProfileScreenBody extends StatelessWidget { 
@@ -157,12 +158,6 @@ class MyProfileScreenBody extends StatelessWidget {
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
                           ),
-                          validator:
-                              (String? value) => AppValidator.emptyFiled(
-                            value,
-                            context,
-                            AppStrings.nationality,
-                          ),
                         ),
                         CustomDropDownMenu(
                           dropdownItems: AppConstants.educationLevelKeys,
@@ -184,16 +179,10 @@ class MyProfileScreenBody extends StatelessWidget {
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
                           ),
-                          validator:
-                              (String? value) => AppValidator.emptyFiled(
-                            value,
-                            context,
-                            AppStrings.educationLevel,
-                          ),
                         ),
                         IgnorePointer(
                           child: CircleToggleButtonGridView(
-                            height: 5.hR,
+                            height: 6.hR,
                             length: 2,
                             titles: const [AppStrings.male, AppStrings.female],
                             selectedColor: Colors.grey,
@@ -214,14 +203,43 @@ class MyProfileScreenBody extends StatelessWidget {
                           isLoading: state is UpdateProfileLoadingState,
                         ),
                         if(cubit.userModel.signInMethod != "google")
-                        ButtonWidget(
-                          onPressed: () {
-                            context.navigateTo(pageName: AppRoutes.changePasswordScreen,arguments: [context]);
-                          },
-                          height: 40,
-                          color: Colors.grey,
-                          label:  AppStrings.changePassword.tr(context),
-                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ButtonWidget(
+                                onPressed: () {
+                                  context.navigateTo(pageName: AppRoutes.changePasswordScreen,arguments: [context]);
+                                },
+                                height: 40,
+                                color: Colors.grey,
+                                label:  AppStrings.changePassword.tr(context),
+                              ),
+                            ),
+                            SizedBox(width: 10,),
+                            Expanded(
+                              child: ButtonWidget(
+                                onPressed: () {
+                                  showDialog(context: context, builder: (_){
+                                    return DeleteAccountDialog(oldContext: context,);
+                                  });
+                                },
+                                height: 40,
+                                color: Colors.red,
+                                label:  AppStrings.deleteAccount.tr(context),
+                              ),
+                            ),
+                          ],
+                        )else
+                          ButtonWidget(
+                            onPressed: () {
+                              showDialog(context: context, builder: (_){
+                                return DeleteAccountDialog(oldContext: context,);
+                              });
+                            },
+                            height: 40,
+                            color: Colors.red,
+                            label:  AppStrings.deleteAccount.tr(context),
+                          ),
                         SizedBox(
                           height: 5,
                         ),

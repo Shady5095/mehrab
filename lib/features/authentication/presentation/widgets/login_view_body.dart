@@ -5,7 +5,6 @@ import 'package:mehrab/core/utilities/resources/assets.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/features/authentication/manager/login_screen_cubit/login_screen_cubit.dart';
 import 'package:mehrab/features/authentication/manager/login_screen_cubit/login_screen_state.dart';
-import '../../../../core/utilities/resources/dimens.dart';
 import '../../../../core/widgets/height_sized_box.dart';
 import 'login_text_form_and_button.dart';
 
@@ -16,7 +15,7 @@ class LoginViewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: EdgeInsets.all(AppDimens.screenPadding),
+        padding: EdgeInsets.all(15),
         child: Stack(
           alignment: Alignment.center,
           children: [

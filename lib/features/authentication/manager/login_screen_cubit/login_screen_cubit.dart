@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +16,8 @@ import '../../data/google_sign_in_model.dart';
 import 'login_screen_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';  // إضافة جديدة
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;  // للـ OAuthProvider
 
 class LoginCubit extends Cubit<LoginStates> {
   LoginCubit() : super(LoginScreenInitial());
@@ -69,8 +70,69 @@ class LoginCubit extends Cubit<LoginStates> {
               photoUrl: userCredential.user?.photoURL,
               uid: userCredential.user?.uid,
               phoneNumber: userCredential.user?.phoneNumber,
+              singInMethod: "google",
             ),
           ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+      if (e.code == 'account-exists-with-different-credential') {
+        errorMessage =
+        'The account already exists with a different credential.';
+      } else if (e.code == 'invalid-credential') {
+        errorMessage = 'Invalid credential. Please try again.';
+      } else {
+        errorMessage = 'Firebase Auth Error: ${e.message}';
+      }
+      emit(GoogleSignInErrorState(errorMessage));
+    } catch (e) {
+      emit(GoogleSignInErrorState('An unexpected error occurred: $e'));
+    }
+  }
+
+  // إضافة جديدة: signInWithApple() بنفس الطريقة بالضبط
+  Future<void> signInWithApple() async {
+    emit(GoogleSignInWaitingState());
+    try {
+      // الحصول على Apple credential باستخدام الحزمة
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: 'your-services-id.com.yourapp',  // ضع Services ID من Apple Developer هنا (مثل com.yourapp.auth)
+          redirectUri: Uri.parse('https://yourapp.com/callbacks/sign_in_with_apple_cb'),  // ضع redirect URI الخاص بك (لـ Firebase أو backend)
+        ),
+      );
+
+      // إنشاء Firebase credential
+      final firebaseCredential = firebase_auth.OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,  // استخدم authorizationCode كـ accessToken إذا لزم
+      );
+
+      // Sign in to Firebase
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(firebaseCredential);
+
+      // بناء نفس الموديل (مع signInMethod = "apple" لاحقًا في RegisterCubit)
+      final socialModel = GoogleSignInModel(  // نستخدم نفس الموديل للبساطة
+        email: userCredential.user?.email ?? appleCredential.email,
+        displayName: userCredential.user?.displayName ?? '${appleCredential.givenName} ${appleCredential.familyName}',
+        photoUrl: userCredential.user?.photoURL,
+        uid: userCredential.user?.uid,
+        phoneNumber: userCredential.user?.phoneNumber,
+        singInMethod: "apple",
+      );
+
+      if (await checkUidExistsBefore(userCredential.user?.uid ?? '')) {
+        await cacheUid(userCredential.user?.uid ?? '');
+        emit(GoogleSignInUsersAlreadyExists());
+      } else {
+        emit(
+          GoogleSignInSuccessState(socialModel),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -114,15 +176,15 @@ class LoginCubit extends Cubit<LoginStates> {
   Future<void> signInWithEmailAndPassword(BuildContext context) async {
     emit(LoginWaitingState());
     try {
-     final user = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final user = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
       await cacheUid(user.user?.uid ?? '');
-     AccountStorage.saveAccount(
-       emailController.text.trim(),
-       passwordController.text.trim(),
-     );
+      AccountStorage.saveAccount(
+        emailController.text.trim(),
+        passwordController.text.trim(),
+      );
       emit(LoginSuccessState());
     } on FirebaseAuthException catch (e) {
       String errorMessage;
@@ -209,7 +271,7 @@ class LoginCubit extends Cubit<LoginStates> {
   }
 
   Future<void> cacheUid(String uid) async {
-   await CacheService.setData(key: AppConstants.uid, value: uid).then((value) {
+    await CacheService.setData(key: AppConstants.uid, value: uid).then((value) {
       if (value == true) {
         CacheService.uid = CacheService.getData(key: AppConstants.uid);
       }
