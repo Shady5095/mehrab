@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
+import 'package:mehrab/core/utilities/functions/print_with_color.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
 import 'package:mehrab/features/students/presentation/widgets/student_profile_data_item.dart';
@@ -46,6 +47,7 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
   }
 
   void _setProfileDataDescriptions() {
+    printWithColor(widget.model.educationalLevel);
     profileDataDescriptions = [
       widget.model.name,
       if(AppConstants.isAdmin)

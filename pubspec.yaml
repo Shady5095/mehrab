@@ -57,7 +57,6 @@ dependencies:
   animations: ^2.0.11
   countup: ^0.1.4
   workmanager: ^0.6.0
-  open_file: ^3.5.10
   flutter_speed_dial: ^7.0.0
   package_info_plus: ^8.3.0
   hijri: ^3.0.0
@@ -68,6 +67,7 @@ dependencies:
   local_auth: ^2.3.0
   flutter_secure_storage: ^9.2.4
   sign_in_with_apple: ^7.0.1
+  open_filex: ^4.3.4
 
 
 
