@@ -1171,5 +1171,16 @@
   "areYouSureDeleteYourAccount" : "هل أنت متأكد أنك تريد حذف حسابك؟",
   "areYouSureDeleteYourAccountDescription" : "سيتم حذف جميع بياناتك ولا يمكن التراجع عن هذا الإجراء.",
   "yourAccountDeletedSuccessfully" : "تم حذف حسابك بنجاح",
-  "singInWithApple" : "تسجيل باستخدام أبل"
+  "singInWithApple" : "تسجيل باستخدام أبل",
+  "newUpdateAvailable": "تحديث جديد متاح",
+  "downloadNow": "تحميل الآن",
+  "whatIsNew": "ما الجديد :",
+  "later": "لاحقاً",
+  "downloadingInProgress": "جارٍ التحميل...",
+  "downloadProgress": "التقدم:",
+  "calculatingProgress": "يتم حساب التقدم...",
+  "downloadCompletedSuccessfully": "تم التحميل بنجاح",
+  "installationFailed": "تعذر التثبيت",
+  "cannotOpenApk": "لا يمكن فتح ملف APK.",
+  "enableUnknownSources": "قد تحتاج إلى تفعيل 'السماح بتثبيت التطبيقات من مصادر غير معروفة' من الإعدادات."
 }
