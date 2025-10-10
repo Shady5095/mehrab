@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/toast.dart';
+import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/buttons_widget.dart';
 import 'package:mehrab/core/widgets/my_text_field.dart';
@@ -19,23 +20,22 @@ class RateSessionScreenBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: BlocConsumer<RateSessionCubit, RateSessionState>(
-          listener: (context, state) {
-            if (state is RateSessionError) {
-              myToast(msg: state.message, state: ToastStates.error);
-            } else if (state is RateSessionSuccess) {
-              myToast(msg: AppStrings.sessionDetailsAddedSuccessfully.tr(context), state: ToastStates.success);
-              context.pop();
-            }
-          },
-          builder: (context, state) {
-            final cubit = RateSessionCubit.instance(context);
-            return CustomScrollView(
-              slivers: [
-                SliverFillRemaining(
-                  hasScrollBody: false,
+      child: BlocConsumer<RateSessionCubit, RateSessionState>(
+        listener: (context, state) {
+          if (state is RateSessionError) {
+            myToast(msg: state.message, state: ToastStates.error);
+          } else if (state is RateSessionSuccess) {
+            myToast(msg: AppStrings.sessionDetailsAddedSuccessfully.tr(context), state: ToastStates.success);
+            context.pop();
+          }
+        },
+        builder: (context, state) {
+          final cubit = RateSessionCubit.instance(context);
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     children: [
                       MyAppBar(title:cubit.isEditMode ? AppStrings.editSessionDetails : AppStrings.sessionDetailsAndStudentRate,titleTextStyle: TextStyle(
@@ -71,65 +71,66 @@ class RateSessionScreenBody extends StatelessWidget {
                           cubit.updateRating(rating);
                         },
                       ),
-                     if (cubit.isEditMode)
-                     ...[ const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: MyTextField(
-                              controller: cubit.startTimeController,
-                              readOnly: true,
-                              onTap: () {
-                                showMyDateTimePicker(context,firstTime: DateTime(2009),initialDate: cubit.startTime?.toDate()??DateTime.now()).then((dateTime) {
-                                  if (dateTime != null) {
-                                    cubit.startTime = Timestamp.fromDate(dateTime);
-                                    cubit.endTime = null;
-                                    cubit.endTimeController.text = '';
-                                    cubit.startTimeController.text = formatDateTimePicker(
-                                      context,
-                                      dateTime,
-                                    );
-                                  }
-                                });
-                              },
-                              label: AppStrings.startTime.tr(context),
-                              maxLines: 1,
-                              minLines: 1,
-                              style: TextStyle(color: context.invertedColor),
-                            ),
-                          ),
-                          const SizedBox(width: 7),
-                          Expanded(
-                            child: MyTextField(
-                              controller: cubit.endTimeController,
-                              readOnly: true,
-                              onTap: () {
-                                if (cubit.startTime == null) {
-                                  myToast(
-                                    msg: AppStrings.pleaseSelectStartDateFirst.tr(context),
-                                    state: ToastStates.error,
-                                  );
-                                  return;
-                                }
-                                showMyDateTimePicker(context, firstTime: cubit.startTime!.toDate(),initialDate: cubit.endTime?.toDate()??DateTime.now()).then((
-                                    dateTime,
-                                    ) {
-                                  if (dateTime != null) {
-                                    cubit.endTime = Timestamp.fromDate(dateTime);
-                                    cubit.endTimeController.text = formatDateTimePicker(
-                                      context,
-                                      dateTime,
-                                    );
-                                  }
-                                });
-                              },
-                              label: AppStrings.endDate.tr(context),
-                              maxLines: 1,
-                              minLines: 1,
-                            ),
-                          ),
-                        ],
-                      ),],
+                      if (cubit.isEditMode)
+                        ...[ const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: MyTextField(
+                                  controller: cubit.startTimeController,
+                                  readOnly: true,
+                                  enabled: AppConstants.isAdmin,
+                                  onTap: () {
+                                    showMyDateTimePicker(context,firstTime: DateTime(2009),initialDate: cubit.startTime?.toDate()??DateTime.now()).then((dateTime) {
+                                      if (dateTime != null) {
+                                        cubit.startTime = Timestamp.fromDate(dateTime);
+                                        cubit.endTime = null;
+                                        cubit.endTimeController.text = '';
+                                        cubit.startTimeController.text = formatDateTimePicker(
+                                          context,
+                                          dateTime,
+                                        );
+                                      }
+                                    });
+                                  },
+                                  label: AppStrings.startTime.tr(context),
+                                  maxLines: 1,
+                                  minLines: 1,
+                                  style: TextStyle(color: context.invertedColor),
+                                ),
+                              ),
+                              const SizedBox(width: 7),
+                              Expanded(
+                                child: MyTextField(
+                                  controller: cubit.endTimeController,
+                                  readOnly: true,
+                                  onTap: () {
+                                    if (cubit.startTime == null) {
+                                      myToast(
+                                        msg: AppStrings.pleaseSelectStartDateFirst.tr(context),
+                                        state: ToastStates.error,
+                                      );
+                                      return;
+                                    }
+                                    showMyDateTimePicker(context, firstTime: cubit.startTime!.toDate(),initialDate: cubit.endTime?.toDate()??DateTime.now()).then((
+                                        dateTime,
+                                        ) {
+                                      if (dateTime != null) {
+                                        cubit.endTime = Timestamp.fromDate(dateTime);
+                                        cubit.endTimeController.text = formatDateTimePicker(
+                                          context,
+                                          dateTime,
+                                        );
+                                      }
+                                    });
+                                  },
+                                  label: AppStrings.endDate.tr(context),
+                                  maxLines: 1,
+                                  minLines: 1,
+                                ),
+                              ),
+                            ],
+                          ),],
                       const SizedBox(height: 10),
                       MyTextField(
                         controller: cubit.recordController,
@@ -223,23 +224,25 @@ class RateSessionScreenBody extends StatelessWidget {
                         keyboardType: TextInputType.text,
                         maxLines: 4,
                       ),
-                      Expanded(child: SizedBox(height: 10)),
-                      ButtonWidget(
-                        onPressed: () {
-                          cubit.updateSession();
-                        },
-                        label: cubit.isEditMode ? AppStrings.edit.tr(context) : AppStrings.send.tr(context),
-                        height: 38,
-                        isLoading: state is RateSessionLoading,
-                      ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 10),
                     ],
                   ),
                 ),
-              ],
-            );
-          },
-        ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: ButtonWidget(
+                  onPressed: () {
+                    cubit.updateSession();
+                  },
+                  label: cubit.isEditMode ? AppStrings.edit.tr(context) : AppStrings.send.tr(context),
+                  height: 38,
+                  isLoading: state is RateSessionLoading,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

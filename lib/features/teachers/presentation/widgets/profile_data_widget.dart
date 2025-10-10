@@ -3,6 +3,7 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
 import 'package:mehrab/features/teachers/presentation/widgets/profile_data_item.dart';
+import 'package:mehrab/features/teachers/presentation/widgets/teacher_sessions_in_profile.dart';
 import 'package:mehrab/features/teachers/presentation/widgets/teachers_comments_view.dart';
 
 import '../../../../core/utilities/resources/strings.dart';
@@ -103,6 +104,7 @@ class _UserProfileDataState extends State<UserProfileData> {
                       ),
                 ),
                 TeachersCommentsView(model: widget.model,),
+                TeacherSessionsInProfileView(model: widget.model,),
               ],
             ),
           ),

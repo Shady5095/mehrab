@@ -73,8 +73,8 @@ class TeacherItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style:  TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     SizedBox(height: 5),
