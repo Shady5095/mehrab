@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
+import '../../../../core/widgets/github_update_helper.dart';
 import '../manager/home_cubit/home_cubit.dart';
 import '../widgets/home_bottom_navigation_bar.dart';
 
@@ -16,7 +19,9 @@ class HomeLayoutBody extends StatefulWidget {
 class _HomeLayoutBodyState extends State<HomeLayoutBody> {
   @override
   void initState() {
-   // AppFirebaseNotification.initNotification(context,HomeCubit.instance(context));
+    if(Platform.isAndroid){
+      UpdateHelper.checkForUpdate(context);
+    }
     super.initState();
   }
   @override

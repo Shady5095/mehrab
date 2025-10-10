@@ -61,7 +61,7 @@ android {
         applicationId "com.mehrab.mehrab"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion 23
+        minSdkVersion 26
         multiDexEnabled true
         targetSdkVersion flutter.targetSdkVersion
                 versionCode flutterVersionCode.toInteger()

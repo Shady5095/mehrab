@@ -24,6 +24,7 @@ void main() async {
     Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
   ]);
 
+
   runApp(
     DevicePreview(
       enabled: false,

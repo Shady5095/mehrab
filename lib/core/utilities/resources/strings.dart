@@ -1449,6 +1449,17 @@ class AppStrings {
   static const String deleteAccount = 'deleteAccount';
   static const String singInWithApple = 'singInWithApple';
   static const String yourAccountDeletedSuccessfully = 'yourAccountDeletedSuccessfully';
+  static const String newUpdateAvailable = 'newUpdateAvailable';
+  static const String downloadNow = 'downloadNow';
+  static const String whatIsNew = 'whatIsNew';
+  static const String later = 'later';
+  static const String downloadingInProgress = 'downloadingInProgress';
+  static const String downloadProgress = 'downloadProgress';
+  static const String calculatingProgress = 'calculatingProgress';
+  static const String downloadCompletedSuccessfully = 'downloadCompletedSuccessfully';
+  static const String installationFailed = 'installationFailed';
+  static const String cannotOpenApk = 'cannotOpenApk';
+  static const String enableUnknownSources = 'enableUnknownSources';
 
 
 

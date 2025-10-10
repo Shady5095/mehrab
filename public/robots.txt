@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mehrab-a8e60.web.app/sitemap.xml

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:mehrab/core/config/routes/app_routes.dart';
-import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/shimmer_rectangle_widget.dart';
@@ -41,16 +39,16 @@ class HomeItemsIconsShimmer extends StatelessWidget {
     // make on tap for each item to navigate to a new screen
     List<Function()> onTapFunctions = [
       () {
-        context.navigateTo(pageName: AppRoutes.teachersScreen,arguments: [true]);
+
       },
       () {
-        context.navigateTo(pageName: '/students');
+
       },
       () {
-        context.navigateTo(pageName: AppRoutes.prayerTimesScreen);
+
       },
       () {
-        context.navigateTo(pageName: AppRoutes.quranWebView);
+
       },
     ];
 
