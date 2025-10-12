@@ -46,11 +46,28 @@ class InstructionsForStartSessionDialog extends StatelessWidget {
               fontWeight: FontWeight.w600
             ),
           ),
-          Text(
-            AppStrings.fourthInstructions.tr(context),
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: AppStrings.fourthInstructions.tr(context),
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                    fontFamily: "Cairo"
+                  ),
+                ),
+                TextSpan(
+                  text: ' (مهم جدا)',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
+                      fontFamily: "Cairo"
+                  ),
+                ),
+              ],
             ),
           ),
           Text(

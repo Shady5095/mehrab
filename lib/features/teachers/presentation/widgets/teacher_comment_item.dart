@@ -28,7 +28,7 @@ class TeacherCommentItem extends StatelessWidget {
                 BuildUserItemPhoto(
                   imageUrl: model.userImage,
                   radius: 27.sp,
-                  imageColor: AppColors.myAppColor.withValues(alpha: 0.5),
+                  imageColor: AppColors.white,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
