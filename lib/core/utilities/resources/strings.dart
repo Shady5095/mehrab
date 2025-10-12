@@ -1460,6 +1460,14 @@ class AppStrings {
   static const String installationFailed = 'installationFailed';
   static const String cannotOpenApk = 'cannotOpenApk';
   static const String enableUnknownSources = 'enableUnknownSources';
+  static const String instructionsForStartSession = 'instructionsForStartSession';
+  static const String firstInstructions = 'firstInstructions';
+  static const String secondInstructions = 'secondInstructions';
+  static const String thirdInstructions = 'thirdInstructions';
+  static const String fourthInstructions = 'fourthInstructions';
+  static const String fifthInstructions = 'fifthInstructions';
+  static const String sixthInstructions = 'sixthInstructions';
+  static const String okayStartSession = 'okayStartSession';
 
 
 

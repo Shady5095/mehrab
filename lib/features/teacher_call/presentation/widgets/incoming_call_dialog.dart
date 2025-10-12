@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mehrab/core/config/routes/app_routes.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
+import 'package:mehrab/core/utilities/services/cache_service.dart';
 import 'package:mehrab/core/widgets/my_alert_dialog.dart';
 import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.dart';
 import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
@@ -12,6 +13,7 @@ import '../../../../core/utilities/functions/toast.dart';
 import '../../../../core/utilities/resources/colors.dart';
 import '../../../../core/utilities/resources/strings.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
+import '../../../teachers/presentation/widgets/instructions_for_start_session_dialog.dart';
 
 class IncomingCallDialog extends StatefulWidget {
   final HomeCubit cubit;
@@ -233,16 +235,15 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
                     child: IconButton(
                       icon: Icon(Icons.call, color: Colors.white, size: 25.sp),
                       onPressed: () async {
-                        stopSound();
-                        setState(() {
-                          _isCallAccepted = true;
-                          _acceptTime = DateTime.now();
-                        });
-                        widget.cubit.acceptCall(widget.model.callId, widget.model.studentName).then((meetLink) {
-                          googleMeetLink = meetLink;
-                          setState(() {});
-                        }).catchError((error) {
-                          myToast(msg: error.toString(), state: error);
+                        if(CacheService.getData(key: "instructionsForStartSession") == true){
+                          onTapAccept();
+                          return;
+                        }
+                        showDialog(context: context, barrierDismissible: false, builder: (context)=>InstructionsForStartSessionDialog()).then((value){
+                          if(value == true){
+                            CacheService.setData(key: "instructionsForStartSession", value: true);
+                            onTapAccept();
+                          }
                         });
                       },
                     ),
@@ -254,5 +255,18 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
         ),
       ),
     );
+  }
+  void onTapAccept() {
+    stopSound();
+    setState(() {
+      _isCallAccepted = true;
+      _acceptTime = DateTime.now();
+    });
+    widget.cubit.acceptCall(widget.model.callId, widget.model.studentName).then((meetLink) {
+      googleMeetLink = meetLink;
+      setState(() {});
+    }).catchError((error) {
+      myToast(msg: error.toString(), state: error);
+    });
   }
 }

@@ -1181,5 +1181,13 @@
   "installationFailed": "Installation failed",
   "cannotOpenApk": "Cannot open APK file.",
   "enableUnknownSources": "You may need to enable 'Allow installation of apps from unknown sources' in settings.",
-  "reCallMe": "Tell Student to call me again"
+  "reCallMe": "Tell Student to call me again",
+  "instructionsForStartSession": "Instructions for starting the session",
+  "firstInstructions": "1. Make sure you have a stable internet connection.",
+  "secondInstructions": "2. Make sure you have a Google account registered on your device.",
+  "thirdInstructions": "3. A window will appear asking you to sign in with your Google account.",
+  "fourthInstructions": "4. After selecting your account, make sure to enable the option (View and edit events on all your calendars) as shown in the image above.",
+  "fifthInstructions": "5. Then click on the (Continue) button at the bottom of the window.",
+  "sixthInstructions": "6. You will be redirected to Google Meet to start the session.",
+  "okayStartSession": "Okay, Start Session"
 }

@@ -1182,5 +1182,13 @@
   "downloadCompletedSuccessfully": "تم التحميل بنجاح",
   "installationFailed": "تعذر التثبيت",
   "cannotOpenApk": "لا يمكن فتح ملف APK.",
-  "enableUnknownSources": "قد تحتاج إلى تفعيل 'السماح بتثبيت التطبيقات من مصادر غير معروفة' من الإعدادات."
+  "enableUnknownSources": "قد تحتاج إلى تفعيل 'السماح بتثبيت التطبيقات من مصادر غير معروفة' من الإعدادات.",
+  "instructionsForStartSession": "تعليمات لبدء الجلسة",
+  "firstInstructions" : "1. تأكد من أن لديك اتصال إنترنت مستقر.",
+  "secondInstructions" :"2. تأكد ان لديك حساب جوجل مسجل في جهازك",
+    "thirdInstructions" : "3. سيظهر لك الان نافذة لتسجيل الدخول بحساب جوجل الخاص بك.",
+    "fourthInstructions" : "4. بعد اختيار الحساب تاكد من تفعيل زر (عرض الاحداث وتعديلها ف جميع تقاويمك) الموضح اعلاه في الصوره",
+    "fifthInstructions" : "5. بعد ذلك اضغط على زر (متابعه) في اسفل النافذة.",
+    "sixthInstructions" : "6. سيتم توجيهك إلى Google Meet ل بدأ الجلسة",
+  "okayStartSession": "حسناً، ابدأ الجلسة"
 }
