@@ -95,33 +95,42 @@ class LoginCubit extends Cubit<LoginStates> {
   Future<void> signInWithApple() async {
     emit(GoogleSignInWaitingState());
     try {
-      // الحصول على Apple credential باستخدام الحزمة
       final appleCredential = await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
           AppleIDAuthorizationScopes.fullName,
         ],
         webAuthenticationOptions: WebAuthenticationOptions(
-          clientId: 'your-services-id.com.yourapp',  // ضع Services ID من Apple Developer هنا (مثل com.yourapp.auth)
-          redirectUri: Uri.parse('https://yourapp.com/callbacks/sign_in_with_apple_cb'),  // ضع redirect URI الخاص بك (لـ Firebase أو backend)
+          clientId: 'your-services-id.com.yourapp',
+          redirectUri: Uri.parse('https://yourapp.com/callbacks/sign_in_with_apple_cb'),
         ),
       );
 
-      // إنشاء Firebase credential
+      // تحقق إذا كانت أول مرة بناءً على وجود الاسم أو الإيميل
+      final isFirstTime = appleCredential.givenName != null || appleCredential.email != null;
+
+      if (isFirstTime) {
+        print("🟢 This is the FIRST TIME sign in with Apple for this user.");
+        print("Full Name: ${appleCredential.givenName} ${appleCredential.familyName}");
+        print("Email: ${appleCredential.email}");
+      } else {
+        print("🔵 This is NOT the first time sign in with Apple (Apple returned only the user ID).");
+      }
+
       final firebaseCredential = firebase_auth.OAuthProvider("apple.com").credential(
         idToken: appleCredential.identityToken,
-        accessToken: appleCredential.authorizationCode,  // استخدم authorizationCode كـ accessToken إذا لزم
+        accessToken: appleCredential.authorizationCode,
       );
 
-      // Sign in to Firebase
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithCredential(firebaseCredential);
+      UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithCredential(firebaseCredential);
 
-      // بناء نفس الموديل (مع signInMethod = "apple" لاحقًا في RegisterCubit)
-      print("name: ${appleCredential.givenName}");
-      final socialModel = GoogleSignInModel(  // نستخدم نفس الموديل للبساطة
+      final socialModel = GoogleSignInModel(
         email: userCredential.user?.email ?? appleCredential.email,
-        displayName: userCredential.user?.displayName ??( (appleCredential.givenName == null || appleCredential.familyName == null) ? null :'${appleCredential.givenName} ${appleCredential.familyName}'),
+        displayName: userCredential.user?.displayName ??
+            ((appleCredential.givenName == null && appleCredential.familyName == null)
+                ? null
+                : '${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}'.trim()),
         photoUrl: userCredential.user?.photoURL,
         uid: userCredential.user?.uid,
         phoneNumber: userCredential.user?.phoneNumber,
@@ -132,25 +141,15 @@ class LoginCubit extends Cubit<LoginStates> {
         await cacheUid(userCredential.user?.uid ?? '');
         emit(GoogleSignInUsersAlreadyExists());
       } else {
-        emit(
-          GoogleSignInSuccessState(socialModel),
-        );
+        emit(GoogleSignInSuccessState(socialModel));
       }
     } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      if (e.code == 'account-exists-with-different-credential') {
-        errorMessage =
-        'The account already exists with a different credential.';
-      } else if (e.code == 'invalid-credential') {
-        errorMessage = 'Invalid credential. Please try again.';
-      } else {
-        errorMessage = 'Firebase Auth Error: ${e.message}';
-      }
-      emit(GoogleSignInErrorState(errorMessage));
+      emit(GoogleSignInErrorState('Firebase Auth Error: ${e.message}'));
     } catch (e) {
       emit(GoogleSignInErrorState('An unexpected error occurred: $e'));
     }
   }
+
 
   Future<bool> checkUidExistsBefore(String uid) async {
     bool uidExists = false;
