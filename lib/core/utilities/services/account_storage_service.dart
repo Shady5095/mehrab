@@ -12,8 +12,6 @@ class AccountStorage {
 
     final jsonData = jsonEncode(accounts);
     await _storage.write(key: _key, value: jsonData);
-
-    print('✅ Saved accounts: $accounts');
   }
 
   /// ✅ جلب كل الحسابات
@@ -25,7 +23,6 @@ class AccountStorage {
       final decoded = jsonDecode(data);
       return Map<String, String>.from(decoded);
     } catch (e) {
-      print('⚠️ JSON decode error: $e');
       return {};
     }
   }
@@ -38,12 +35,10 @@ class AccountStorage {
     final jsonData = jsonEncode(accounts);
     await _storage.write(key: _key, value: jsonData);
 
-    print('🗑️ Removed $email');
   }
 
   /// ✅ مسح كل الحسابات (اختياري)
   static Future<void> clearAllAccounts() async {
     await _storage.delete(key: _key);
-    print('🧹 All accounts cleared.');
   }
 }
