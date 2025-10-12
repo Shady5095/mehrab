@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mehrab/core/config/routes/app_routes.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/dimens.dart';
@@ -27,22 +28,32 @@ class AddTeacherScreenBody extends StatelessWidget {
         child: BlocConsumer<AddTeacherCubit, AddTeacherState>(
           listener: (context, state) {
             if (state is RegisterSuccessState) {
-              Navigator.pop(context,true);
+              Navigator.pop(context, true);
               showDialog(
                 context: context,
                 builder:
                     (_) => AddTeacherSuccessDialog(
-                  teacher:  AddTeacherCubit.get(context).getUserModel,
-                ),
+                      teacher: AddTeacherCubit.get(context).getUserModel,
+                    ),
               );
-            } if (state is RegisterErrorState) {
-              myToast(msg: state.errorMessage, state: ToastStates.error,toastLength: Toast.LENGTH_LONG);
+            }
+            if (state is RegisterErrorState) {
+              myToast(
+                msg: state.errorMessage,
+                state: ToastStates.error,
+                toastLength: Toast.LENGTH_LONG,
+              );
             }
             if (state is UpdateTeacherSuccessState) {
-              Navigator.pop(context,true);
+              Navigator.pop(context, true);
               myToast(msg: "تم تعديل المعلم بنجاح", state: ToastStates.success);
-            } if (state is UpdateTeacherErrorState) {
-              myToast(msg: state.errorMessage, state: ToastStates.error,toastLength: Toast.LENGTH_LONG);
+            }
+            if (state is UpdateTeacherErrorState) {
+              myToast(
+                msg: state.errorMessage,
+                state: ToastStates.error,
+                toastLength: Toast.LENGTH_LONG,
+              );
             }
           },
           builder: (context, state) {
@@ -56,7 +67,12 @@ class AddTeacherScreenBody extends StatelessWidget {
                     child: Column(
                       spacing: 10,
                       children: [
-                        MyAppBar(title:cubit.teacherModel ==null ? AppStrings.addTeacher : AppStrings.editTeacher,),
+                        MyAppBar(
+                          title:
+                              cubit.teacherModel == null
+                                  ? AppStrings.addTeacher
+                                  : AppStrings.editTeacher,
+                        ),
                         AddTeacherProfilePhotoBuild(),
                         MyTextField(
                           label: AppStrings.fullName.tr(context),
@@ -91,6 +107,7 @@ class AddTeacherScreenBody extends StatelessWidget {
                         MyTextField(
                           label: AppStrings.email.tr(context),
                           controller: cubit.emailController,
+                          enabled: cubit.teacherModel == null,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           focusedBorder: UnderlineInputBorder(
@@ -117,12 +134,15 @@ class AddTeacherScreenBody extends StatelessWidget {
                                   AppValidator.emailValidator(value, context),
                         ),
                         MyTextField(
-                          enabled: cubit.teacherModel == null ,
+                          enabled: cubit.teacherModel == null,
                           label: AppStrings.password.tr(context),
                           controller: cubit.passwordController,
                           keyboardType: TextInputType.visiblePassword,
                           textInputAction: TextInputAction.next,
-                          obsceure:cubit.teacherModel == null ? cubit.isPasswordObscured : false,
+                          obsceure:
+                              cubit.teacherModel == null
+                                  ? cubit.isPasswordObscured
+                                  : false,
                           suffixIcon: IconButton(
                             icon: Icon(
                               cubit.isPasswordObscured
@@ -184,9 +204,11 @@ class AddTeacherScreenBody extends StatelessWidget {
                           ),
 
                           validator:
-                              (String? value) =>
-                                  AppValidator.emptyFiled(value, context,
-                                      AppStrings.phone),
+                              (String? value) => AppValidator.emptyFiled(
+                                value,
+                                context,
+                                AppStrings.phone,
+                              ),
                         ),
                         Row(
                           children: [
@@ -215,20 +237,110 @@ class AddTeacherScreenBody extends StatelessWidget {
                                   ),
                                 ),
                                 validator:
-                                    (String? value) =>
-                                        AppValidator.emptyFiled(
-                                          value,
-                                          context,
-                                          AppStrings.experience,
-                                        ),
+                                    (String? value) => AppValidator.emptyFiled(
+                                      value,
+                                      context,
+                                      AppStrings.experience,
+                                    ),
                               ),
                             ),
                             SizedBox(width: 30),
                             Text(AppStrings.yearExperience.tr(context)),
                           ],
                         ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: MyTextField(
+                                label: AppStrings.igaz.tr(context),
+                                maxLines: 2,
+                                minLines: 1,
+                                controller: cubit.igazahController,
+                                keyboardType: TextInputType.text,
+                                textInputAction: TextInputAction.next,
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: context.invertedColor,
+                                  ),
+                                ),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: context.invertedColor,
+                                  ),
+                                ),
+                                errorBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.red),
+                                ),
+                                disabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: context.invertedColor,
+                                  ),
+                                ),
+                                validator:
+                                    (String? value) => AppValidator.emptyFiled(
+                                      value,
+                                      context,
+                                      AppStrings.igaz,
+                                    ),
+                              ),
+                            ),
+                            SizedBox(width: 5),
+                            InkWell(
+                              onTap: (){
+                                context.navigateTo(pageName: AppRoutes.igazPdfScreen,arguments: [context]);
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                margin: EdgeInsetsDirectional.only(end: 1),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withValues(alpha: 0.5),
+                                      spreadRadius: 1,
+                                      blurRadius: 1,
+                                      offset: Offset(
+                                        0,
+                                        1,
+                                      ), // changes position of shadow
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Image(
+                                      image: AssetImage(
+                                        "assets/images/pdf-upload.png",
+                                      ),
+                                      width: 25.sp,
+                                      height: 25.sp,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    if(cubit.igazPdfFile == null && cubit.igazPdfUrl == null )
+                                    Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Colors.amber,
+                                      size: 18.sp,
+                                    )
+                                    else
+                                      Icon(
+                                        Icons.check_circle,
+                                        color: Colors.green,
+                                        size: 18.sp,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                         MyTextField(
-                          label: "${AppStrings.specialization.tr(context)} ${AppStrings.optional.tr(context)}",
+                          label:
+                              "${AppStrings.specialization.tr(context)} ${AppStrings.optional.tr(context)}",
                           controller: cubit.specializationController,
                           keyboardType: TextInputType.text,
                           textInputAction: TextInputAction.next,
@@ -252,7 +364,8 @@ class AddTeacherScreenBody extends StatelessWidget {
                           ),
                         ),
                         MyTextField(
-                          label: "${AppStrings.foundationalTexts.tr(context)} ${AppStrings.optional.tr(context)}",
+                          label:
+                              "${AppStrings.foundationalTexts.tr(context)} ${AppStrings.optional.tr(context)}",
                           controller: cubit.foundationalTextsController,
                           keyboardType: TextInputType.text,
                           textInputAction: TextInputAction.next,
@@ -276,7 +389,8 @@ class AddTeacherScreenBody extends StatelessWidget {
                           ),
                         ),
                         MyTextField(
-                          label: "${AppStrings.categories.tr(context)} ${AppStrings.optional.tr(context)}",
+                          label:
+                              "${AppStrings.categories.tr(context)} ${AppStrings.optional.tr(context)}",
                           controller: cubit.categoriesController,
                           keyboardType: TextInputType.text,
                           textInputAction: TextInputAction.next,
@@ -300,7 +414,8 @@ class AddTeacherScreenBody extends StatelessWidget {
                           ),
                         ),
                         MyTextField(
-                          label: "${AppStrings.tracks.tr(context)} ${AppStrings.optional.tr(context)}",
+                          label:
+                              "${AppStrings.tracks.tr(context)} ${AppStrings.optional.tr(context)}",
                           controller: cubit.tracksController,
                           keyboardType: TextInputType.text,
                           textInputAction: TextInputAction.next,
@@ -324,7 +439,8 @@ class AddTeacherScreenBody extends StatelessWidget {
                           ),
                         ),
                         MyTextField(
-                          label: "${AppStrings.compositions.tr(context)} ${AppStrings.optional.tr(context)}",
+                          label:
+                              "${AppStrings.compositions.tr(context)} ${AppStrings.optional.tr(context)}",
                           controller: cubit.compositionsController,
                           keyboardType: TextInputType.text,
                           textInputAction: TextInputAction.next,
@@ -348,7 +464,8 @@ class AddTeacherScreenBody extends StatelessWidget {
                           ),
                         ),
                         MyTextField(
-                          label: "${AppStrings.curriculum.tr(context)} ${AppStrings.optional.tr(context)}",
+                          label:
+                              "${AppStrings.curriculum.tr(context)} ${AppStrings.optional.tr(context)}",
                           controller: cubit.curriculumController,
                           keyboardType: TextInputType.text,
                           textInputAction: TextInputAction.next,
@@ -372,7 +489,8 @@ class AddTeacherScreenBody extends StatelessWidget {
                           ),
                         ),
                         MyTextField(
-                          label: "${AppStrings.compatibility.tr(context)} ${AppStrings.optional.tr(context)}",
+                          label:
+                              "${AppStrings.compatibility.tr(context)} ${AppStrings.optional.tr(context)}",
                           controller: cubit.compatibilityController,
                           keyboardType: TextInputType.text,
                           textInputAction: TextInputAction.next,
@@ -396,32 +514,9 @@ class AddTeacherScreenBody extends StatelessWidget {
                           ),
                         ),
                         MyTextField(
-                          label: "${AppStrings.universityDegree.tr(context)} ${AppStrings.optional.tr(context)}",
+                          label:
+                              "${AppStrings.universityDegree.tr(context)} ${AppStrings.optional.tr(context)}",
                           controller: cubit.schoolController,
-                          keyboardType: TextInputType.text,
-                          textInputAction: TextInputAction.next,
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: context.invertedColor,
-                            ),
-                          ),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: context.invertedColor,
-                            ),
-                          ),
-                          errorBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.red),
-                          ),
-                          disabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: context.invertedColor,
-                            ),
-                          ),
-                        ),
-                        MyTextField(
-                          label: "${AppStrings.igaz.tr(context)} ${AppStrings.optional.tr(context)}",
-                          controller: cubit.igazahController,
                           keyboardType: TextInputType.text,
                           textInputAction: TextInputAction.next,
                           focusedBorder: UnderlineInputBorder(
@@ -460,15 +555,20 @@ class AddTeacherScreenBody extends StatelessWidget {
                         Expanded(child: SizedBox(height: 20)),
                         ButtonWidget(
                           onPressed: () {
-                            if(cubit.teacherModel == null){
+                            if (cubit.teacherModel == null) {
                               cubit.onTabAddTeacher(context);
-                            }else{
+                            } else {
                               cubit.updateTeacher();
                             }
                           },
                           height: 40,
-                          label:cubit.teacherModel == null ? AppStrings.add.tr(context) : AppStrings.edit.tr(context),
-                          isLoading: state is RegisterLoadingState || state is UpdateTeacherLoadingState,
+                          label:
+                              cubit.teacherModel == null
+                                  ? AppStrings.add.tr(context)
+                                  : AppStrings.edit.tr(context),
+                          isLoading:
+                              state is RegisterLoadingState ||
+                              state is UpdateTeacherLoadingState,
                         ),
                         SizedBox(height: 5),
                       ],

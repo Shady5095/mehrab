@@ -68,6 +68,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   sign_in_with_apple: ^7.0.1
   open_filex: ^4.3.4
+  syncfusion_flutter_pdfviewer: ^31.1.17
 
 
 

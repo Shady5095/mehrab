@@ -11,104 +11,165 @@ import 'package:mehrab/features/sessions/presentation/widgets/session_item_for_t
 import '../../../../core/utilities/resources/constants.dart';
 import '../../../teacher_call/data/models/call_model.dart';
 
-class SessionsList extends StatelessWidget {
+class SessionsList extends StatefulWidget {
   const SessionsList({super.key});
 
   @override
+  State<SessionsList> createState() => _SessionsListState();
+}
+
+class _SessionsListState extends State<SessionsList> {
+  final int _pageSize = 10; // عدد العناصر في كل صفحة
+  final ScrollController _scrollController = ScrollController();
+
+  final List<CallModel> _calls = [];
+  DocumentSnapshot? _lastDoc;
+  bool _isLoading = false;
+  bool _hasMore = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCalls();
+
+    // تحميل الصفحة التالية عند الوصول لآخر القائمة
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+        _fetchCalls();
+      }
+    });
+  }
+
+  /// 🔹 تحميل البيانات من Firestore بصفحات (pagination)
+  Future<void> _fetchCalls() async {
+    if (_isLoading || !_hasMore) return;
+
+    setState(() => _isLoading = true);
+
+    Query query = FirebaseFirestore.instance
+        .collection('calls')
+        .orderBy('timestamp', descending: true)
+        .limit(_pageSize);
+
+    if (AppConstants.isTeacher) {
+      query = query
+          .where('teacherUid', isEqualTo: myUid)
+          .where('status', isEqualTo: 'ended');
+    } else {
+      query = query
+          .where('studentUid', isEqualTo: myUid)
+          .where('status', whereIn: ['ended', 'answered']);
+    }
+
+    if (_lastDoc != null) {
+      query = query.startAfterDocument(_lastDoc!);
+    }
+
+    final snapshot = await query.get();
+
+    if (snapshot.docs.isNotEmpty) {
+      _lastDoc = snapshot.docs.last;
+      final newCalls = snapshot.docs.map((doc) {
+        return CallModel.fromJson(doc.data() as Map<String, dynamic>);
+      }).toList();
+
+      setState(() {
+        _calls.addAll(newCalls);
+      });
+    } else {
+      _hasMore = false;
+    }
+
+    setState(() => _isLoading = false);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_calls.isEmpty && !_isLoading) {
+      return Expanded(
+        child: ListEmptyWidget(
+          icon: "assets/images/session.png",
+          title: AppStrings.noSessionsTitle,
+          description: AppStrings.noSessionsDescription,
+        ),
+      );
+    }
+
+    Map<String, List<CallModel>> groupedCalls = {};
+    DateTime now = DateTime.now();
+    DateTime yesterday = now.subtract(Duration(days: 1));
+
+    for (var call in _calls) {
+      DateTime callDate = call.timestamp.toDate();
+      String dateKey = _getDateKey(callDate, now, yesterday, context);
+
+      groupedCalls.putIfAbsent(dateKey, () => []);
+      groupedCalls[dateKey]!.add(call);
+    }
+
     return Expanded(
-      child: StreamBuilder<QuerySnapshot>(
-        stream: getSessionsStream(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          final calls = snapshot.data!.docs;
-          if (calls.isEmpty) {
-            return ListEmptyWidget(
-              icon: "assets/images/session.png",
-              title: AppStrings.noSessionsTitle,
-              description: AppStrings.noSessionsDescription,
-            );
-          }
-
-          Map<String, List<CallModel>> groupedCalls = {};
-          DateTime now = DateTime.now(); // Uses device's local time zone
-          DateTime yesterday = now.subtract(Duration(days: 1));
-
-          for (var doc in calls) {
-            CallModel call = CallModel.fromJson(
-              doc.data() as Map<String, dynamic>,
-            );
-            DateTime callDate = call.timestamp.toDate();
-            String dateKey = _getDateKey(callDate, now, yesterday, context);
-
-            if (!groupedCalls.containsKey(dateKey)) {
-              groupedCalls[dateKey] = [];
-            }
-            groupedCalls[dateKey]!.add(call);
-          }
-          return CustomScrollView(
-            slivers:
-                groupedCalls.entries.map((entry) {
-                  String dateKey = entry.key;
-                  List<CallModel> dailyCalls = entry.value;
-                  return SliverStickyHeader.builder(
-                    builder:
-                        (context, state) => Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(child: Container()),
-                            Container(
-                              margin: EdgeInsets.symmetric(vertical: 5),
-                              width: 40.wR,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16.0,
-                                vertical: 4,
-                              ),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: Color.fromRGBO(230, 230, 230, 1.0),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                dateKey,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            Expanded(child: Container()),
-                          ],
-                        ),
-                    sliver: SliverList.separated(
-                      itemBuilder: (context, index) {
-                        if(AppConstants.isTeacher){
-                          return SessionItemForTeachers(model: dailyCalls[index]);
-                        }else{
-                          return SessionItemForStudents(model: dailyCalls[index]);
-                        }
-                      },
-                      separatorBuilder: (context, index) => SizedBox(),
-                      itemCount: dailyCalls.length,
+      child: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          ...groupedCalls.entries.map((entry) {
+            String dateKey = entry.key;
+            List<CallModel> dailyCalls = entry.value;
+            return SliverStickyHeader.builder(
+              builder: (context, state) => Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(child: Container()),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 5),
+                    width: 40.wR,
+                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(230, 230, 230, 1.0),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  );
-                }).toList(),
-          );
-        },
+                    child: Text(
+                      dateKey,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Expanded(child: Container()),
+                ],
+              ),
+              sliver: SliverList.separated(
+                itemBuilder: (context, index) {
+                  final call = dailyCalls[index];
+                  if (AppConstants.isTeacher) {
+                    return SessionItemForTeachers(model: call);
+                  } else {
+                    return SessionItemForStudents(model: call);
+                  }
+                },
+                separatorBuilder: (context, index) => const SizedBox(),
+                itemCount: dailyCalls.length,
+              ),
+            );
+          }),
+          if (_isLoading)
+            const SliverToBoxAdapter(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  String _getDateKey(
-    DateTime callDate,
-    DateTime now,
-    DateTime yesterday,
-    BuildContext context,
-  ) {
+  /// 🔹 تحديد عنوان القسم (اليوم / أمس / تاريخ)
+  String _getDateKey(DateTime callDate, DateTime now, DateTime yesterday, BuildContext context) {
     if (isSameDay(callDate, now)) {
       return AppStrings.today.tr(context);
     } else if (isSameDay(callDate, yesterday)) {
@@ -122,23 +183,5 @@ class SessionsList extends StatelessWidget {
     return date1.year == date2.year &&
         date1.month == date2.month &&
         date1.day == date2.day;
-  }
-
-  Stream<QuerySnapshot<Object?>> getSessionsStream() {
-    if (AppConstants.isTeacher) {
-      return FirebaseFirestore.instance
-          .collection('calls')
-          .where('teacherUid', isEqualTo: myUid)
-          .where('status', isEqualTo: 'ended')
-          .orderBy('timestamp', descending: true)
-          .snapshots();
-    } else {
-      return FirebaseFirestore.instance
-          .collection('calls')
-          .where('studentUid', isEqualTo: myUid)
-          .where('status', whereIn: ['ended', 'answered'])
-          .orderBy('timestamp', descending: true)
-          .snapshots();
-    }
   }
 }

@@ -4,7 +4,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/my_appbar.dart';
-import '../../../../core/config/routes/app_routes.dart';
 import '../../../../core/utilities/functions/toast.dart';
 import '../../../../core/utilities/resources/dimens.dart';
 import '../../../../core/utilities/validator.dart';
@@ -52,6 +51,7 @@ class MyTeacherProfileScreenBody extends StatelessWidget {
                           label: AppStrings.fullName.tr(context),
                           controller: cubit.nameController,
                           keyboardType: TextInputType.name,
+                          enabled: false,
                           textInputAction: TextInputAction.next,
                           focusedBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: context.invertedColor),
@@ -142,14 +142,14 @@ class MyTeacherProfileScreenBody extends StatelessWidget {
                           label:  AppStrings.updateMyProfile.tr(context),
                           isLoading: state is UpdateProfileLoadingState,
                         ),
-                        ButtonWidget(
+                        /*ButtonWidget(
                           onPressed: () {
                             context.navigateTo(pageName: AppRoutes.changePasswordScreenTeacher,arguments: [context]);
                           },
                           height: 40,
                           color: Colors.grey,
                           label:  AppStrings.changePassword.tr(context),
-                        ),
+                        ),*/
                         SizedBox(
                           height: 5,
                         ),

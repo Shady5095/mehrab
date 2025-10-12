@@ -14,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
 import 'package:meta/meta.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../../../../../core/utilities/functions/print_with_color.dart';
 import '../../../../../core/utilities/functions/toast.dart';
@@ -147,6 +148,7 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
     compatibility: compatibilityController.text.trim().isEmpty ? null : compatibilityController.text.trim(),
     school: schoolController.text.trim().isEmpty ? null : schoolController.text.trim(),
     igazah: igazahController.text.trim().isEmpty ? null : igazahController.text.trim(),
+    igazPdfUrl: igazPdfUrl,
   );
   Future<void> signUpWithEmailAndPassword(BuildContext context) async {
     try {
@@ -247,6 +249,7 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
       return;
     }
     await uploadImageToImageKit();
+    await uploadIgazPdfToImageKit();
     await addUserDataToFireStore();
     emit(RegisterSuccessState());
   }
@@ -275,15 +278,19 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
     compatibilityController.text = teacherModel!.compatibility ?? '';
     schoolController.text = teacherModel!.school ?? '';
     igazahController.text = teacherModel!.igazah ?? '';
+    igazPdfUrl = teacherModel!.igazPdfUrl;
   }
 
   Future<void> updateTeacher() async {
     if(teacherModel == null) return;
+    if (formKey.currentState!.validate()) {
     emit(UpdateTeacherLoadingState());
     if(imageFile != null) {
       await uploadImageToImageKit();
     }
-    if (formKey.currentState!.validate()) {
+    if(igazPdfFile != null) {
+      await uploadIgazPdfToImageKit();
+    }
       await db
           .collection('users')
           .doc(teacherModel!.uid)
@@ -295,6 +302,80 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
         printWithColor("Error updating user data: $error");
         emit(UpdateTeacherErrorState(error.toString()));
       });
+    }
+  }
+
+  File? igazPdfFile;
+  String? igazPdfUrl;
+  void pickIgazPdfFile() {
+    FilePicker.platform
+        .pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'PDF'],
+    )
+        .then((value) async {
+      if (value != null) {
+        if (value.files.isNotEmpty) {
+          final file = value.files.first;
+          if (file.size < (5 * 1048576)) {
+            igazPdfFile = File(file.path!);
+            emit(AddTeacherInitial());
+          } else {
+            if (!formKey.currentContext!.mounted) return;
+            myToast(
+              toastLength: Toast.LENGTH_LONG,
+              msg: ' ${AppStrings.lessFileSize.tr(formKey.currentContext!)} 5 MB',
+              state: ToastStates.error,
+            );
+          }
+        }
+      } else {
+        printWithColor('No files picked');
+      }
+    });
+  }
+
+  clearIgazPdf() {
+    igazPdfFile = null;
+    igazPdfUrl = null;
+    emit(AddTeacherInitial());
+  }
+  Future<void> uploadIgazPdfToImageKit() async {
+    if (igazPdfFile == null) return;
+
+    try {
+      final fileName = "إجازة المعلم ${nameController.text}.pdf";
+
+      final bytes = await igazPdfFile!.readAsBytes();
+      final base64Image = base64Encode(bytes);
+
+      final uri = Uri.parse("https://upload.imagekit.io/api/v1/files/upload");
+
+      final response = await http.post(
+        uri,
+        headers: {
+          "Authorization": "Basic ${base64Encode(utf8.encode('private_ACQf3pOvrG3Z+lW/EzXeECiJbOs=:'))}", // or use Public API with unsigned uploads
+        },
+        body: {
+          "file": base64Image,
+          "fileName": fileName,
+          "folder": "/mehrab_igaz_pdf/",
+          "useUniqueFileName": "true",
+          "publicKey": "public_JGe/g1A7bPqoxvdcFyZOKPvd2sw=",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final result = jsonDecode(response.body);
+        igazPdfUrl = result["url"];
+        printWithColor("PDF uploaded successfully. URL: $igazPdfUrl");
+      } else {
+        printWithColor("PDFKit upload failed: ${response.body}");
+        emit(RegisterErrorState("PDF upload failed"));
+      }
+    } catch (e) {
+      printWithColor("PDFKit upload error: $e");
+      emit(RegisterErrorState("PDF upload failed"));
     }
   }
 }

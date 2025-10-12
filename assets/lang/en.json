@@ -1180,5 +1180,6 @@
   "downloadCompletedSuccessfully": "Download completed successfully",
   "installationFailed": "Installation failed",
   "cannotOpenApk": "Cannot open APK file.",
-  "enableUnknownSources": "You may need to enable 'Allow installation of apps from unknown sources' in settings."
+  "enableUnknownSources": "You may need to enable 'Allow installation of apps from unknown sources' in settings.",
+  "reCallMe": "Tell Student to call me again"
 }

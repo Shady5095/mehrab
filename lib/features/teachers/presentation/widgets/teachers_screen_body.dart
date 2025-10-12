@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mehrab/core/utilities/resources/dimens.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/my_appbar.dart';
 import 'package:mehrab/features/teachers/presentation/manager/teachers_cubit/teachers_cubit.dart';
@@ -18,10 +17,13 @@ class TeachersScreenBody extends StatelessWidget {
       create: (context) => TeachersCubit(),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimens.screenPadding),
+          padding: const EdgeInsets.only(top: 20),
           child: Column(
             children: [
-              MyAppBar(title: isFav ? AppStrings.favoriteTeachers: AppStrings.teachers, isShowBackButton: isFav,),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: MyAppBar(title: isFav ? AppStrings.favoriteTeachers: AppStrings.teachers, isShowBackButton: isFav,),
+              ),
               const SizedBox(height: 10,),
                if (!isFav)
                const TeacherSearchBar(),

@@ -229,58 +229,74 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
               Row(
                 children: [
                   Expanded(
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           "${AppStrings.fromSurah.tr(context)} : ",
                           style: TextStyle(
-                            fontSize: 12.5.sp,
+                            fontSize: 13.sp,
                             color: Colors.grey,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        Text(
-                          widget.model.fromSurah ?? '---',
-                          style: TextStyle(
-                            fontSize: 12.5.sp,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          "  (${AppStrings.ayah.tr(context)} : ${widget.model.fromAyah != null ? widget.model.fromAyah.toString() : '---'})",
-                          style: TextStyle(
-                            fontSize: 12.5.sp,
-                            color: Colors.black,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              widget.model.fromSurah ?? '---',
+                              style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: AppColors.myAppColor,
+                                  fontWeight: FontWeight.w600
+                              ),
+                            ),
+                            Text(
+                              "  (${AppStrings.ayah.tr(context)} : ${widget.model.fromAyah != null ? widget.model.fromAyah.toString() : '---'})",
+                              style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: AppColors.myAppColor,
+                                  fontWeight: FontWeight.w600
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                   SizedBox(width: 10),
                   Expanded(
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           "${AppStrings.toSurah.tr(context)} : ",
                           style: TextStyle(
-                            fontSize: 12.5.sp,
+                            fontSize: 13.sp,
                             color: Colors.grey,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        Text(
-                          widget.model.toSurah ?? '---',
-                          style: TextStyle(
-                            fontSize: 12.5.sp,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          "  (${AppStrings.ayah.tr(context)} : ${widget.model.toAyah != null ? widget.model.toAyah.toString() : '---'})",
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.black,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              widget.model.toSurah ?? '---',
+                              style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: AppColors.myAppColor,
+                                  fontWeight: FontWeight.w600
+                              ),
+                            ),
+                            Text(
+                              "  (${AppStrings.ayah.tr(context)} : ${widget.model.toAyah != null ? widget.model.toAyah.toString() : '---'})",
+                              style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: AppColors.myAppColor,
+                                  fontWeight: FontWeight.w600
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

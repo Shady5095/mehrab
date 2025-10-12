@@ -188,7 +188,8 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
               Row(
                 children: [
                   Expanded(
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           "${AppStrings.fromSurah.tr(context)} : ",
@@ -198,26 +199,34 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        Text(
-                          widget.model.fromSurah ?? '---',
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          "  (${AppStrings.ayah.tr(context)} : ${widget.model.fromAyah != null ? widget.model.fromAyah.toString() : '---'})",
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.black,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              widget.model.fromSurah ?? '---',
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: AppColors.myAppColor,
+                                fontWeight: FontWeight.w600
+                              ),
+                            ),
+                            Text(
+                              "  (${AppStrings.ayah.tr(context)} : ${widget.model.fromAyah != null ? widget.model.fromAyah.toString() : '---'})",
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: AppColors.myAppColor,
+                                  fontWeight: FontWeight.w600
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                   SizedBox(width: 10),
                   Expanded(
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           "${AppStrings.toSurah.tr(context)} : ",
@@ -227,19 +236,26 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        Text(
-                          widget.model.toSurah ?? '---',
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          "  (${AppStrings.ayah.tr(context)} : ${widget.model.toAyah != null ? widget.model.toAyah.toString() : '---'})",
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.black,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              widget.model.toSurah ?? '---',
+                              style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: AppColors.myAppColor,
+                                  fontWeight: FontWeight.w600
+                              ),
+                            ),
+                            Text(
+                              "  (${AppStrings.ayah.tr(context)} : ${widget.model.toAyah != null ? widget.model.toAyah.toString() : '---'})",
+                              style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: AppColors.myAppColor,
+                                  fontWeight: FontWeight.w600
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -270,6 +286,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                               style: TextStyle(
                                 fontSize: 13.sp,
                                 color: Colors.black,
+                                fontWeight: FontWeight.w600
                               ),
                             ),
                           ],
@@ -295,6 +312,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                           style: TextStyle(
                             fontSize: 13.sp,
                             color: Colors.black,
+                              fontWeight: FontWeight.w600
                           ),
                         ),
                       ],
@@ -324,6 +342,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                           style: TextStyle(
                             fontSize: 13.sp,
                             color: Colors.black,
+                              fontWeight: FontWeight.w600
                           ),
                         ),
                       ],
@@ -347,6 +366,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                           style: TextStyle(
                             fontSize: 13.sp,
                             color: Colors.black,
+                              fontWeight: FontWeight.w600
                           ),
                         ),
                       ],
@@ -378,6 +398,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                       style: TextStyle(
                         fontSize: 13.sp,
                         color: Colors.black,
+                        fontWeight: FontWeight.w600
                       ),
                     ),
                   ),

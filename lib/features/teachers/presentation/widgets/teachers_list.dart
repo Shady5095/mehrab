@@ -62,7 +62,7 @@ class TeachersList extends StatelessWidget {
                   final teacher = teachers[index];
                   return ListItemAnimation(
                     index: index,
-                    child: TeacherItem(teacher: teacher),
+                    child: TeacherItem(teacher: teacher, isLastItem: index == teachers.length - 1),
                   );
                 },
               ),

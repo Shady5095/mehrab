@@ -13,116 +13,120 @@ import 'build_teacher_photo.dart';
 class TeacherItem extends StatelessWidget {
   final TeacherModel teacher;
 
-  const TeacherItem({super.key, required this.teacher});
+  final bool isLastItem;
+  const TeacherItem({super.key, required this.teacher, required this.isLastItem});
 
   @override
   Widget build(BuildContext context) {
     List<dynamic> args = ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [];
     final bool isFav = args.isNotEmpty ? args[0] as bool : false;
-    return Card(
-      color: Colors.white,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(15),
-        onTap: () {
-          context.navigateTo(
-            pageName: AppRoutes.teacherProfileScreen,
-            arguments: [teacher],
-          );
-        },
-        onLongPress: () {
-          if (!AppConstants.isAdmin || isFav) return;
-          showModalBottomSheet(
-            context: context,
-            builder:
-                (newContext) => TeachersBottomSheetActions(
-                  teacherModel: teacher,
-                  oldContext: context,
-                  onFinish: (value) {
-                    if (value != null) {
-                      // Handle any actions after finishing
-                    }
-                  },
+    return Padding(
+      padding:  EdgeInsets.only(bottom:isLastItem ? 15.0 :0, left: 20.0, right: 20.0, ),
+      child: Card(
+        color: Colors.white,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(15),
+          onTap: () {
+            context.navigateTo(
+              pageName: AppRoutes.teacherProfileScreen,
+              arguments: [teacher],
+            );
+          },
+          onLongPress: () {
+            if (!AppConstants.isAdmin || isFav) return;
+            showModalBottomSheet(
+              context: context,
+              builder:
+                  (newContext) => TeachersBottomSheetActions(
+                    teacherModel: teacher,
+                    oldContext: context,
+                    onFinish: (value) {
+                      if (value != null) {
+                        // Handle any actions after finishing
+                      }
+                    },
+                  ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: Colors.white,
+            ),
+            child: Row(
+              children: [
+                Hero(
+                  tag: teacher.uid,
+                  child: BuildTeacherPhoto(
+                    imageUrl: teacher.imageUrl,
+                    radius: 29.sp,
+                    imageColor: Colors.white,
+                    isOnline: teacher.isOnline,
+                    isFromFav: isFav,
+                  ),
                 ),
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            color: Colors.white,
-          ),
-          child: Row(
-            children: [
-              Hero(
-                tag: teacher.uid,
-                child: BuildTeacherPhoto(
-                  imageUrl: teacher.imageUrl,
-                  radius: 29.sp,
-                  imageColor: Colors.white,
-                  isOnline: teacher.isOnline,
-                  isFromFav: isFav,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      teacher.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style:  TextStyle(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Row(
-                      children: [
-                        Icon(Icons.star, color: Colors.amber, size: 17.sp),
-                        SizedBox(width: 3),
-                        Text(
-                          teacher.averageRating.toStringAsFixed(1),
-                          style: TextStyle(fontSize: 14.sp, color: Colors.black87, fontWeight: FontWeight.w600),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        teacher.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style:  TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w700,
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 5),
-                    if(!isFav)
-                    Text(
-                        teacher.isOnline ? AppStrings.availableNow.tr(context) :  "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}  : ${formatTime(context, teacher.lastActive)}",
-                      style: TextStyle(fontSize: 11.sp, color:teacher.isOnline ?AppColors.coolGreen : Colors.black54),
-                    ),
-                  ],
+                      ),
+                      SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Icon(Icons.star, color: Colors.amber, size: 17.sp),
+                          SizedBox(width: 3),
+                          Text(
+                            teacher.averageRating.toStringAsFixed(1),
+                            style: TextStyle(fontSize: 14.sp, color: Colors.black87, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 5),
+                      if(!isFav)
+                      Text(
+                          teacher.isOnline ? AppStrings.availableNow.tr(context) :  "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}  : ${formatTime(context, teacher.lastActive)}",
+                        style: TextStyle(fontSize: 11.sp, color:teacher.isOnline ?AppColors.coolGreen : Colors.black54),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              IconButton(
-                onPressed: () async {
-                  if(!teacher.isOnline) {
-                    return;
-                  }
-                  context.navigateTo(
-                    pageName: AppRoutes.teacherCallScreen,
-                    arguments: [teacher],
-                  );
-                },
-                icon: Icon(Icons.call,size: 22.sp,color: teacher.isOnline ? AppColors.coolGreen : Colors.grey,),
-              ),
-              IconButton(
-                onPressed: () async {
-                 await TeachersCubit.get(context).toggleTeacherFav(teacher.uid);
-                 if(!context.mounted) return;
-                  TeachersCubit.get(context).addStudentInTeacherCollection(teacher.uid);
-                  TeachersCubit.get(context).addTeacherInStudentCollection(teacher.copyWith(
-                    favoriteStudentsUid: isTeacherInMyFavorites
-                        ? (teacher.favoriteStudentsUid..remove(myUid))
-                        : (teacher.favoriteStudentsUid..add(myUid)),
-                  ));
-                },
-                icon: Icon(isTeacherInMyFavorites ? Icons.favorite : Icons.favorite_border_outlined, size: 22.sp,color: isTeacherInMyFavorites ? AppColors.redColor : Colors.black,),
-              ),
-            ],
+                IconButton(
+                  onPressed: () async {
+                    if(!teacher.isOnline) {
+                      return;
+                    }
+                    context.navigateTo(
+                      pageName: AppRoutes.teacherCallScreen,
+                      arguments: [teacher],
+                    );
+                  },
+                  icon: Icon(Icons.call,size: 22.sp,color: teacher.isOnline ? AppColors.coolGreen : Colors.grey,),
+                ),
+                IconButton(
+                  onPressed: () async {
+                   await TeachersCubit.get(context).toggleTeacherFav(teacher.uid);
+                   if(!context.mounted) return;
+                    TeachersCubit.get(context).addStudentInTeacherCollection(teacher.uid);
+                    TeachersCubit.get(context).addTeacherInStudentCollection(teacher.copyWith(
+                      favoriteStudentsUid: isTeacherInMyFavorites
+                          ? (teacher.favoriteStudentsUid..remove(myUid))
+                          : (teacher.favoriteStudentsUid..add(myUid)),
+                    ));
+                  },
+                  icon: Icon(isTeacherInMyFavorites ? Icons.favorite : Icons.favorite_border_outlined, size: 22.sp,color: isTeacherInMyFavorites ? AppColors.redColor : Colors.black,),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -289,9 +289,24 @@ class HomeCubit extends Cubit<HomeState> {
             state: ToastStates.error,
           );
         });
+    notifyMyFavStudentsAboutMyAvailability();
     emit(ChangeTeacherAvailabilityState());
   }
 
+  void notifyMyFavStudentsAboutMyAvailability() {
+    if (!teacherAvailability) {
+      return;
+    }
+    for (var studentUid in teacherModel?.favoriteStudentsUid ?? []) {
+      AppFirebaseNotification.pushNotification(
+        topic: studentUid,
+        // only take the first name and second if the name contains spaces
+        title: "المعلم ${teacherModel?.name.split(' ').take(3).join(' ')} متاح الآن🟢",
+        dataInNotification: {},
+        body: "يمكنك الآن بدء جلسة معه.",
+      );
+    }
+  }
   void setLastActive() {
     db.collection('users').doc(myUid).update({
       "lastActive": FieldValue.serverTimestamp(),

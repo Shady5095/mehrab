@@ -127,6 +127,7 @@ class MyTeacherProfileCubit extends Cubit<MyTeacherProfileState> {
       igazah: teacherModel.igazah,
       school: teacherModel.school,
       isOnline: teacherModel.isOnline,
+      igazPdfUrl: teacherModel.igazPdfUrl,
     );
   }
 

@@ -9,6 +9,7 @@ class ListEmptyWidget extends StatelessWidget {
   final String title;
   final Color? color;
   final String? description;
+  final bool isTextTranslate;
 
   const ListEmptyWidget({
     super.key,
@@ -16,6 +17,7 @@ class ListEmptyWidget extends StatelessWidget {
     required this.title,
     this.description,
     this.color,
+    this.isTextTranslate = true,
   });
 
   @override
@@ -27,14 +29,14 @@ class ListEmptyWidget extends StatelessWidget {
           ImageIcon(AssetImage(icon), color: color, size: 80.sp),
         if (color == null) Image.asset(icon, width: 9.hR, height: 9.hR),
         Text(
-          title.tr(context),
+          isTextTranslate ? title.tr(context) : title,
           style: AppStyle.textStyle20,
           textAlign: TextAlign.center,
         ),
         const HeightSizedBox(height: 0.5),
         if (description != null)
           Text(
-            description!.tr(context),
+            isTextTranslate ? description!.tr(context) : description!,
             style: AppStyle.textStyle12GreyBlue,
             textAlign: TextAlign.center,
           ),

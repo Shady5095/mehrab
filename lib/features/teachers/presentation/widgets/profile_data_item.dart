@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
+import 'package:mehrab/core/utilities/resources/constants.dart';
 
+import '../../../../core/config/routes/app_routes.dart';
 import '../../../../core/utilities/resources/colors.dart';
+import '../../../../core/utilities/resources/strings.dart';
 import '../../../../core/utilities/resources/styles.dart';
 
 class ProfileDataItem extends StatelessWidget {
@@ -9,6 +12,7 @@ class ProfileDataItem extends StatelessWidget {
   final String? description;
   final bool isTitleTranslated;
   final Color? color;
+  final String? igazPdfUrl;
 
   const ProfileDataItem({
     super.key,
@@ -16,6 +20,7 @@ class ProfileDataItem extends StatelessWidget {
     required this.description,
     this.isTitleTranslated = true,
     this.color,
+    this.igazPdfUrl,
   });
 
   @override
@@ -39,13 +44,13 @@ class ProfileDataItem extends StatelessWidget {
             color: color ?? context.containerColor,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Row(children: [Expanded(child: _buildDescriptionContent())]),
+          child: Row(children: [Expanded(child: _buildDescriptionContent(context))]),
         ),
       ],
     );
   }
 
-  Widget _buildDescriptionContent() {
+  Widget _buildDescriptionContent(BuildContext context) {
     if (description == '-') {
       return const Center(
         child: SizedBox(
@@ -58,13 +63,32 @@ class ProfileDataItem extends StatelessWidget {
       );
     }
 
-    return SelectableText(
-      description!,
-      textAlign: TextAlign.start,
+    return Row(
+      children: [
+        Expanded(
+          child: SelectableText(
+            description!,
+            textAlign: TextAlign.start,
 
-      style: AppStyle.textStyle14.copyWith(height: 1.5),
-      maxLines: 15,
-      minLines: 1,
+            style: AppStyle.textStyle14.copyWith(height: 1.5),
+            maxLines: 15,
+            minLines: 1,
+          ),
+        ),
+        if (title == AppStrings.igaz &&
+            AppConstants.isAdmin &&
+            igazPdfUrl != null)
+          InkWell(
+            onTap: () {
+              context.navigateTo(pageName: AppRoutes.pdfNetworkViewer, arguments: igazPdfUrl);
+            },
+            child: Image(
+              image: const AssetImage("assets/images/pdfReports.png"),
+              width: 30.sp,
+              height: 30.sp,
+            ),
+          ),
+      ],
     );
   }
 }

@@ -27,6 +27,7 @@ class _UserProfileDataState extends State<UserProfileData> {
     if(AppConstants.isAdmin)
     AppStrings.phone,
     AppStrings.experience,
+    AppStrings.igaz,
     AppStrings.specialization,
     AppStrings.foundationalTexts,
     AppStrings.categories,
@@ -35,7 +36,6 @@ class _UserProfileDataState extends State<UserProfileData> {
     AppStrings.curriculum,
     AppStrings.compatibility,
     AppStrings.universityDegree,
-    AppStrings.igaz,
     if(AppConstants.isAdmin)
     AppStrings.email,
     if(AppConstants.isAdmin)
@@ -62,6 +62,7 @@ class _UserProfileDataState extends State<UserProfileData> {
       if(AppConstants.isAdmin)
       widget.model.phone,
       "${widget.model.experience} عاما",
+      widget.model.igazah,
       widget.model.specialization,
       widget.model.foundationalTexts,
       widget.model.categories,
@@ -70,7 +71,6 @@ class _UserProfileDataState extends State<UserProfileData> {
       widget.model.curriculum,
       widget.model.compatibility,
       widget.model.school,
-      widget.model.igazah,
       if(AppConstants.isAdmin)
       widget.model.email,
       if(AppConstants.isAdmin)
@@ -101,6 +101,7 @@ class _UserProfileDataState extends State<UserProfileData> {
                       (context, index) => ProfileDataItem(
                         title: profileDataTitles[index],
                         description: profileDataDescriptions[index],
+                        igazPdfUrl: widget.model.igazPdfUrl,
                       ),
                 ),
                 TeachersCommentsView(model: widget.model,),

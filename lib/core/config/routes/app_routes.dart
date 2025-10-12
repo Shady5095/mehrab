@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mehrab/core/widgets/pdf_network_viewer.dart';
 import 'package:mehrab/features/authentication/presentation/views/login_screen.dart';
 import 'package:mehrab/features/my_profile/presentation/screens/my_profile_screen.dart';
 import 'package:mehrab/features/notifications/presentation/screens/notifications_screen.dart';
@@ -19,6 +20,7 @@ import '../../../features/teaacher_reviews/presentation/screens/teacher_reviews_
 import '../../../features/teacher_call/presentation/screens/rate_session_screen.dart';
 import '../../../features/teacher_call/presentation/screens/teacher_call_screen.dart';
 import '../../../features/teachers/presentation/screens/add_teacher_screen.dart';
+import '../../../features/teachers/presentation/screens/igaz_padf_screen.dart';
 import '../../../features/teachers/presentation/screens/teacher_profile_screen.dart';
 import '../../../features/teachers/presentation/screens/teachers_screen.dart';
 import '../../utilities/resources/strings.dart';
@@ -48,6 +50,8 @@ abstract class AppRoutes {
   static const String rateSessionScreen = 'rateSessionScreen';
   static const String startScreenRoute = 'startScreenRoute';
   static const String onboardingRoute = 'onboardingScreen';
+  static const String igazPdfScreen = 'igazPdfScreen';
+  static const String pdfNetworkViewer = 'pdfNetworkViewer';
 
 }
 
@@ -172,6 +176,16 @@ abstract class RouteGenerator {
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const OnboardingScreen(),
+        );
+        case AppRoutes.igazPdfScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const IgazPdfScreen(),
+        );
+        case AppRoutes.pdfNetworkViewer:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => PdfNetworkViewer(pdfUrl: settings.arguments as String),
         );
       default:
         return noRoute();

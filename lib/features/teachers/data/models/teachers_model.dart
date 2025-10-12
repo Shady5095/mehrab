@@ -25,6 +25,7 @@ class TeacherModel {
    Timestamp? joinedAt;
    double averageRating;
    List<String> favoriteStudentsUid ;
+   String? igazPdfUrl ;
 
   TeacherModel({
     required this.uid,
@@ -50,6 +51,7 @@ class TeacherModel {
     required this.compatibility,
     required this.school,
     required this.igazah,
+    this.igazPdfUrl,
   });
 
   factory TeacherModel.fromJson(Map<String, dynamic> json) {
@@ -77,6 +79,7 @@ class TeacherModel {
       compatibility: json['compatibility'],
       school: json['school'],
       igazah: json['igazah'],
+      igazPdfUrl: json['igazPdfUrl'],
     );
   }
 
@@ -105,6 +108,7 @@ class TeacherModel {
       'compatibility': compatibility,
       'school': school,
       'igazah': igazah,
+      'igazPdfUrl': igazPdfUrl,
     };
   }
 
@@ -133,6 +137,7 @@ class TeacherModel {
     Timestamp? joinedAt,
     double? averageRating,
     List<String>? favoriteStudentsUid,
+    String? igazPdfUrl,
   }) {
     return TeacherModel(
       uid: uid ?? this.uid,
@@ -158,6 +163,7 @@ class TeacherModel {
       compatibility: compatibility ?? this.compatibility,
       school: school ?? this.school,
       igazah: igazah ?? this.igazah,
+      igazPdfUrl:  igazPdfUrl ?? this.igazPdfUrl,
     );
   }
 }
