@@ -22,3 +22,8 @@ final class CallAnsweredState extends TeacherCallState {}
 
 final class MeetingOpenedState extends TeacherCallState {}
 
+final class TeacherIsInMeetingButYouWillJoin extends TeacherCallState {
+  final String meetingId;
+  TeacherIsInMeetingButYouWillJoin({required this.meetingId});
+}
+

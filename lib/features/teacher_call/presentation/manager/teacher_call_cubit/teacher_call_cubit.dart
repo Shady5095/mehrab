@@ -33,11 +33,18 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
 
   void initCall() async {
     await playSound();
-    await sendCallToTeacher();
-    callPushNotification();
-    callListener();
-    startCallTimeout();
-    emit(SendCallToTeacherSuccess());
+    getCurrentMeetingLinkIfTeacherIsInMeeting().then((meetingLink) async {
+      if(meetingLink != null){
+        await stopSound();
+        return;
+      }else{
+        await sendCallToTeacher();
+        callPushNotification();
+        callListener();
+        startCallTimeout();
+        emit(SendCallToTeacherSuccess());
+      }
+    });
   }
 
   String? callDocId;
@@ -162,6 +169,30 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       dataInNotification: {},
       topic: teacherModel.uid,
     );
+  }
+
+  Future<String?> getCurrentMeetingLinkIfTeacherIsInMeeting() async {
+    try {
+      final querySnapshot =
+          await db
+              .collection('calls')
+              .where('teacherUid', isEqualTo: teacherModel.uid)
+              .orderBy("timestamp", descending: true)
+              .where('status', isEqualTo: 'answered')
+              .limit(1)
+              .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final meetingLink = querySnapshot.docs.first.data()['meetingLink'];
+        emit(TeacherIsInMeetingButYouWillJoin(meetingId: meetingLink.toString() ));
+        return meetingLink;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      printWithColor("Error fetching meeting link: $e");
+      return null;
+    }
   }
 
   @override

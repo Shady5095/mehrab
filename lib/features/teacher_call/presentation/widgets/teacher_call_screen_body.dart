@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
-
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 import '../manager/teacher_call_cubit/teacher_call_cubit.dart';
 
@@ -88,6 +87,12 @@ class TeacherCallScreenBody extends StatelessWidget {
         }
         else if (state is MeetingOpenedState) {
           context.pop();
+        }else if(state is TeacherIsInMeetingButYouWillJoin){
+          Future.delayed(Duration(seconds: 4)).then((_){
+            if(!context.mounted)return;
+            context.pop();
+            TeacherCallCubit.get(context).openMeet(state.meetingId);
+          });
         }
       },
       builder: (context, state) {
@@ -149,6 +154,16 @@ class TeacherCallScreenBody extends StatelessWidget {
                   if(state is CallAnsweredState)
                   Text(
                     AppStrings.callAccepted.tr(context),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                  if(state is TeacherIsInMeetingButYouWillJoin)
+                  Text(
+                    AppStrings.theTeacherInCallNow.tr(context),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 18.sp,

@@ -38,3 +38,8 @@ class ToggleTeacherFavErrorState extends HomeState {
   ToggleTeacherFavErrorState(this.error);
 }
 
+class ErrorWhileCreateMeeting extends HomeState {
+  final String error;
+
+  ErrorWhileCreateMeeting(this.error);
+}

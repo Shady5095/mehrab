@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mehrab/core/config/routes/app_routes.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
@@ -33,7 +34,7 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
   final AudioPlayer _player = AudioPlayer();
   bool _isCallAccepted = false;
   DateTime? _acceptTime;
-  String? googleMeetLink ;
+  String? googleMeetLink;
 
   Future<void> playSound() async {
     _player.setReleaseMode(ReleaseMode.loop);
@@ -52,14 +53,14 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
   }
 
   void getAcceptedTime() {
-    if(widget.model.acceptedTime != null){
+    if (widget.model.acceptedTime != null) {
       _isCallAccepted = true;
       _acceptTime = widget.model.acceptedTime!.toDate();
       stopSound();
-      setState(() {
-      });
+      setState(() {});
     }
   }
+
   @override
   void dispose() {
     stopSound();
@@ -80,193 +81,253 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
       canPop: false,
       child: BlocProvider.value(
         value: widget.cubit,
-        child: MyAlertDialog(
-          makeIosAndAndroidSameDialog: true,
-          actions: [],
-          width: 70.wR,
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    _isCallAccepted ? AppStrings.ongoingCall.tr(context) : AppStrings.incomingCall.tr(context),
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if(_isCallAccepted)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Icon(
-                        Icons.call,
-                        color: Colors.green,
-                        size: 35.sp,
-                      ),
-                    )
-                  else
-                  Lottie.asset(
-                    delegates: LottieDelegates(
-                      values: [
-                        ValueDelegate.color(
-                          const ['**'],
-                          value: Colors.green,
-                        ),
-                      ],
-                    ),
-                    "assets/json/ringing2.json",
-                    width: 50.sp,
-                    height: 50.sp,
-                    fit: BoxFit.cover,
-                  ),
-                ],
-              ),
-              SizedBox(height: 10.sp),
-              BuildUserItemPhoto(
-                imageUrl: widget.model.studentPhoto,
-                radius: 45.sp,
-                imageColor: Colors.white,
-              ),
-              SizedBox(height: 10.sp),
-              Text(
-                widget.model.studentName,
-                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
-              ),
-              if (!_isCallAccepted)
-                Text(
-                  AppStrings.wantsToJoinSession.tr(context),
-                  style: TextStyle(fontSize: 16.sp, color: Colors.grey),
-                )
-              else
-                StreamBuilder(
-                  stream: Stream.periodic(const Duration(seconds: 1)),
-                  builder: (context, snapshot) {
-                    final duration = widget.model.acceptedTime != null
-                        ? DateTime.now().difference(widget.model.acceptedTime!.toDate())
-                        : _acceptTime != null
-                        ? DateTime.now().difference(_acceptTime!)
-                        : Duration.zero;
-                    return Text(
-                      _formatDuration(duration),
-                      style: TextStyle(fontSize: 16.sp, color: Colors.grey),
-                    );
-                  },
-                ),
-              SizedBox(height: 20.sp),
-              if(_isCallAccepted)
+        child: BlocListener<HomeCubit, HomeState>(
+          listener: (context, state) {
+            if(state is ErrorWhileCreateMeeting) {
+              myToast(msg: state.error, state: ToastStates.error,toastLength: Toast.LENGTH_LONG);
+            }
+          },
+          child: MyAlertDialog(
+            makeIosAndAndroidSameDialog: true,
+            actions: [],
+            width: 70.wR,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-
+                    Text(
+                      _isCallAccepted
+                          ? AppStrings.ongoingCall.tr(context)
+                          : AppStrings.incomingCall.tr(context),
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (_isCallAccepted)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Icon(
+                          Icons.call,
+                          color: Colors.green,
+                          size: 35.sp,
+                        ),
+                      )
+                    else
+                      Lottie.asset(
+                        delegates: LottieDelegates(
+                          values: [
+                            ValueDelegate.color(const [
+                              '**',
+                            ], value: Colors.green),
+                          ],
+                        ),
+                        "assets/json/ringing2.json",
+                        width: 50.sp,
+                        height: 50.sp,
+                        fit: BoxFit.cover,
+                      ),
+                  ],
+                ),
+                SizedBox(height: 10.sp),
+                BuildUserItemPhoto(
+                  imageUrl: widget.model.studentPhoto,
+                  radius: 45.sp,
+                  imageColor: Colors.white,
+                ),
+                SizedBox(height: 10.sp),
+                Text(
+                  widget.model.studentName,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (!_isCallAccepted)
+                  Text(
+                    AppStrings.wantsToJoinSession.tr(context),
+                    style: TextStyle(fontSize: 16.sp, color: Colors.grey),
+                  )
+                else
+                  StreamBuilder(
+                    stream: Stream.periodic(const Duration(seconds: 1)),
+                    builder: (context, snapshot) {
+                      final duration =
+                          widget.model.acceptedTime != null
+                              ? DateTime.now().difference(
+                                widget.model.acceptedTime!.toDate(),
+                              )
+                              : _acceptTime != null
+                              ? DateTime.now().difference(_acceptTime!)
+                              : Duration.zero;
+                      return Text(
+                        _formatDuration(duration),
+                        style: TextStyle(fontSize: 16.sp, color: Colors.grey),
+                      );
+                    },
+                  ),
+                SizedBox(height: 20.sp),
+                if (_isCallAccepted)
+                  Row(
+                    children: [
                       Expanded(
                         child: TextButton(
                           onPressed: () {
-                            if(googleMeetLink != null ){
-                              widget.cubit.openMeet(googleMeetLink!).catchError((error) {
-                                myToast(msg: error.toString(), state: error);
-                              });
-                            }else{
-                              widget.cubit.acceptCall(widget.model.callId, widget.model.studentName).then((meetLink) {
-                                googleMeetLink = meetLink;
-                                setState(() {});
-                              }).catchError((error) {
-                                myToast(msg: error.toString(), state: error);
-                              });
+                            if (googleMeetLink != null) {
+                              widget.cubit.openMeet(googleMeetLink!).catchError(
+                                (error) {
+                                  myToast(msg: error.toString(), state: error);
+                                },
+                              );
+                            } else {
+                              widget.cubit
+                                  .acceptCall(
+                                    widget.model.callId,
+                                    widget.model.studentName,
+                                  )
+                                  .then((meetLink) {
+                                    googleMeetLink = meetLink;
+                                    setState(() {});
+                                  })
+                                  .catchError((error) {
+                                    myToast(
+                                      msg: error.toString(),
+                                      state: error,
+                                    );
+                                  });
                             }
-
                           },
                           child: Text(
                             AppStrings.reJoin.tr(context),
                             style: TextStyle(
-                                color: AppColors.myAppColor.withValues(alpha: 0.8),
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: MainAppCubit.instance(context).setFontFamily()
+                              color: AppColors.myAppColor.withValues(
+                                alpha: 0.8,
+                              ),
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              fontFamily:
+                                  MainAppCubit.instance(
+                                    context,
+                                  ).setFontFamily(),
                             ),
                           ),
                         ),
                       ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () {
-                          widget.cubit.endCall(widget.model.callId,widget.model.studentUid,widget.model.teacherName).catchError((error) {
-                            myToast(msg: error.toString(), state: error);
-                          });
-                          context.pop();
-                          context.navigateTo(pageName: AppRoutes.rateSessionScreen, arguments: [widget.model,false]);
-                        },
-                        child: Text(
-                          AppStrings.endCall.tr(context),
-                          style: TextStyle(
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () {
+                            widget.cubit
+                                .endCall(
+                                  widget.model.callId,
+                                  widget.model.studentUid,
+                                  widget.model.teacherName,
+                                )
+                                .catchError((error) {
+                                  myToast(msg: error.toString(), state: error);
+                                });
+                            context.pop();
+                            context.navigateTo(
+                              pageName: AppRoutes.rateSessionScreen,
+                              arguments: [widget.model, false],
+                            );
+                          },
+                          child: Text(
+                            AppStrings.endCall.tr(context),
+                            style: TextStyle(
                               color: AppColors.redColor.withValues(alpha: 0.8),
                               fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
-                              fontFamily: MainAppCubit.instance(context).setFontFamily()
+                              fontFamily:
+                                  MainAppCubit.instance(
+                                    context,
+                                  ).setFontFamily(),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                )
-              else
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  CircleAvatar(
-                    radius: 25.sp,
-                    backgroundColor: Colors.red,
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.call_end,
-                        color: Colors.white,
-                        size: 25.sp,
+                    ],
+                  )
+                else
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      CircleAvatar(
+                        radius: 25.sp,
+                        backgroundColor: Colors.red,
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.call_end,
+                            color: Colors.white,
+                            size: 25.sp,
+                          ),
+                          onPressed: () {
+                            widget.cubit.declineCall(widget.model.callId);
+                            context.pop();
+                          },
+                        ),
                       ),
-                      onPressed: () {
-                        widget.cubit.declineCall(widget.model.callId);
-                        context.pop();
-                      },
-                    ),
+                      CircleAvatar(
+                        radius: 25.sp,
+                        backgroundColor: Colors.green,
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.call,
+                            color: Colors.white,
+                            size: 25.sp,
+                          ),
+                          onPressed: () async {
+                            if (CacheService.getData(
+                                  key: "instructionsForStartSession",
+                                ) ==
+                                true) {
+                              onTapAccept();
+                              return;
+                            }
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder:
+                                  (context) =>
+                                      InstructionsForStartSessionDialog(),
+                            ).then((value) {
+                              if (value == true) {
+                                CacheService.setData(
+                                  key: "instructionsForStartSession",
+                                  value: true,
+                                );
+                                onTapAccept();
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  CircleAvatar(
-                    radius: 25.sp,
-                    backgroundColor: Colors.green,
-                    child: IconButton(
-                      icon: Icon(Icons.call, color: Colors.white, size: 25.sp),
-                      onPressed: () async {
-                        if(CacheService.getData(key: "instructionsForStartSession") == true){
-                          onTapAccept();
-                          return;
-                        }
-                        showDialog(context: context, barrierDismissible: false, builder: (context)=>InstructionsForStartSessionDialog()).then((value){
-                          if(value == true){
-                            CacheService.setData(key: "instructionsForStartSession", value: true);
-                            onTapAccept();
-                          }
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
   void onTapAccept() {
     stopSound();
     setState(() {
       _isCallAccepted = true;
       _acceptTime = DateTime.now();
     });
-    widget.cubit.acceptCall(widget.model.callId, widget.model.studentName).then((meetLink) {
-      googleMeetLink = meetLink;
-      setState(() {});
-    }).catchError((error) {
-      myToast(msg: error.toString(), state: error);
-    });
+    widget.cubit
+        .acceptCall(widget.model.callId, widget.model.studentName)
+        .then((meetLink) {
+          googleMeetLink = meetLink;
+          setState(() {});
+        })
+        .catchError((error) {
+          myToast(msg: error.toString(), state: error);
+        });
   }
 }

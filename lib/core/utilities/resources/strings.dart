@@ -1468,6 +1468,7 @@ class AppStrings {
   static const String fifthInstructions = 'fifthInstructions';
   static const String sixthInstructions = 'sixthInstructions';
   static const String okayStartSession = 'okayStartSession';
+  static const String theTeacherInCallNow = 'theTeacherInCallNow';
 
 
 

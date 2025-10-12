@@ -318,56 +318,94 @@ class HomeCubit extends Cubit<HomeState> {
   );
 
   Future<GoogleSignInAccount?> signInUser() async {
-    await _googleSignIn.signOut(); // Ensure previous sessions are cleared
-    return await _googleSignIn.signIn();
+    try {
+      await _googleSignIn.signOut();
+      final account = await _googleSignIn.signIn();
+
+      if (account == null) {
+        printWithColor("⚠️ المستخدم لغى تسجيل الدخول أو لم يتم تحديد حساب.");
+        return null;
+      }
+
+      printWithColor("✅ تسجيل الدخول تم بنجاح: ${account.email}");
+      return account;
+    } catch (e) {
+      printWithColor("❌ خطأ أثناء تسجيل الدخول: $e");
+      emit(ErrorWhileCreateMeeting(e.toString()));
+      return null;
+    }
   }
 
   Future<String?> createGoogleMeetEvent(
-    GoogleSignInAccount user,
-    String meetingName,
-  ) async {
-    final authHeaders = await user.authHeaders;
-    final client = authenticatedClient(
-      http.Client(),
-      AccessCredentials(
-        AccessToken(
-          'Bearer',
-          authHeaders['Authorization']!.split(" ").last,
-          DateTime.now().toUtc(),
+      GoogleSignInAccount user,
+      String meetingName,
+      ) async {
+    try {
+      final authHeaders = await user.authHeaders;
+
+      if (!authHeaders.containsKey('Authorization')) {
+        printWithColor("⚠️ لم يتم العثور على ترويسة المصادقة (auth headers).");
+        emit(ErrorWhileCreateMeeting("⚠️ لم يتم العثور على ترويسة المصادقة (auth headers)."));
+        return null;
+      }
+
+      final client = authenticatedClient(
+        http.Client(),
+        AccessCredentials(
+          AccessToken(
+            'Bearer',
+            authHeaders['Authorization']!.split(" ").last,
+            DateTime.now().toUtc().add(Duration(hours: 1)),
+          ),
+          null,
+          ['https://www.googleapis.com/auth/calendar.events'],
         ),
-        null,
-        ['https://www.googleapis.com/auth/calendar.events'],
-      ),
-    );
+      );
 
-    var calendarApi = calendar.CalendarApi(client);
+      final calendarApi = calendar.CalendarApi(client);
 
-    var event = calendar.Event(
-      summary: meetingName,
-      start: calendar.EventDateTime(
-        dateTime: DateTime.now().toUtc().add(Duration(minutes: 1)),
-        timeZone: "UTC",
-      ),
-      end: calendar.EventDateTime(
-        dateTime: DateTime.now().toUtc().add(Duration(hours: 1)),
-        timeZone: "UTC",
-      ),
-      conferenceData: calendar.ConferenceData(
-        createRequest: calendar.CreateConferenceRequest(
-          requestId: DateTime.now().millisecondsSinceEpoch.toString(),
-          conferenceSolutionKey: calendar.ConferenceSolutionKey(
-            type: "hangoutsMeet",
+      final event = calendar.Event(
+        summary: meetingName,
+        start: calendar.EventDateTime(
+          dateTime: DateTime.now().toUtc().add(Duration(minutes: 1)),
+          timeZone: "UTC",
+        ),
+        end: calendar.EventDateTime(
+          dateTime: DateTime.now().toUtc().add(Duration(hours: 1)),
+          timeZone: "UTC",
+        ),
+        conferenceData: calendar.ConferenceData(
+          createRequest: calendar.CreateConferenceRequest(
+            requestId: DateTime.now().millisecondsSinceEpoch.toString(),
+            conferenceSolutionKey: calendar.ConferenceSolutionKey(
+              type: "hangoutsMeet",
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    var createdEvent = await calendarApi.events.insert(
-      event,
-      "primary",
-      conferenceDataVersion: 1,
-    );
-    return createdEvent.conferenceData?.entryPoints?.first.uri;
+      final createdEvent = await calendarApi.events.insert(
+        event,
+        "primary",
+        conferenceDataVersion: 1,
+      );
+
+      final meetLink = createdEvent.conferenceData?.entryPoints?.first.uri;
+
+      if (meetLink != null) {
+        printWithColor("✅ تم إنشاء اجتماع Google Meet: $meetLink");
+        return meetLink;
+      } else {
+        printWithColor("⚠️ تم إنشاء الحدث بدون رابط اجتماع.");
+        emit(ErrorWhileCreateMeeting("⚠️ تم إنشاء الحدث بدون رابط اجتماع."));
+        return null;
+      }
+    } catch (e, stack) {
+      printWithColor("❌ خطأ أثناء إنشاء الحدث: $e");
+      printWithColor(stack);
+      emit(ErrorWhileCreateMeeting("❌ خطأ أثناء إنشاء الجلسة: $e"));
+      return null;
+    }
   }
 
   Future<void> openMeet(String url) async {

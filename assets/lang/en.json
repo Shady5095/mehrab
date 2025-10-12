@@ -1189,5 +1189,6 @@
   "fourthInstructions": "4. After selecting your account, make sure to enable the option (View and edit events on all your calendars) as shown in the image above.",
   "fifthInstructions": "5. Then click on the (Continue) button at the bottom of the window.",
   "sixthInstructions": "6. You will be redirected to Google Meet to start the session.",
-  "okayStartSession": "Okay, Start Session"
+  "okayStartSession": "Okay, Start Session",
+  "theTeacherInCallNow": "The teacher is currently in a call with other students, but you will now join with them."
 }
