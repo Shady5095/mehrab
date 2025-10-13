@@ -66,6 +66,7 @@ class RegisterScreenBody extends StatelessWidget {
                                   : AppStrings.completeRegistration,
                         ),
                         RegisterProfilePhotoBuild(),
+                        if(!Platform.isIOS || cubit.socialSignInModel?.singInMethod != 'apple' || cubit.socialSignInModel?.displayName ==null)
                         MyTextField(
                           label: AppStrings.fullName.tr(context),
                           controller: cubit.nameController,
@@ -96,7 +97,7 @@ class RegisterScreenBody extends StatelessWidget {
                                 AppStrings.name,
                               ),
                         ),
-                        if(!Platform.isIOS || cubit.socialSignInModel != null)
+                        if(!Platform.isIOS || cubit.socialSignInModel?.singInMethod != 'apple')
                         MyTextField(
                           label: AppStrings.email.tr(context),
                           controller: cubit.emailController,

@@ -105,7 +105,6 @@ class LoginCubit extends Cubit<LoginStates> {
           redirectUri: Uri.parse('https://yourapp.com/callbacks/sign_in_with_apple_cb'),
         ),
       );
-
       // تحقق إذا كانت أول مرة بناءً على وجود الاسم أو الإيميل
       final isFirstTime = appleCredential.givenName != null || appleCredential.email != null;
 
@@ -124,7 +123,6 @@ class LoginCubit extends Cubit<LoginStates> {
 
       UserCredential userCredential =
       await FirebaseAuth.instance.signInWithCredential(firebaseCredential);
-
       final socialModel = GoogleSignInModel(
         email: userCredential.user?.email ?? appleCredential.email,
         displayName: userCredential.user?.displayName ??
