@@ -6,6 +6,8 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/toast.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
+import 'package:mehrab/core/widgets/buttons_widget.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 import '../manager/student_call_cubit/student_call_cubit.dart';
 import '../manager/student_call_cubit/student_call_state.dart';
@@ -17,7 +19,58 @@ class StudentCallScreenBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<StudentCallCubit, StudentCallState>(
       listener: (context, state) {
-        if (state is CallEndedByTimeOut) {
+        if (state is MicrophonePermanentlyDenied) {
+          context.pop();
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              contentPadding: const EdgeInsets.all(30),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    AppStrings.microphonePermissionTitle.tr(context),
+                    style: TextStyle(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    AppStrings.microphonePermissionPermanentlyDenied.tr(context),
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+              actions: [
+                ButtonWidget(
+                  onPressed: () {
+                    openAppSettings();
+                    context.pop();
+                  },
+                  height: 38,
+                  label: AppStrings.openSettings.tr(context),
+
+                )
+              ],
+            ),
+          );
+        }
+
+        else if (state is MicrophoneNotAllowed) {
+          context.pop();
+          myToast(
+            msg: AppStrings.microphonePermissionNotAllowed.tr(context),
+            state: ToastStates.error,
+            toastLength: Toast.LENGTH_LONG,
+          );
+        }
+        else if (state is CallEndedByTimeOut) {
           context.pop();
           showDialog(
             context: context,

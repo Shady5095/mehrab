@@ -6,7 +6,7 @@ class AgoraCallService {
   RtcEngine? _engine;
   bool isMicMuted = false;
   bool isInitialized = false;
-  bool _isSpeakerOn = false;
+  bool _isSpeakerOn = true;
 
   // Callbacks
   Function(int uid)? onUserJoined;
@@ -71,7 +71,7 @@ class AgoraCallService {
         ),
       );
 
-      /*// Enable audio AFTER initialization
+      // Enable audio AFTER initialization
       await _engine!.enableAudio();
       debugPrint('✅ Audio enabled');
 
@@ -84,7 +84,7 @@ class AgoraCallService {
 
       // Configure audio settings
       await _engine!.setDefaultAudioRouteToSpeakerphone(true);
-      debugPrint('✅ Default audio route set to speakerphone');*/
+      debugPrint('✅ Default audio route set to speakerphone');
 
       isInitialized = true;
       debugPrint('✅ Agora Engine fully initialized');

@@ -40,3 +40,9 @@ final class AgoraConnectionError extends StudentCallState {
   final String error;
   AgoraConnectionError({required this.error});
 }
+
+final class MicrophoneNotAllowed extends StudentCallState {}
+
+final class MicrophonePermanentlyDenied extends StudentCallState {}
+
+final class MicrophoneAllowed extends StudentCallState {}

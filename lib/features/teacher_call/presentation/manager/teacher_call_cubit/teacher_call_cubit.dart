@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:proximity_sensor/proximity_sensor.dart';
+import 'package:screen_off/screen_off.dart';
 
 import '../../../../../core/utilities/services/call_service.dart';
 part 'teacher_call_state.dart';
@@ -79,7 +81,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   }
   bool isCallConnected = false;
   bool isMicMuted = false;
-  bool isSpeakerOn = false;
+  bool isSpeakerOn = true;
   Future<void> setupAgoraCallService() async {
     callService = AgoraCallService();
     callService.onUserJoined = (uid) {};
@@ -87,7 +89,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       await endCall();
     };
     callService.onError = (error) {
-      emit(AgoraConnectionError(error: error));
+      //emit(AgoraConnectionError(error: error));
     };
     callService.onCallEnded = () {
 
@@ -111,12 +113,19 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   Future<void> toggleMicMute() async {
     await callService.toggleMute();
     isMicMuted = callService.isMicMuted;
+    HapticFeedback.heavyImpact();
     emit(TeacherCallInitial());
   }
 
   Future<void> switchSpeaker() async {
     await callService.switchSpeaker(!callService.isSpeakerOn);
     isSpeakerOn = callService.isSpeakerOn;
+    HapticFeedback.heavyImpact();
+    if(!isSpeakerOn){
+      enableProximitySensor();
+    }else{
+      disableProximitySensor();
+    }
     emit(TeacherCallInitial());
   }
 
@@ -153,7 +162,24 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     _callDurationTimer?.cancel();
     _callDurationTimer = null;
   }
+  StreamSubscription<dynamic>? _proximitySubscription;
+  bool _isNear = false;
 
+  void enableProximitySensor() {
+    _proximitySubscription = ProximitySensor.events.listen((event) async {
+      _isNear = event > 0;
+      if (_isNear) {
+        await ScreenOff.turnScreenOff();
+      } else {
+        await ScreenOff.turnScreenOn();
+      }
+    });
+  }
+
+  void disableProximitySensor() {
+    _proximitySubscription?.cancel();
+    _proximitySubscription = null;
+  }
   @override
   Future<void> close() {
     stopSound();

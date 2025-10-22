@@ -71,9 +71,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (var item in boarding) {
+        precacheImage(AssetImage(item.image1), context);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //appBar: AppBar(),
       body: Stack(
         children: [
           PageView.builder(
@@ -111,7 +120,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
                         fontSize: 17.sp,
-                        fontFamily: 'Cairo'
+                        fontFamily: 'Cairo',
                       ),
                     ),
                   ),
@@ -172,12 +181,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     children: [
       Image(
         image: AssetImage(model.image1),
-
         height: 100.hR,
         width: 100.wR,
         fit: BoxFit.cover,
       ),
-      Container(color: Colors.black.withValues(alpha: index == 2 || index == 3 ? 0.7: 0.5)),
+      Container(
+          color: Colors.black.withValues(
+              alpha: index == 2 || index == 3 ? 0.7 : 0.5)),
       Positioned(
         right: 0,
         left: 0,

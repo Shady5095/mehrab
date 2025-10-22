@@ -1475,6 +1475,10 @@ class AppStrings {
   static const String onCallFinishedTitle = 'onCallFinishedTitle';
   static const String onCallFinishedDescription = 'onCallFinishedDescription';
   static const String connected = 'connected';
+  static const String microphonePermissionNotAllowed = 'microphonePermissionNotAllowed';
+  static const String microphonePermissionPermanentlyDenied = 'microphonePermissionPermanentlyDenied';
+  static const String microphonePermissionTitle = 'microphonePermissionTitle';
+  static const String openSettings = 'openSettings';
 
 
 

@@ -10,6 +10,8 @@ import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
 import 'package:mehrab/features/teacher_call/presentation/manager/student_call_cubit/student_call_state.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:proximity_sensor/proximity_sensor.dart';
+import 'package:screen_off/screen_off.dart';
 
 import '../../../../../core/utilities/services/call_service.dart';
 
@@ -25,13 +27,21 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   final db = FirebaseFirestore.instance;
   final AudioPlayer _player = AudioPlayer();
   Future<void> requestPermissions() async {
-   // check and request microphone permission
     var status = await Permission.microphone.status;
-    if (!status.isGranted) {
-      await Permission.microphone.request();
-      if(await Permission.microphone.isGranted == false){
-        emit(AgoraConnectionError(error: "لم يتم منح إذن الميكروفونو"));
-      }
+
+    if (status.isDenied) {
+      status = await Permission.microphone.request();
+    }
+
+    if (status.isPermanentlyDenied) {
+      emit(MicrophonePermanentlyDenied());
+      return;
+    }
+
+    if (status.isGranted) {
+      emit(MicrophoneAllowed());
+    } else {
+      emit(MicrophoneNotAllowed());
     }
   }
   Future<void> playSound() async {
@@ -49,14 +59,16 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   }
 
   void initCall() async {
-    requestPermissions();
     await playSound();
-    await sendCallToTeacher();
-    await setupAgoraCallService();
-    callPushNotification();
-    callListener();
-    startCallTimeout();
-    emit(SendCallToTeacherSuccess());
+    await requestPermissions();
+    if(state is MicrophoneAllowed ) {
+      await sendCallToTeacher();
+      await setupAgoraCallService();
+      callPushNotification();
+      callListener();
+      startCallTimeout();
+      emit(SendCallToTeacherSuccess());
+    }
   }
 
   String? callDocId;
@@ -196,7 +208,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   bool isCallAnswered = false;
   bool isAnotherUserJoined = false;
   bool isMicMuted = false;
-  bool isSpeakerOn = false;
+  bool isSpeakerOn = true;
   Future<void> setupAgoraCallService() async {
     callService = AgoraCallService();
     callService.onUserJoined = (uid) {
@@ -209,7 +221,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       await endCallAfterAnswer(isByUser: false);
     };
     callService.onError = (error) {
-      emit(AgoraConnectionError(error: error));
+      //emit(AgoraConnectionError(error: error));
     };
     callService.onCallEnded = () {
 
@@ -231,12 +243,19 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   Future<void> toggleMicMute() async {
     await callService.toggleMute();
     isMicMuted = callService.isMicMuted;
+    HapticFeedback.heavyImpact();
     emit(TeacherCallInitial());
   }
 
   Future<void> switchSpeaker() async {
     await callService.switchSpeaker(!callService.isSpeakerOn);
     isSpeakerOn = callService.isSpeakerOn;
+    HapticFeedback.heavyImpact();
+    if(!isSpeakerOn){
+      enableProximitySensor();
+    }else{
+      disableProximitySensor();
+    }
     emit(TeacherCallInitial());
   }
 
@@ -282,6 +301,24 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   void stopCallTimer() {
     _callDurationTimer?.cancel();
     _callDurationTimer = null;
+  }
+  StreamSubscription<dynamic>? _proximitySubscription;
+  bool _isNear = false;
+
+  void enableProximitySensor() {
+    _proximitySubscription = ProximitySensor.events.listen((event) async {
+        _isNear = event > 0;
+      if (_isNear) {
+        await ScreenOff.turnScreenOff();
+      } else {
+        await ScreenOff.turnScreenOn();
+      }
+    });
+  }
+
+  void disableProximitySensor() {
+    _proximitySubscription?.cancel();
+    _proximitySubscription = null;
   }
 
   @override
