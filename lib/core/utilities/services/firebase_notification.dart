@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:mehrab/core/config/routes/app_routes.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/services/cache_service.dart';
-import 'package:mehrab/core/utilities/services/firebase_private_key.dart';
+import 'package:mehrab/core/utilities/services/sensitive_app_constants.dart';
 import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.dart';
 
 import '../functions/print_with_color.dart';
@@ -111,7 +111,7 @@ class AppFirebaseNotification {
       "type": "service_account",
       "project_id": "mehrab-a8e60",
       "private_key_id": "7d0bafe44af019f11fa73ec5b870befb1b5987c5",
-      "private_key": privateKeyNotifications,
+      "private_key": SensitiveAppConstants.privateKeyNotifications,
       "client_email": "firebase-adminsdk-fbsvc@mehrab-a8e60.iam.gserviceaccount.com",
       "client_id": "117743556891008027326",
       "auth_uri": "https://accounts.google.com/o/oauth2/auth",

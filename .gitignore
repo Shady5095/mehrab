@@ -29,6 +29,7 @@ migrate_working_dir/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+firebase.json
 .pub-cache/
 .pub/
 /build/
@@ -45,7 +46,7 @@ app.*.map.json
 /android/app/release
 
 # Firebase private key
-lib/core/utilities/services/firebase_private_key.dart
+lib/core/utilities/services/sensitive_app_constants.dart
 lib/firebase_options.dart
 ios/Runner/GoogleService-Info.plist
 /ios/build/

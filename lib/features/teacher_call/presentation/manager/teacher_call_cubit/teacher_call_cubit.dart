@@ -1,30 +1,41 @@
+import 'package:bloc/bloc.dart';
+import 'package:meta/meta.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mehrab/core/utilities/functions/print_with_color.dart';
-import 'package:mehrab/core/utilities/resources/constants.dart';
-import 'package:mehrab/core/utilities/services/firebase_notification.dart';
-import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
-import 'package:meta/meta.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
+import 'package:permission_handler/permission_handler.dart';
 
+import '../../../../../core/utilities/services/call_service.dart';
 part 'teacher_call_state.dart';
 
 class TeacherCallCubit extends Cubit<TeacherCallState> {
-  TeacherCallCubit({required this.teacherModel}) : super(TeacherCallInitial());
-
-  final TeacherModel teacherModel;
+  final CallModel callModel;
+  TeacherCallCubit({
+    required this.callModel,
+}) : super(TeacherCallInitial());
 
   static TeacherCallCubit get(context) => BlocProvider.of(context);
 
+  late AgoraCallService callService ;
   final db = FirebaseFirestore.instance;
   final AudioPlayer _player = AudioPlayer();
+  Future<void> requestPermissions() async {
+    // check and request microphone permission
+    var status = await Permission.microphone.status;
+    if (!status.isGranted) {
+      await Permission.microphone.request();
+      if(await Permission.microphone.isGranted == false){
+        emit(AgoraConnectionError(error: "لم يتم منح إذن الميكروفون"));
+      }
+    }
+  }
 
-  Future<void> playSound() async {
-    _player.setReleaseMode(ReleaseMode.loop);
-    await _player.play(AssetSource('audio/phone-ringing.mp3'));
+  Future<void> playAnswerSound() async {
+    _player.setReleaseMode(ReleaseMode.stop);
+    await _player.play(AssetSource('audio/userJoinedSound.mp3'));
   }
 
   Future<void> stopSound() async {
@@ -32,175 +43,124 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   }
 
   void initCall() async {
-    await playSound();
-    getCurrentMeetingLinkIfTeacherIsInMeeting().then((meetingLink) async {
-      if(meetingLink != null){
-        await stopSound();
-        return;
-      }else{
-        await sendCallToTeacher();
-        callPushNotification();
-        callListener();
-        startCallTimeout();
-        emit(SendCallToTeacherSuccess());
-      }
-    });
+    await requestPermissions();
+    await Future.delayed(Duration(
+        milliseconds: 300
+    ));
+    await playAnswerSound();
+    await setupAgoraCallService();
+    joinAgoraChannel(callModel.callId);
   }
 
-  String? callDocId;
-
-  Future<void> sendCallToTeacher() async {
-    await db
-        .collection('calls')
-        .add({
-          'teacherUid': teacherModel.uid,
-          'timestamp': FieldValue.serverTimestamp(),
-          'studentUid': currentUserModel?.uid ?? '',
-          "studentName": currentUserModel?.name ?? '',
-          "teacherName": teacherModel.name,
-          "studentPhoto": currentUserModel?.imageUrl,
-          "teacherPhoto": teacherModel.imageUrl,
-          'status': "ringing",
-        })
-        .then((value) {
-          callDocId = value.id;
-          value.update({'callId': value.id});
-        })
-        .catchError((error) {
-          emit(SendCallToTeacherFailure(error: error.toString()));
-        });
-  }
-
-  Future<bool> checkIfAnotherCallRinging() async {
-    final querySnapshot =
-        await db
-            .collection('calls')
-            .where('teacherUid', isEqualTo: teacherModel.uid)
-            .where('status', whereIn: ['answered', 'ringing'])
-            .get();
-
-    return querySnapshot.docs.isNotEmpty;
-  }
-
-  Future<void> endCall({bool isByUser = false}) async {
-    if (callDocId != null) {
+  Future<void> endCall() async {
       await db
           .collection('calls')
-          .doc(callDocId)
-          .update({'status': 'missed'})
-          .then((value) {
-            if (isByUser) {
-              emit(CallEndedByUserState());
-            } else {
-              emit(CallEndedByTimeOut());
-            }
-          })
+          .doc(callModel.callId)
+          .update({'status': 'ended',"endedTime" : FieldValue.serverTimestamp()})
+          .then((value) async {
+        await endAgoraCall();
+        emit(CallFinished());
+      })
           .catchError((error) {
-            emit(SendCallToTeacherFailure(error: error.toString()));
-          });
+        emit(SendCallToTeacherFailure(error: error.toString()));
+      });
+  }
+  StreamSubscription<DocumentSnapshot>? _callSubscription;
+
+  Future<void> onTeacherAnswer(CallModel data) async {
+    emit(CallAnsweredState());
+    stopSound();
+    await Future.delayed(Duration(
+        milliseconds: 300
+    ));
+    playAnswerSound();
+    HapticFeedback.heavyImpact();
+    joinAgoraChannel(data.callId);
+  }
+  bool isCallConnected = false;
+  bool isMicMuted = false;
+  bool isSpeakerOn = false;
+  Future<void> setupAgoraCallService() async {
+    callService = AgoraCallService();
+    callService.onUserJoined = (uid) {};
+    callService.onUserLeft = (uid) async {
+      await endCall();
+    };
+    callService.onError = (error) {
+      emit(AgoraConnectionError(error: error));
+    };
+    callService.onCallEnded = () {
+
+    };
+    callService.onConnectionSuccess = () {
+      startCallTimer();
+      isCallConnected = true;
+      emit(TeacherCallInitial());
+    };
+    await callService.initialize();
+  }
+
+  Future<void> joinAgoraChannel(String channelId) async {
+    await callService.joinChannel(channelId);
+  }
+
+  Future<void> endAgoraCall() async {
+    await callService.endCall();
+  }
+
+  Future<void> toggleMicMute() async {
+    await callService.toggleMute();
+    isMicMuted = callService.isMicMuted;
+    emit(TeacherCallInitial());
+  }
+
+  Future<void> switchSpeaker() async {
+    await callService.switchSpeaker(!callService.isSpeakerOn);
+    isSpeakerOn = callService.isSpeakerOn;
+    emit(TeacherCallInitial());
+  }
+
+  final StreamController<String> _callTimerController =
+  StreamController<String>.broadcast();
+
+  Stream<String> get callTimerStream => _callTimerController.stream;
+
+  Timer? _callDurationTimer;
+  Duration _elapsedTime = Duration.zero;
+
+  String _formatDuration(Duration d) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(d.inMinutes.remainder(60));
+    final seconds = twoDigits(d.inSeconds.remainder(60));
+    return "$minutes:$seconds";
+  }
+
+  void startCallTimer() {
+    if (_callDurationTimer != null && _callDurationTimer!.isActive) {
+      return;
     }
-  }
 
-  void callListener() {
-    FirebaseFirestore.instance
-        .collection('calls')
-        .doc(callDocId)
-        .snapshots()
-        .listen((snapshot) {
-          if (snapshot.exists) {
-            final data = snapshot.data();
-            if (data != null && data['status'] == 'answered') {
-              emit(CallAnsweredState());
-              stopSound();
-              _callTimeoutTimer?.cancel();
-              if (data['meetingLink'] != null) {
-                openMeet(data['meetingLink'].toString())
-                    .then((value) {
-                      emit(MeetingOpenedState());
-                    })
-                    .catchError((error) {
-                      emit(SendCallToTeacherFailure(error: error.toString()));
-                    });
-              }
-            } else if (data != null && data['status'] == 'declined') {
-              emit(TeacherInAnotherCall());
-            }
-          }
-        });
-  }
+    _elapsedTime = Duration.zero;
+    _callTimerController.add(_formatDuration(_elapsedTime));
 
-  void closeListener() {
-    FirebaseFirestore.instance
-        .collection('calls')
-        .doc(callDocId)
-        .snapshots()
-        .listen((snapshot) {})
-        .cancel();
-  }
-
-  Timer? _callTimeoutTimer;
-
-  void startCallTimeout() {
-    // make a timer for 2 minutes to end the call if not answered even if the user closes the app
-    _callTimeoutTimer = Timer(const Duration(minutes: 2), () {
-      endCall();
+    _callDurationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _elapsedTime += const Duration(seconds: 1);
+      _callTimerController.add(_formatDuration(_elapsedTime));
     });
   }
 
-  Future<void> openMeet(String url) async {
-    final Uri meetUrl = Uri.parse(url);
-    if (await canLaunchUrl(meetUrl)) {
-      await launchUrl(meetUrl, mode: LaunchMode.externalApplication).catchError(
-        (error) {
-          printWithColor("catchError $error");
-          return error;
-        },
-      );
-    } else {
-      printWithColor("else");
-    }
-  }
-
-  void callPushNotification() {
-    AppFirebaseNotification.pushNotification(
-      title: "اتصال جديد 📞",
-      body:
-          "يريد الطالب ${currentUserModel?.name ?? ''} بدأ جلسة معك, برجاء فتح التطبيق الان",
-      dataInNotification: {},
-      topic: teacherModel.uid,
-    );
-  }
-
-  Future<String?> getCurrentMeetingLinkIfTeacherIsInMeeting() async {
-    try {
-      final querySnapshot =
-          await db
-              .collection('calls')
-              .where('teacherUid', isEqualTo: teacherModel.uid)
-              .orderBy("timestamp", descending: true)
-              .where('status', isEqualTo: 'answered')
-              .limit(1)
-              .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        final meetingLink = querySnapshot.docs.first.data()['meetingLink'];
-        emit(TeacherIsInMeetingButYouWillJoin(meetingId: meetingLink.toString() ));
-        return meetingLink;
-      } else {
-        return null;
-      }
-    } catch (e) {
-      printWithColor("Error fetching meeting link: $e");
-      return null;
-    }
+  void stopCallTimer() {
+    _callDurationTimer?.cancel();
+    _callDurationTimer = null;
   }
 
   @override
   Future<void> close() {
     stopSound();
     _player.dispose();
-    closeListener();
-    _callTimeoutTimer?.cancel();
+    _callTimerController.close();
+    stopCallTimer();
+    _callSubscription?.cancel();
     return super.close();
   }
 }

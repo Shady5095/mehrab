@@ -49,14 +49,14 @@ class StudentItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style:  TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
-                      "${AppStrings.joinedDate.tr(context)} : ${formatDate(context, userModel.joinedAt)}",
-                      style: TextStyle(fontSize: 12.sp, color: Colors.black54),
+                      "${AppStrings.joinedDate.tr(context)} : ${formatDate(context, userModel.joinedAt)} : ${formatTime(context, userModel.joinedAt)}",
+                      style: TextStyle(fontSize: 11.5.sp, color: Colors.black54),
                     ),
                   ],
                 ),

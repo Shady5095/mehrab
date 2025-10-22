@@ -20,10 +20,20 @@ final class TeacherInAnotherCall extends TeacherCallState {}
 
 final class CallAnsweredState extends TeacherCallState {}
 
-final class MeetingOpenedState extends TeacherCallState {}
-
 final class TeacherIsInMeetingButYouWillJoin extends TeacherCallState {
   final String meetingId;
   TeacherIsInMeetingButYouWillJoin({required this.meetingId});
 }
 
+final class AnotherUserJoinedSuccessfully extends TeacherCallState {}
+
+final class AnotherUserLeft extends TeacherCallState {}
+
+final class CallFinished extends TeacherCallState {}
+
+final class MaxDurationReached extends TeacherCallState {}
+
+final class AgoraConnectionError extends TeacherCallState {
+  final String error;
+  AgoraConnectionError({required this.error});
+}

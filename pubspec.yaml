@@ -4,7 +4,7 @@ description: "A new Flutter project."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 
-version: 1.1.2+22
+version: 1.1.8+28
 
 environment:
   sdk: ^3.7.0
@@ -42,12 +42,10 @@ dependencies:
   custom_clippers: ^2.0.0
   image_picker: ^1.2.0
   image_cropper: ^9.0.0
-  flutter_phoenix: ^1.1.1
   dropdown_button2: ^2.3.9
   mime: ^2.0.0
   audioplayers: ^6.5.1
   flutter_custom_clippers: ^2.1.0
-  data_table_2: ^2.5.18
   smooth_page_indicator: ^1.2.1
   dotted_border: ^2.1.0
   in_app_review: ^2.0.10
@@ -69,6 +67,7 @@ dependencies:
   sign_in_with_apple: ^7.0.1
   open_filex: ^4.3.4
   syncfusion_flutter_pdfviewer: ^31.1.17
+  agora_rtc_engine: ^6.5.3
 
 
 

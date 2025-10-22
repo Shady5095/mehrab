@@ -1190,5 +1190,11 @@
   "fifthInstructions": "5. Then click on the (Continue) button at the bottom of the window.",
   "sixthInstructions": "6. You will be redirected to Google Meet to start the session.",
   "okayStartSession": "Okay, Start Session",
-  "theTeacherInCallNow": "The teacher is currently in a call with other students, but you will now join with them."
+  "theTeacherInCallNow": "The teacher is currently in a call with other students, but you will now join with them.",
+  "serverError": "An error occurred when connecting to the server. Please try again later.",
+  "maxDurationExceeded" : "The maximum session duration has been exceeded.",
+  "connecting" : "Connecting...",
+  "onCallFinishedTitle" : "We are happy for hearing your voice",
+  "onCallFinishedDescription" : "Thank you for attending the session. We hope it was beneficial. Please don't forget to rate the teacher and leave your comments.",
+  "connected" : "Connected"
 }

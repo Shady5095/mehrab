@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/widgets/gradient_scaffold.dart';
-import '../manager/teacher_call_cubit/teacher_call_cubit.dart';
-import '../widgets/teacher_call_screen_body.dart';
+import '../manager/student_call_cubit/student_call_cubit.dart';
+import '../widgets/student_call_screen_body.dart';
 
-class TeacherCallScreen extends StatelessWidget {
-  const TeacherCallScreen({super.key});
+class StudentCallScreen extends StatelessWidget {
+  const StudentCallScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,8 +13,8 @@ class TeacherCallScreen extends StatelessWidget {
     return PopScope(
       canPop: false,
       child: BlocProvider(
-        create: (context) => TeacherCallCubit(
-          callModel: args[0],
+        create: (context) => StudentCallCubit(
+          teacherModel: args[0],
         )..initCall(),
         child: GradientScaffold(
           gradient: LinearGradient(
@@ -28,7 +28,7 @@ class TeacherCallScreen extends StatelessWidget {
               Color(0xFF5bafa5),
             ],
           ),
-          body: TeacherCallScreenBody(),
+          body: StudentCallScreenBody(),
         ),
       ),
     );

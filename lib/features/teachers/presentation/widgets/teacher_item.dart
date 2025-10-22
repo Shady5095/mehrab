@@ -106,7 +106,7 @@ class TeacherItem extends StatelessWidget {
                       return;
                     }
                     context.navigateTo(
-                      pageName: AppRoutes.teacherCallScreen,
+                      pageName: AppRoutes.studentCallScreen,
                       arguments: [teacher],
                     );
                   },

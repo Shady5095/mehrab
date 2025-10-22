@@ -1469,6 +1469,12 @@ class AppStrings {
   static const String sixthInstructions = 'sixthInstructions';
   static const String okayStartSession = 'okayStartSession';
   static const String theTeacherInCallNow = 'theTeacherInCallNow';
+  static const String serverError = 'serverError';
+  static const String maxDurationExceeded = 'maxDurationExceeded';
+  static const String connecting = 'connecting';
+  static const String onCallFinishedTitle = 'onCallFinishedTitle';
+  static const String onCallFinishedDescription = 'onCallFinishedDescription';
+  static const String connected = 'connected';
 
 
 

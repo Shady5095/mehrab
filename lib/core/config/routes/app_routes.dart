@@ -18,6 +18,7 @@ import '../../../features/students/presentation/screens/students_profile_screen.
 import '../../../features/students/presentation/screens/students_screen.dart';
 import '../../../features/teaacher_reviews/presentation/screens/teacher_reviews_screen.dart';
 import '../../../features/teacher_call/presentation/screens/rate_session_screen.dart';
+import '../../../features/teacher_call/presentation/screens/student_call_screen.dart';
 import '../../../features/teacher_call/presentation/screens/teacher_call_screen.dart';
 import '../../../features/teachers/presentation/screens/add_teacher_screen.dart';
 import '../../../features/teachers/presentation/screens/igaz_padf_screen.dart';
@@ -46,6 +47,7 @@ abstract class AppRoutes {
   static const String addNotificationScreen = 'addNotificationScreen';
   static const String favoriteStudentsScreen = 'favoriteStudentsScreen';
   static const String teacherReviewsScreen = 'teacherReviewsScreen';
+  static const String studentCallScreen = 'studentCallScreen';
   static const String teacherCallScreen = 'teacherCallScreen';
   static const String rateSessionScreen = 'rateSessionScreen';
   static const String startScreenRoute = 'startScreenRoute';
@@ -156,6 +158,11 @@ abstract class RouteGenerator {
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => const TeacherReviewsScreen(),
+        );
+        case AppRoutes.studentCallScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => const StudentCallScreen(),
         );
         case AppRoutes.teacherCallScreen:
         return getPageRoute(

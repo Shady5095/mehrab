@@ -1,0 +1,299 @@
+import 'dart:async';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mehrab/core/utilities/resources/constants.dart';
+import 'package:mehrab/core/utilities/services/firebase_notification.dart';
+import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
+import 'package:mehrab/features/teacher_call/presentation/manager/student_call_cubit/student_call_state.dart';
+import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+import '../../../../../core/utilities/services/call_service.dart';
+
+
+class StudentCallCubit extends Cubit<StudentCallState> {
+  StudentCallCubit({required this.teacherModel}) : super(TeacherCallInitial());
+
+  final TeacherModel teacherModel;
+
+  static StudentCallCubit get(context) => BlocProvider.of(context);
+
+  late AgoraCallService callService ;
+  final db = FirebaseFirestore.instance;
+  final AudioPlayer _player = AudioPlayer();
+  Future<void> requestPermissions() async {
+   // check and request microphone permission
+    var status = await Permission.microphone.status;
+    if (!status.isGranted) {
+      await Permission.microphone.request();
+      if(await Permission.microphone.isGranted == false){
+        emit(AgoraConnectionError(error: "لم يتم منح إذن الميكروفونو"));
+      }
+    }
+  }
+  Future<void> playSound() async {
+    _player.setReleaseMode(ReleaseMode.loop);
+    await _player.play(AssetSource('audio/phone-ringing.mp3'));
+  }
+
+  Future<void> playAnswerSound() async {
+    _player.setReleaseMode(ReleaseMode.stop);
+    await _player.play(AssetSource('audio/userJoinedSound.mp3'));
+  }
+
+  Future<void> stopSound() async {
+    await _player.stop();
+  }
+
+  void initCall() async {
+    requestPermissions();
+    await playSound();
+    await sendCallToTeacher();
+    await setupAgoraCallService();
+    callPushNotification();
+    callListener();
+    startCallTimeout();
+    emit(SendCallToTeacherSuccess());
+  }
+
+  String? callDocId;
+
+  Future<void> sendCallToTeacher() async {
+    await db
+        .collection('calls')
+        .add({
+      'teacherUid': teacherModel.uid,
+      'timestamp': FieldValue.serverTimestamp(),
+      'studentUid': currentUserModel?.uid ?? '',
+      "studentName": currentUserModel?.name ?? '',
+      "teacherName": teacherModel.name,
+      "studentPhoto": currentUserModel?.imageUrl,
+      "teacherPhoto": teacherModel.imageUrl,
+      'status': "ringing",
+    })
+        .then((value) {
+      callDocId = value.id;
+      value.update({'callId': value.id});
+    })
+        .catchError((error) {
+      emit(SendCallToTeacherFailure(error: error.toString()));
+    });
+  }
+
+  Future<bool> checkIfAnotherCallRinging() async {
+    final querySnapshot =
+    await db
+        .collection('calls')
+        .where('teacherUid', isEqualTo: teacherModel.uid)
+        .where('status', whereIn: ['answered', 'ringing'])
+        .get();
+
+    return querySnapshot.docs.isNotEmpty;
+  }
+
+  Future<void> endCallBeforeAnswer({bool isByUser = false}) async {
+    if (callDocId != null) {
+      await db
+          .collection('calls')
+          .doc(callDocId)
+          .update({'status': 'missed'})
+          .then((value) {
+        if (isByUser) {
+          emit(CallEndedByUserState());
+        } else {
+          emit(CallEndedByTimeOut());
+        }
+      })
+          .catchError((error) {
+        emit(SendCallToTeacherFailure(error: error.toString()));
+      });
+    }
+  }
+
+  Future<void> endCallAfterAnswer({bool isByUser = false}) async {
+    if (callDocId != null) {
+      await db
+          .collection('calls')
+          .doc(callDocId)
+          .update({'status': 'ended',"endedTime" : FieldValue.serverTimestamp()})
+          .then((value) async {
+            await endAgoraCall();
+        if (isByUser) {
+          emit(CallFinished(model: teacherModel));
+        } else {
+          emit(MaxDurationReached());
+        }
+      })
+          .catchError((error) {
+        emit(SendCallToTeacherFailure(error: error.toString()));
+      });
+    }
+  }
+  StreamSubscription<DocumentSnapshot>? _callSubscription;
+  void callListener() {
+    _callSubscription?.cancel();
+    _callSubscription = FirebaseFirestore.instance
+        .collection('calls')
+        .doc(callDocId)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        CallModel data = CallModel.fromJson(snapshot.data()??{});
+        if (data.status == 'answered') {
+          if (!isCallAnswered) {
+            onTeacherAnswer(data);
+          }
+        } else if (data.status == 'declined') {
+          stopSound();
+          emit(TeacherInAnotherCall());
+        }
+      }
+    });
+  }
+
+  Future<void> onTeacherAnswer(CallModel data) async {
+    isCallAnswered = true;
+    emit(CallAnsweredState());
+    stopSound();
+    await Future.delayed(Duration(
+      milliseconds: 300
+    ));
+    playAnswerSound();
+    HapticFeedback.heavyImpact();
+    _callTimeoutTimer?.cancel();
+    joinAgoraChannel(data.callId);
+  }
+  void closeListener() {
+    FirebaseFirestore.instance
+        .collection('calls')
+        .doc(callDocId)
+        .snapshots()
+        .listen((snapshot) {})
+        .cancel();
+  }
+
+  Timer? _callTimeoutTimer;
+
+  void startCallTimeout() {
+    // make a timer for 2 minutes to end the call if not answered even if the user closes the app
+    _callTimeoutTimer = Timer(const Duration(minutes: 2), () {
+      endCallBeforeAnswer();
+    });
+  }
+
+  Timer? maxCallDurationTimer;
+
+  void startMaxCallDurationTimer(Duration duration) {
+    maxCallDurationTimer = Timer(duration, () async {
+      endCallAfterAnswer(isByUser: false);
+    });
+  }
+
+
+  bool isCallAnswered = false;
+  bool isAnotherUserJoined = false;
+  bool isMicMuted = false;
+  bool isSpeakerOn = false;
+  Future<void> setupAgoraCallService() async {
+    callService = AgoraCallService();
+    callService.onUserJoined = (uid) {
+      isAnotherUserJoined = true;
+      startCallTimer();
+
+      emit(AnotherUserJoinedSuccessfully());
+    };
+    callService.onUserLeft = (uid) async {
+      await endCallAfterAnswer(isByUser: false);
+    };
+    callService.onError = (error) {
+      emit(AgoraConnectionError(error: error));
+    };
+    callService.onCallEnded = () {
+
+    };
+    callService.onConnectionSuccess = () {
+
+    };
+    await callService.initialize();
+  }
+
+  Future<void> joinAgoraChannel(String channelId) async {
+    await callService.joinChannel(channelId);
+  }
+
+  Future<void> endAgoraCall() async {
+    await callService.endCall();
+  }
+
+  Future<void> toggleMicMute() async {
+    await callService.toggleMute();
+    isMicMuted = callService.isMicMuted;
+    emit(TeacherCallInitial());
+  }
+
+  Future<void> switchSpeaker() async {
+    await callService.switchSpeaker(!callService.isSpeakerOn);
+    isSpeakerOn = callService.isSpeakerOn;
+    emit(TeacherCallInitial());
+  }
+
+  void callPushNotification() {
+    AppFirebaseNotification.pushNotification(
+      title: "اتصال جديد 📞",
+      body:
+      "يريد الطالب ${currentUserModel?.name ?? ''} بدأ جلسة معك, برجاء فتح التطبيق الان",
+      dataInNotification: {},
+      topic: teacherModel.uid,
+    );
+  }
+
+  final StreamController<String> _callTimerController =
+  StreamController<String>.broadcast();
+
+  Stream<String> get callTimerStream => _callTimerController.stream;
+
+  Timer? _callDurationTimer;
+  Duration _elapsedTime = Duration.zero;
+
+  String _formatDuration(Duration d) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(d.inMinutes.remainder(60));
+    final seconds = twoDigits(d.inSeconds.remainder(60));
+    return "$minutes:$seconds";
+  }
+
+  void startCallTimer() {
+    if (_callDurationTimer != null && _callDurationTimer!.isActive) {
+      return;
+    }
+
+    _elapsedTime = Duration.zero;
+    _callTimerController.add(_formatDuration(_elapsedTime));
+
+    _callDurationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _elapsedTime += const Duration(seconds: 1);
+      _callTimerController.add(_formatDuration(_elapsedTime));
+    });
+  }
+
+  void stopCallTimer() {
+    _callDurationTimer?.cancel();
+    _callDurationTimer = null;
+  }
+
+  @override
+  Future<void> close() {
+    stopSound();
+    _player.dispose();
+    closeListener();
+    _callTimeoutTimer?.cancel();
+    maxCallDurationTimer?.cancel();
+    _callTimerController.close();
+    stopCallTimer();
+    _callSubscription?.cancel();
+    return super.close();
+  }
+}

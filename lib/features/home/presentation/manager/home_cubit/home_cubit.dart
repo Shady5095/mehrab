@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:http/http.dart' as http;
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/print_with_color.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
@@ -12,8 +10,6 @@ import 'package:mehrab/features/authentication/data/user_model.dart';
 import 'package:mehrab/features/sessions/presentation/screens/sessions_screen.dart';
 import 'package:mehrab/features/students/presentation/screens/students_screen.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import '../../../../../core/utilities/functions/toast.dart';
 import '../../../../../core/utilities/resources/constants.dart';
 import '../../../../teacher_call/data/models/call_model.dart';
@@ -22,9 +18,6 @@ import '../../../../teacher_call/presentation/widgets/incoming_call_dialog.dart'
 import '../../../../teachers/presentation/screens/teachers_screen.dart';
 import '../../views/home_view.dart';
 import '../../views/more_screen.dart';
-import 'package:googleapis/calendar/v3.dart' as calendar;
-import 'package:googleapis_auth/googleapis_auth.dart';
-
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
@@ -94,7 +87,9 @@ class HomeCubit extends Cubit<HomeState> {
                   teacherModel?.favoriteStudentsUid.length ?? 0;
               teacherAvailability = teacherModel?.isOnline ?? false;
               getTeacherRatingAndComments();
-              listenToTeacherNewCalls(context);
+              if(context.mounted){
+                listenToTeacherNewCalls(context);
+              }
               getMissedCallsCount();
             } else {
               AppConstants.isStudent = true;
@@ -313,107 +308,6 @@ class HomeCubit extends Cubit<HomeState> {
     });
   }
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'https://www.googleapis.com/auth/calendar.events'],
-  );
-
-  Future<GoogleSignInAccount?> signInUser() async {
-    try {
-      await _googleSignIn.signOut();
-      final account = await _googleSignIn.signIn();
-
-      if (account == null) {
-        printWithColor("⚠️ المستخدم لغى تسجيل الدخول أو لم يتم تحديد حساب.");
-        return null;
-      }
-
-      printWithColor("✅ تسجيل الدخول تم بنجاح: ${account.email}");
-      return account;
-    } catch (e) {
-      printWithColor("❌ خطأ أثناء تسجيل الدخول: $e");
-      emit(ErrorWhileCreateMeeting(e.toString()));
-      return null;
-    }
-  }
-
-  Future<String?> createGoogleMeetEvent(
-      GoogleSignInAccount user,
-      String meetingName,
-      ) async {
-    try {
-      final authHeaders = await user.authHeaders;
-
-      if (!authHeaders.containsKey('Authorization')) {
-        printWithColor("⚠️ لم يتم العثور على ترويسة المصادقة (auth headers).");
-        emit(ErrorWhileCreateMeeting("⚠️ لم يتم العثور على ترويسة المصادقة (auth headers)."));
-        return null;
-      }
-
-      final client = authenticatedClient(
-        http.Client(),
-        AccessCredentials(
-          AccessToken(
-            'Bearer',
-            authHeaders['Authorization']!.split(" ").last,
-            DateTime.now().toUtc().add(Duration(hours: 1)),
-          ),
-          null,
-          ['https://www.googleapis.com/auth/calendar.events'],
-        ),
-      );
-
-      final calendarApi = calendar.CalendarApi(client);
-
-      final event = calendar.Event(
-        summary: meetingName,
-        start: calendar.EventDateTime(
-          dateTime: DateTime.now().toUtc().add(Duration(minutes: 1)),
-          timeZone: "UTC",
-        ),
-        end: calendar.EventDateTime(
-          dateTime: DateTime.now().toUtc().add(Duration(hours: 1)),
-          timeZone: "UTC",
-        ),
-        conferenceData: calendar.ConferenceData(
-          createRequest: calendar.CreateConferenceRequest(
-            requestId: DateTime.now().millisecondsSinceEpoch.toString(),
-            conferenceSolutionKey: calendar.ConferenceSolutionKey(
-              type: "hangoutsMeet",
-            ),
-          ),
-        ),
-      );
-
-      final createdEvent = await calendarApi.events.insert(
-        event,
-        "primary",
-        conferenceDataVersion: 1,
-      );
-
-      final meetLink = createdEvent.conferenceData?.entryPoints?.first.uri;
-
-      if (meetLink != null) {
-        printWithColor("✅ تم إنشاء اجتماع Google Meet: $meetLink");
-        return meetLink;
-      } else {
-        printWithColor("⚠️ تم إنشاء الحدث بدون رابط اجتماع.");
-        emit(ErrorWhileCreateMeeting("⚠️ تم إنشاء الحدث بدون رابط اجتماع."));
-        return null;
-      }
-    } catch (e, stack) {
-      printWithColor("❌ خطأ أثناء إنشاء الحدث: $e");
-      printWithColor(stack);
-      emit(ErrorWhileCreateMeeting("❌ خطأ أثناء إنشاء الجلسة: $e"));
-      return null;
-    }
-  }
-
-  Future<void> openMeet(String url) async {
-    final Uri meetUrl = Uri.parse(url);
-    if (await canLaunchUrl(meetUrl)) {
-      await launchUrl(meetUrl, mode: LaunchMode.externalApplication);
-    }
-  }
 
   bool _isDialogShowing = false; // Tracks if a dialog is currently shown
 
@@ -426,7 +320,7 @@ class HomeCubit extends Cubit<HomeState> {
         .snapshots()
         .listen((event) {
           if (event.docs.isNotEmpty) {
-            if ((event.docs.first.data()['status'] == 'ringing'|| event.docs.first.data()['status'] == 'answered') &&
+            if ((event.docs.first.data()['status'] == 'ringing') &&
                 !_isDialogShowing) {
               if (!context.mounted) return;
               _isDialogShowing = true; // Set flag to prevent multiple dialogs
@@ -468,56 +362,14 @@ class HomeCubit extends Cubit<HomeState> {
         .catchError((error) {});
   }
 
-  Future<String?> acceptCall(String callDocId, String studentName) async {
-    String? googleMeetingLink ;
+  Future<void> acceptCall(String callDocId) async {
     await db
         .collection("calls")
         .doc(callDocId)
         .update({"status": "answered", "acceptedTime": FieldValue.serverTimestamp()})
         .then((value) async {
-          final user = await signInUser();
-          if (user != null) {
-           await createGoogleMeetEvent(user, "جلسة مع $studentName")
-                .then((meetingLink) {
-                  if (meetingLink != null) {
-                    googleMeetingLink = meetingLink;
-                    updateMeetingLink(callDocId, meetingLink);
-                    openMeet(meetingLink);
-                  }
-                })
-                .catchError((error) {
-                  printWithColor("Error creating Google Meet event: $error");
-                });
-          }
         })
         .catchError((error) {});
-    return googleMeetingLink;
-  }
-
-  Future<void> updateMeetingLink(String callDocId, String meetingLink) async {
-    await db
-        .collection("calls")
-        .doc(callDocId)
-        .update({"meetingLink": meetingLink})
-        .then((value) {})
-        .catchError((error) {});
-  }
-  Future<void> endCall(String callId,String studentUid, String teacherName) async {
-    try {
-      await db.collection('calls').doc(callId).update({'status': 'ended', 'endedTime': FieldValue.serverTimestamp()});
-      sendNotificationAfterEndingCall(studentUid, teacherName);
-    } catch (e) {
-      printWithColor('Error ending call: $e');
-    }
-  }
-
-  void sendNotificationAfterEndingCall(String studentUid, String teacherName) {
-    AppFirebaseNotification.pushNotification(
-      topic: studentUid,
-      title: "سعدتنا بسماع صوتك",
-      dataInNotification: {},
-      body: "شكراً لك على حضور الجلسة مع $teacherName، نتمنى أن تكون قد استفدت."
-    );
   }
 
   void onSignOut(){
