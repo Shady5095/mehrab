@@ -173,8 +173,6 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     await Future.delayed(Duration(
       milliseconds: 300
     ));
-    playAnswerSound();
-    HapticFeedback.heavyImpact();
     _callTimeoutTimer?.cancel();
     joinAgoraChannel(data.callId);
   }
@@ -214,14 +212,15 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     callService.onUserJoined = (uid) {
       isAnotherUserJoined = true;
       startCallTimer();
-
+      playAnswerSound();
+      HapticFeedback.vibrate();
       emit(AnotherUserJoinedSuccessfully());
     };
     callService.onUserLeft = (uid) async {
       await endCallAfterAnswer(isByUser: false);
     };
     callService.onError = (error) {
-      //emit(AgoraConnectionError(error: error));
+      emit(AgoraConnectionError(error: error));
     };
     callService.onCallEnded = () {
 
@@ -331,6 +330,8 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     _callTimerController.close();
     stopCallTimer();
     _callSubscription?.cancel();
+    disableProximitySensor();
+    callService.dispose();
     return super.close();
   }
 }
