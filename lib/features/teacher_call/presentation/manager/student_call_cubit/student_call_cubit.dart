@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -34,14 +35,22 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     }
 
     if (status.isPermanentlyDenied) {
-      emit(MicrophonePermanentlyDenied());
+      if(Platform.isIOS){
+        emit(MicrophoneAllowed());
+      }else{
+        emit(MicrophonePermanentlyDenied());
+      }
       return;
     }
 
     if (status.isGranted) {
       emit(MicrophoneAllowed());
     } else {
-      emit(MicrophoneNotAllowed());
+      if(Platform.isIOS){
+        emit(MicrophoneAllowed());
+      }else{
+        emit(MicrophoneNotAllowed());
+      }
     }
   }
   Future<void> playSound() async {
@@ -250,10 +259,12 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     await callService.switchSpeaker(!callService.isSpeakerOn);
     isSpeakerOn = callService.isSpeakerOn;
     HapticFeedback.heavyImpact();
-    if(!isSpeakerOn){
-      enableProximitySensor();
-    }else{
-      disableProximitySensor();
+    if (Platform.isAndroid) {
+      if(!isSpeakerOn){
+        enableProximitySensor();
+      }else{
+        disableProximitySensor();
+      }
     }
     emit(TeacherCallInitial());
   }
@@ -330,8 +341,10 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     _callTimerController.close();
     stopCallTimer();
     _callSubscription?.cancel();
-    disableProximitySensor();
     callService.dispose();
+    if(Platform.isAndroid){
+      disableProximitySensor();
+    }
     return super.close();
   }
 }
