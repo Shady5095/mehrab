@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'dart:async';
@@ -29,9 +31,9 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     var status = await Permission.microphone.status;
     if (!status.isGranted) {
       await Permission.microphone.request();
-      if(await Permission.microphone.isGranted == false){
+      /*if(await Permission.microphone.isGranted == false){
         emit(AgoraConnectionError(error: "لم يتم منح إذن الميكروفون"));
-      }
+      }*/
     }
   }
 
@@ -69,16 +71,6 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   }
   StreamSubscription<DocumentSnapshot>? _callSubscription;
 
-  Future<void> onTeacherAnswer(CallModel data) async {
-    emit(CallAnsweredState());
-    stopSound();
-    await Future.delayed(Duration(
-        milliseconds: 300
-    ));
-    playAnswerSound();
-    HapticFeedback.heavyImpact();
-    joinAgoraChannel(data.callId);
-  }
   bool isCallConnected = false;
   bool isMicMuted = false;
   bool isSpeakerOn = true;
@@ -89,7 +81,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       await endCall();
     };
     callService.onError = (error) {
-      //emit(AgoraConnectionError(error: error));
+      emit(AgoraConnectionError(error: error));
     };
     callService.onCallEnded = () {
 
@@ -97,6 +89,8 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     callService.onConnectionSuccess = () {
       startCallTimer();
       isCallConnected = true;
+      playAnswerSound();
+      HapticFeedback.vibrate();
       emit(TeacherCallInitial());
     };
     await callService.initialize();
@@ -114,6 +108,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     await callService.toggleMute();
     isMicMuted = callService.isMicMuted;
     HapticFeedback.heavyImpact();
+
     emit(TeacherCallInitial());
   }
 
@@ -172,6 +167,10 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
         await ScreenOff.turnScreenOff();
       } else {
         await ScreenOff.turnScreenOn();
+        if (Platform.isIOS) {
+          disableProximitySensor();
+          enableProximitySensor();
+        }
       }
     });
   }
@@ -187,6 +186,8 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     _callTimerController.close();
     stopCallTimer();
     _callSubscription?.cancel();
+    disableProximitySensor();
+    callService.dispose();
     return super.close();
   }
 }
