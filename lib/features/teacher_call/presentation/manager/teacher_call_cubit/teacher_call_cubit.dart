@@ -116,10 +116,12 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     await callService.switchSpeaker(!callService.isSpeakerOn);
     isSpeakerOn = callService.isSpeakerOn;
     HapticFeedback.heavyImpact();
-    if(!isSpeakerOn){
-      enableProximitySensor();
-    }else{
-      disableProximitySensor();
+    if (Platform.isAndroid) {
+      if(!isSpeakerOn){
+        enableProximitySensor();
+      }else{
+        disableProximitySensor();
+      }
     }
     emit(TeacherCallInitial());
   }
@@ -167,10 +169,6 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
         await ScreenOff.turnScreenOff();
       } else {
         await ScreenOff.turnScreenOn();
-        if (Platform.isIOS) {
-          disableProximitySensor();
-          enableProximitySensor();
-        }
       }
     });
   }
@@ -186,8 +184,10 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     _callTimerController.close();
     stopCallTimer();
     _callSubscription?.cancel();
-    disableProximitySensor();
     callService.dispose();
+    if(Platform.isAndroid){
+      disableProximitySensor();
+    }
     return super.close();
   }
 }
