@@ -25,38 +25,33 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     SizeConfig.init(context);
 
-    /* final Locale systemLocale = WidgetsBinding.instance.platformDispatcher
-        .locale;*/
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create:
-              (context) =>
-                  MainAppCubit(
-                      getLocationInfoUseCase: GetLocationInfoUseCase(
-                        getIt<PrayerTimesRepoImpl>(),
-                      ),
-                    )
-                    ..getLocationInfo()
-                    ..englishFunction(
-                      isEnglishCache: CacheService.getData(
-                        key: AppConstants.isEnglish,
-                      ),
-                      systemLocale: Locale('ar'), //systemLocale,
-                    )
-                    ..setCurrentIndex(
-                      cacheThemValue: CacheService.getData(
-                        key: AppConstants.themeMode,
-                      ),
-                    )..setStatusBarColor(),
+          create: (context) => MainAppCubit(
+            getLocationInfoUseCase: GetLocationInfoUseCase(
+              getIt<PrayerTimesRepoImpl>(),
+            ),
+          )
+            ..getLocationInfo()
+            ..initializeLanguage(
+              cachedLanguage: CacheService.getData(
+                key: AppConstants.currentLanguage,
+              ),
+              systemLocale: const Locale('ar'), // أو احصل عليها من النظام
+            )
+            ..setCurrentIndex(
+              cacheThemValue: CacheService.getData(
+                key: AppConstants.themeMode,
+              ),
+            )
+            ..setStatusBarColor(),
         ),
       ],
       child: BlocBuilder<MainAppCubit, MainAppStates>(
-        buildWhen:
-            (previous, current) =>
-                current is! MainAppInitial ||
-                current is! MainAppChangeFileState,
+        buildWhen: (previous, current) =>
+        current is! MainAppInitial ||
+            current is! MainAppChangeFileState,
         builder: (context, state) {
           final MainAppCubit cubit = MainAppCubit.instance(context);
           return ChangeSystemNavigationBarTheme(
@@ -68,14 +63,18 @@ class MyApp extends StatelessWidget {
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
               ],
-              supportedLocales: const [Locale('ar'), Locale('en')],
+              supportedLocales: const [
+                Locale('ar'),
+                Locale('en'),
+                Locale('tr'),
+                Locale('de'),
+              ],
               locale: cubit.setAppLanguage(),
               debugShowCheckedModeBanner: false,
               theme: AppLightThemes.appLightTheme(context),
               builder: DevicePreview.appBuilder,
               darkTheme: AppDarkThemes.appDarkTheme(context),
               themeMode: ThemeMode.light,
-
               onGenerateRoute: RouteGenerator.generateRoute,
               initialRoute: cubit.checkNextRoute,
             ),

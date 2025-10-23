@@ -11,8 +11,12 @@ class AppConstants {
   static const int homeScreenIndex = 0;
   static const english = 'English';
   static const arabic = 'العربية';
+  static const turkish = 'Türkçe';
+  static const germany = 'Deutsch';
   static const ar = 'ar';
   static const en = 'en';
+  static const tr = 'tr';
+  static const de = 'de';
   static const appVersion = 'appVersion';
   static const double paginationValue = 0.7;
   static const unauthenticated = 401;
@@ -27,6 +31,7 @@ class AppConstants {
   static const maxFileSize = 204800;
   static const letter = 'Value';
   static const addFile = 'addFile';
+  static const String currentLanguage = 'currentLanguage';
 
   static const allowFileExtension = [
     'pdf',

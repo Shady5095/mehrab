@@ -1200,5 +1200,5 @@
   "microphonePermissionNotAllowed" : "You can't start or join the session because you didn't allow microphone permission.",
   "microphonePermissionPermanentlyDenied": "You have permanently denied microphone access. Please enable it from the app settings to make calls.",
   "microphonePermissionTitle": "Microphone permission required 🎤",
-  "openSettings": "فتح الإعدادات"
+  "openSettings": "Open Settings"
 }

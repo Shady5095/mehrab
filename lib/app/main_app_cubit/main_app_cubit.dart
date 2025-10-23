@@ -15,49 +15,99 @@ import 'main_app_state.dart';
 class MainAppCubit extends Cubit<MainAppStates> {
   MainAppCubit({
     required this.getLocationInfoUseCase,
-})
-    : super(MainAppInitial());
+  }) : super(MainAppInitial());
+
   final GetLocationInfoUseCase getLocationInfoUseCase;
+
   static MainAppCubit instance(BuildContext context) =>
       BlocProvider.of(context);
 
-  bool isEnglish = true;
+  String currentLanguage = 'ar'; // القيمة الافتراضية
   int currentIndex = 2;
   int? totalUnseenNotification;
   int? totalUnseenAnnouncement;
 
+  // دالة موحدة لتغيير اللغة
+  void changeLanguage(String langCode) {
+    if (currentLanguage != langCode) {
+      currentLanguage = langCode;
+      CacheService.setData(key: AppConstants.currentLanguage, value: langCode);
+      emit(MainAppChangeLangState());
+    }
+  }
 
-  Color setEnglishColor(BuildContext context) {
-    if (isEnglish) {
+  // دالة لتحديد لون اللغة المختارة
+  Color setLanguageColor(BuildContext context, String langCode) {
+    if (currentLanguage == langCode) {
       return AppColors.accentColor;
     }
     return context.backgroundColor;
   }
 
-  Color setArabicColor(BuildContext context) {
-    if (isEnglish) {
-      return context.backgroundColor;
+  // تعيين اللغة من الكاش أو النظام
+  void initializeLanguage({
+    String? cachedLanguage,
+    Locale? systemLocale,
+  }) {
+    if (cachedLanguage != null) {
+      currentLanguage = cachedLanguage;
+    } else if (systemLocale != null) {
+      // التحقق من اللغات المدعومة
+      if (['en', 'ar', 'tr','de'].contains(systemLocale.languageCode)) {
+        currentLanguage = systemLocale.languageCode;
+      } else {
+        currentLanguage = 'ar'; // اللغة الافتراضية
+      }
     }
-    return AppColors.accentColor;
+    CacheService.setData(key: AppConstants.currentLanguage, value: currentLanguage);
+    emit(MainAppChangeLangState());
+  }
+
+  // دالة لإرجاع Locale بناءً على اللغة الحالية
+  Locale setAppLanguage() {
+    return Locale(currentLanguage);
+  }
+
+  // للتوافق مع الكود القديم
+  bool get isEnglish => currentLanguage == 'en';
+  bool get isArabic => currentLanguage == 'ar';
+  bool get isTurkish => currentLanguage == 'tr';
+  bool get isGerman => currentLanguage == 'de';
+
+  Color setEnglishColor(BuildContext context) {
+    return setLanguageColor(context, 'en');
+  }
+
+  Color setArabicColor(BuildContext context) {
+    return setLanguageColor(context, 'ar');
+  }
+
+  Color setTurkishColor(BuildContext context) {
+    return setLanguageColor(context, 'tr');
+  }
+
+  Color setGermany(BuildContext context) {
+    return setLanguageColor(context, 'de');
   }
 
   void englishFunction({
     bool? isEnglishCache,
     Locale? systemLocale,
   }) {
-    if (isEnglishCache != null) {
-      isEnglish = isEnglishCache;
-    } else {
-      if (systemLocale != null) {
-        isEnglish = systemLocale.languageCode == 'en';
-      } else {
-        isEnglish = true; // fallback default
-      }
-    }
-    CacheService.setData(key: AppConstants.isEnglish, value: isEnglish);
-    emit(MainAppChangeLangState());
+    changeLanguage('en');
   }
 
+  void arabicFunction() {
+    changeLanguage('ar');
+  }
+
+  void turkishFunction() {
+    changeLanguage('tr');
+  }
+
+  void germanFunction() {
+    changeLanguage('de');
+  }
 
   void setCurrentIndex({int? index, int? cacheThemValue}) {
     if (cacheThemValue != null) {
@@ -70,7 +120,6 @@ class MainAppCubit extends Cubit<MainAppStates> {
       }
     }
   }
-
 
   Color setLangColor(int index) {
     if (currentIndex == index) {
@@ -115,50 +164,40 @@ class MainAppCubit extends Cubit<MainAppStates> {
     }
   }
 
-  void arabicFunction() {
-    if (isEnglish) {
-      isEnglish = false;
-      CacheService.setData(key: AppConstants.isEnglish, value: isEnglish);
-      emit(MainAppChangeLangState());
-    }
-  }
-
-  Locale setAppLanguage() {
-    if (isEnglish) {
-      return const Locale(AppConstants.en);
-    }
-    return const Locale(AppConstants.ar);
-  }
-
   IconData changeArrow() {
-    if (isEnglish) {
-      return IconBroken.Arrow___Left_2;
+    // العربية والتركية من اليمين لليسار
+    if (currentLanguage == 'ar' || currentLanguage == 'tr') {
+      return IconBroken.Arrow___Right_2;
     }
-    return IconBroken.Arrow___Right_2;
+    return IconBroken.Arrow___Left_2;
   }
 
   String setFontFamily() {
-    /*if (isEnglish) {
-      return AppConstants.englishFont;
-    }*/
+    // يمكنك إضافة خط خاص باللغة التركية إذا أردت
+    if (currentLanguage == 'tr') {
+      return AppConstants.arabicFont; // أضف هذا الثابت في constants
+    }
     return AppConstants.arabicFont;
   }
 
   String get checkNextRoute {
     CacheService.userRole = CacheService.getData(key: AppConstants.userRole);
     CacheService.uid = CacheService.getData(key: AppConstants.uid);
-    if(CacheService.uid != null){
-      if(CacheService.userRole == "student" || CacheService.userRole == "admin"|| CacheService.userRole == "teacher"){
+    if (CacheService.uid != null) {
+      if (CacheService.userRole == "student" ||
+          CacheService.userRole == "admin" ||
+          CacheService.userRole == "teacher") {
         return AppRoutes.homeLayoutRoute;
       }
-    }else if(CacheService.getData(key: 'onBoarding') != true){
+    } else if (CacheService.getData(key: 'onBoarding') != true) {
       return AppRoutes.startScreenRoute;
     }
     return AppRoutes.loginRoute;
   }
+
   Future<void> getLocationInfo() async {
     final currentCountryCode = CacheService.getData(key: 'currentCountryCode');
-    if(currentCountryCode != null){
+    if (currentCountryCode != null) {
       CacheService.currentCountryCode = currentCountryCode;
       return;
     }
@@ -166,23 +205,19 @@ class MainAppCubit extends Cubit<MainAppStates> {
       ip: await getCurrentIpWithDio(),
     );
     result.fold((failure) {}, (location) {
-      CacheService.setData(key: 'currentCountryCode', value: location.countryCode);
+      CacheService.setData(
+          key: 'currentCountryCode', value: location.countryCode);
       CacheService.currentCountryCode = location.countryCode;
     });
   }
+
   Future<String> getCurrentIpWithDio() async {
-    // Check the current connectivity status (Wi-Fi or mobile data)
     final List<ConnectivityResult> results =
     await Connectivity().checkConnectivity();
 
-    // Check if Wi-Fi is among the active connections
     if (results.contains(ConnectivityResult.wifi)) {
-      // Get the local IP address when connected to Wi-Fi
       return getLocalIpWithDio();
-    }
-    // Check if mobile data is among the active connections
-    else if (results.contains(ConnectivityResult.mobile)) {
-      // Get the public IP address when connected to mobile data
+    } else if (results.contains(ConnectivityResult.mobile)) {
       return getPublicIpWithDio();
     } else {
       return 'No Internet Connection';
@@ -194,7 +229,7 @@ class MainAppCubit extends Cubit<MainAppStates> {
       final dio = Dio();
       final response = await dio.get(
         'http://api.ipify.org?format=json',
-      ); // Example of fetching public IP
+      );
       return response.data['ip'];
     } catch (e) {
       return 'Failed to fetch local IP';
@@ -213,9 +248,9 @@ class MainAppCubit extends Cubit<MainAppStates> {
 
   void setStatusBarColor() {
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, // Make status bar transparent
-      statusBarIconBrightness: Brightness.dark, // For Android (dark icons)
-      statusBarBrightness: Brightness.light, // For iOS (dark icons)
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
     ));
   }
 }
