@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:lottie/lottie.dart';
 import 'package:mehrab/app/app_locale/app_locale.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
-import 'package:mehrab/core/widgets/buttons_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../../../../core/utilities/functions/format_date_and_time.dart';
 import '../../../../core/utilities/functions/format_duration.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
@@ -98,49 +95,6 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
                           ),
                         ],
                       ),
-                    ),
-                    if(widget.model.status == "answered")
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            SizedBox(width: 5),
-                            Text(
-                              AppStrings.answered.tr(context),
-                              style: TextStyle(
-                                fontSize: 11.sp,
-                                color: AppColors.myAppColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Lottie.asset(
-                              delegates: LottieDelegates(
-                                values: [
-                                  ValueDelegate.color(const [
-                                    '**',
-                                  ], value: AppColors.myAppColor),
-                                ],
-                              ),
-                              "assets/json/ringing2.json",
-                              width: 25.sp,
-                              height: 25.sp,
-                              fit: BoxFit.cover,
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 5,
-                        ),
-                        ButtonWidget(
-                          onPressed: () {
-                            openMeet(widget.model.meetingLink??'');
-                          },
-                          label: AppStrings.reJoin.tr(context),
-                          height: 25,
-                          width: 25.wR,
-                          labelFontSize: 11.sp,
-                        ),
-                      ],
                     ),
                   ],
                 ),
@@ -246,17 +200,17 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
                             Text(
                               widget.model.fromSurah ?? '---',
                               style: TextStyle(
-                                  fontSize: 13.sp,
-                                  color: AppColors.myAppColor,
-                                  fontWeight: FontWeight.w600
+                                fontSize: 13.sp,
+                                color: AppColors.myAppColor,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             Text(
                               "  (${AppStrings.ayah.tr(context)} : ${widget.model.fromAyah != null ? widget.model.fromAyah.toString() : '---'})",
                               style: TextStyle(
-                                  fontSize: 13.sp,
-                                  color: AppColors.myAppColor,
-                                  fontWeight: FontWeight.w600
+                                fontSize: 13.sp,
+                                color: AppColors.myAppColor,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -283,17 +237,17 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
                             Text(
                               widget.model.toSurah ?? '---',
                               style: TextStyle(
-                                  fontSize: 13.sp,
-                                  color: AppColors.myAppColor,
-                                  fontWeight: FontWeight.w600
+                                fontSize: 13.sp,
+                                color: AppColors.myAppColor,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             Text(
                               "  (${AppStrings.ayah.tr(context)} : ${widget.model.toAyah != null ? widget.model.toAyah.toString() : '---'})",
                               style: TextStyle(
-                                  fontSize: 13.sp,
-                                  color: AppColors.myAppColor,
-                                  fontWeight: FontWeight.w600
+                                fontSize: 13.sp,
+                                color: AppColors.myAppColor,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -415,7 +369,7 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
                     style: TextStyle(
                       fontSize: 14.sp,
                       color: Colors.grey,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -426,7 +380,11 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
                   Expanded(
                     child: Text(
                       widget.model.comment ?? '-------------',
-                      style: TextStyle(fontSize: 13.sp, color: Colors.black),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: AppColors.myAppColor,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -472,6 +430,7 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
       ),
     );
   }
+
   Future<void> openMeet(String url) async {
     final Uri meetUrl = Uri.parse(url);
     if (await canLaunchUrl(meetUrl)) {

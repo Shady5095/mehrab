@@ -7,6 +7,7 @@ import '../../../features/authentication/presentation/views/register_screen.dart
 import '../../../features/favorite_students/presentation/screens/favorite_students_screen.dart';
 import '../../../features/home/presentation/views/home_layout.dart';
 import '../../../features/home/presentation/widgets/quran_web_view_screen.dart';
+import '../../../features/home/presentation/widgets/who_we_are_screen.dart';
 import '../../../features/my_profile/presentation/screens/change_password_screen.dart';
 import '../../../features/my_profile/presentation/screens/change_password_screen_teacher.dart';
 import '../../../features/my_profile/presentation/screens/my_profile_screen_teacher.dart';
@@ -54,6 +55,7 @@ abstract class AppRoutes {
   static const String onboardingRoute = 'onboardingScreen';
   static const String igazPdfScreen = 'igazPdfScreen';
   static const String pdfNetworkViewer = 'pdfNetworkViewer';
+  static const String aboutUsRoute = 'aboutUsRoute';
 
 }
 
@@ -193,6 +195,11 @@ abstract class RouteGenerator {
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => PdfNetworkViewer(pdfUrl: settings.arguments as String),
+        );
+        case AppRoutes.aboutUsRoute:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => AboutUsPage(),
         );
       default:
         return noRoute();

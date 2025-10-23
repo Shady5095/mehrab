@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/config/routes/app_routes.dart';
@@ -108,6 +109,20 @@ class MoreScreenBody extends StatelessWidget {
                 leading: Icon(Icons.call, size: 24.sp),
                 title: Text(
                   AppStrings.contactUs.tr(context),
+                  style: TextStyle(fontSize: 18.sp),
+                ),
+              ),
+              ListTile(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                onTap: () async {
+                 context.navigateTo(pageName: AppRoutes.aboutUsRoute);
+                },
+                contentPadding: const EdgeInsets.all(10),
+                leading: Icon(CupertinoIcons.info_circle, size: 24.sp),
+                title: Text(
+                  AppStrings.whoAreWe.tr(context),
                   style: TextStyle(fontSize: 18.sp),
                 ),
               ),

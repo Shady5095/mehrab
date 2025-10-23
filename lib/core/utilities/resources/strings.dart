@@ -1479,7 +1479,25 @@ class AppStrings {
   static const String microphonePermissionPermanentlyDenied = 'microphonePermissionPermanentlyDenied';
   static const String microphonePermissionTitle = 'microphonePermissionTitle';
   static const String openSettings = 'openSettings';
-
+  static const String whoAreWe = 'whoAreWe';
+  static const String aboutUsTitle = 'aboutUsTitle';
+  static const String aboutUsSubtitle = 'aboutUsSubtitle';
+  static const String platformDescription = 'platformDescription';
+  static const String quranVerse = 'quranVerse';
+  static const String verseReference = 'verseReference';
+  static const String platformFeatures = 'platformFeatures';
+  static const String feature1Title = 'feature1Title';
+  static const String feature1Desc = 'feature1Desc';
+  static const String feature2Title = 'feature2Title';
+  static const String feature2Desc = 'feature2Desc';
+  static const String feature3Title = 'feature3Title';
+  static const String feature3Desc = 'feature3Desc';
+  static const String availablePaths = 'availablePaths';
+  static const String path1 = 'path1';
+  static const String path2 = 'path2';
+  static const String path3 = 'path3';
+  static const String dedication = 'dedication';
+  static const String availableTime = 'availableTime';
 
 
 

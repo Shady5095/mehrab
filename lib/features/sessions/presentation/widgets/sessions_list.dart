@@ -144,7 +144,17 @@ class _SessionsListState extends State<SessionsList> {
                 itemBuilder: (context, index) {
                   final call = dailyCalls[index];
                   if (AppConstants.isTeacher) {
-                    return SessionItemForTeachers(model: call);
+                    return SessionItemForTeachers(
+                      model: call,
+                      onRefresh: () {
+                        setState(() {
+                          _calls.clear();
+                          _lastDoc = null;
+                          _hasMore = true;
+                        });
+                        _fetchCalls();
+                      },
+                    );
                   } else {
                     return SessionItemForStudents(model: call);
                   }

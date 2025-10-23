@@ -13,8 +13,8 @@ import '../../../teacher_call/data/models/call_model.dart';
 
 class SessionItemForTeachers extends StatefulWidget {
   final CallModel model;
-
-  const SessionItemForTeachers({super.key, required this.model});
+  final VoidCallback? onRefresh;
+  const SessionItemForTeachers({super.key, required this.model, this.onRefresh});
 
   @override
   State<SessionItemForTeachers> createState() => _SessionItemForTeachersState();
@@ -103,7 +103,14 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                         size: 20.sp,
                       ),
                       onPressed: () {
-                        context.navigateTo(pageName: AppRoutes.rateSessionScreen, arguments: [widget.model,true]);
+                        context.navigateTo(
+                            pageName: AppRoutes.rateSessionScreen,
+                            arguments: [widget.model, true]
+                        ).then((value) {
+                          if (value == true) {
+                            widget.onRefresh?.call(); // استدعاء الـ callback
+                          }
+                        });
                       },
                     ),
                   ],
@@ -384,7 +391,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                     style: TextStyle(
                       fontSize: 14.sp,
                       color: Colors.grey,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -397,7 +404,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                       widget.model.comment ?? '-------------',
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: Colors.black,
+                        color: AppColors.myAppColor,
                         fontWeight: FontWeight.w600
                       ),
                     ),
