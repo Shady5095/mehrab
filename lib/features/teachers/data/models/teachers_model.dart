@@ -21,6 +21,7 @@ class TeacherModel {
    String? imageUrl;
    bool isMale;
    bool isOnline ;
+   bool isBusy ;
    Timestamp? lastActive;
    Timestamp? joinedAt;
    double averageRating;
@@ -56,6 +57,7 @@ class TeacherModel {
     this.igazPdfUrl,
     this.minutesCount = 0,
     this.sessionsCount = 0,
+    this.isBusy = false,
   });
 
   factory TeacherModel.fromJson(Map<String, dynamic> json) {
@@ -76,6 +78,7 @@ class TeacherModel {
       imageUrl: json['imageUrl'],
       isMale: json['isMale'] ?? true,
       isOnline: json['isOnline'] ?? false,
+      isBusy: json['isBusy'] ?? false,
       lastActive: json['lastActive'] ,
       joinedAt: json['joinedAt'] ,
       averageRating: (json['averageRating'] != null) ? (json['averageRating'] as num).toDouble() : 0.0,
@@ -106,6 +109,7 @@ class TeacherModel {
       'imageUrl': imageUrl,
       'isMale': isMale,
       'isOnline': isOnline,
+      'isBusy': isBusy,
       'userRole': userRole,
       'lastActive': lastActive,
       'joinedAt': joinedAt,
@@ -141,6 +145,7 @@ class TeacherModel {
     String? imageUrl,
     bool? isMale,
     bool? isOnline,
+    bool? isBusy,
     Timestamp? lastActive,
     Timestamp? joinedAt,
     double? averageRating,
@@ -166,6 +171,7 @@ class TeacherModel {
       imageUrl: imageUrl ?? this.imageUrl,
       isMale: isMale ?? this.isMale,
       isOnline: isOnline ?? this.isOnline,
+      isBusy: isBusy ?? this.isBusy,
       lastActive: lastActive ?? this.lastActive,
       joinedAt: joinedAt ?? this.joinedAt,
       averageRating: averageRating ?? this.averageRating,

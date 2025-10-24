@@ -1222,5 +1222,8 @@
   "dedication": "Sevgili Peygamberimiz Muhammed ﷺ'in ruhuna ithaf edilmiştir",
   "availableTime": "7/24 Kullanılabilir",
   "sessionsCount": "oturum sayısı",
-  "minutesCount": "dakika Sayısı"
+  "minutesCount": "dakika Sayısı",
+  "busy": "Meşgul",
+  "teacherIsBusy": "Öğretmen başka bir derste meşgul, lütfen daha sonra tekrar deneyin.",
+  "inAppProblem": "Uygulamada herhangi bir sorunla karşılaşırsanız lütfen bizimle iletişime geçin:"
 }

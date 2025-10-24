@@ -85,6 +85,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       batch.update(userRef, {
         'totalMinutes': FieldValue.increment(_elapsedTime.inMinutes),
         'totalSessions': FieldValue.increment(1),
+        'isBusy': false,
       });
       await Future.wait([
         batch.commit(),

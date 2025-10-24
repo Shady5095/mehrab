@@ -11,6 +11,7 @@ class BuildTeacherPhoto extends StatelessWidget {
     required this.radius,
     this.imageColor,
     this.isOnline = false,
+    this.isBusy = false,
     this.isFromFav = false,
   });
 
@@ -19,6 +20,7 @@ class BuildTeacherPhoto extends StatelessWidget {
 
   final Color? imageColor;
   final bool isOnline ;
+  final bool isBusy ;
   final bool isFromFav;
 
   @override
@@ -40,7 +42,7 @@ class BuildTeacherPhoto extends StatelessWidget {
             if(!isFromFav)
              CircleAvatar(
               radius: 7,
-              backgroundColor: isOnline ? Colors.green : Colors.grey[500],
+              backgroundColor: isBusy ? AppColors.redColor : (isOnline ? AppColors.coolGreen : Colors.grey[500]),
             ),
         ],
       );
@@ -67,7 +69,7 @@ class BuildTeacherPhoto extends StatelessWidget {
           if(!isFromFav)
            CircleAvatar(
             radius: 7,
-            backgroundColor: isOnline ? AppColors.coolGreen : Colors.grey[500],
+            backgroundColor: isBusy ? AppColors.redColor : (isOnline ? AppColors.coolGreen : Colors.grey[500]),
           ),
       ],
     );

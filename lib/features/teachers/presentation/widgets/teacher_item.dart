@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/format_date_and_time.dart';
+import 'package:mehrab/core/utilities/functions/toast.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
@@ -14,14 +15,25 @@ class TeacherItem extends StatelessWidget {
   final TeacherModel teacher;
 
   final bool isLastItem;
-  const TeacherItem({super.key, required this.teacher, required this.isLastItem});
+
+  const TeacherItem({
+    super.key,
+    required this.teacher,
+    required this.isLastItem,
+  });
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> args = ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [];
+    List<dynamic> args =
+        ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [];
     final bool isFav = args.isNotEmpty ? args[0] as bool : false;
+    final cubit = TeachersCubit.get(context);
     return Padding(
-      padding:  EdgeInsets.only(bottom:isLastItem ? 15.0 :0, left: 20.0, right: 20.0, ),
+      padding: EdgeInsets.only(
+        bottom: isLastItem ? 15.0 : 0,
+        left: 20.0,
+        right: 20.0,
+      ),
       child: Card(
         color: Colors.white,
         child: InkWell(
@@ -64,6 +76,7 @@ class TeacherItem extends StatelessWidget {
                     imageColor: Colors.white,
                     isOnline: teacher.isOnline,
                     isFromFav: isFav,
+                    isBusy: teacher.isBusy,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -75,7 +88,7 @@ class TeacherItem extends StatelessWidget {
                         teacher.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style:  TextStyle(
+                        style: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w700,
                         ),
@@ -87,22 +100,42 @@ class TeacherItem extends StatelessWidget {
                           SizedBox(width: 3),
                           Text(
                             teacher.averageRating.toStringAsFixed(1),
-                            style: TextStyle(fontSize: 14.sp, color: Colors.black87, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
                       SizedBox(height: 5),
-                      if(!isFav)
-                      Text(
-                          teacher.isOnline ? AppStrings.availableNow.tr(context) :  "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}  : ${formatTime(context, teacher.lastActive)}",
-                        style: TextStyle(fontSize: 11.sp, color:teacher.isOnline ?AppColors.coolGreen : Colors.black54),
-                      ),
+                      if (!isFav)
+                        Text(
+                          teacher.isBusy
+                              ? AppStrings.busy.tr(context)
+                              : (teacher.isOnline
+                                  ? AppStrings.availableNow.tr(context)
+                                  : "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}  : ${formatTime(context, teacher.lastActive)}"),
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color:
+                                teacher.isBusy
+                                    ? AppColors.redColor
+                                    : (teacher.isOnline
+                                        ? AppColors.coolGreen
+                                        : Colors.black54),
+                          ),
+                        ),
                     ],
                   ),
                 ),
                 IconButton(
                   onPressed: () async {
-                    if(!teacher.isOnline) {
+                    if (!teacher.isOnline) {
+                      return;
+                    }
+                    if(teacher.isBusy) {
+                      myToast(msg: AppStrings.teacherIsBusy.tr(context), state: ToastStates.normal,);
                       return;
                     }
                     context.navigateTo(
@@ -110,20 +143,41 @@ class TeacherItem extends StatelessWidget {
                       arguments: [teacher],
                     );
                   },
-                  icon: Icon(Icons.call,size: 22.sp,color: teacher.isOnline ? AppColors.coolGreen : Colors.grey,),
+                  icon: Icon(
+                    Icons.call,
+                    size: 22.sp,
+                    color:
+                        teacher.isBusy
+                            ? AppColors.redColor
+                            : (teacher.isOnline
+                                ? AppColors.coolGreen
+                                : Colors.grey),
+                  ),
                 ),
                 IconButton(
                   onPressed: () async {
-                   await TeachersCubit.get(context).toggleTeacherFav(teacher.uid);
-                   if(!context.mounted) return;
-                    TeachersCubit.get(context).addStudentInTeacherCollection(teacher.uid);
-                    TeachersCubit.get(context).addTeacherInStudentCollection(teacher.copyWith(
-                      favoriteStudentsUid: isTeacherInMyFavorites
-                          ? (teacher.favoriteStudentsUid..remove(myUid))
-                          : (teacher.favoriteStudentsUid..add(myUid)),
-                    ));
+                    await cubit.toggleTeacherFav(teacher.uid);
+                    if (!context.mounted) return;
+                    cubit.addStudentInTeacherCollection(teacher.uid);
+                    cubit.addTeacherInStudentCollection(
+                      teacher.copyWith(
+                        favoriteStudentsUid:
+                            isTeacherInMyFavorites
+                                ? (teacher.favoriteStudentsUid..remove(myUid))
+                                : (teacher.favoriteStudentsUid..add(myUid)),
+                      ),
+                    );
                   },
-                  icon: Icon(isTeacherInMyFavorites ? Icons.favorite : Icons.favorite_border_outlined, size: 22.sp,color: isTeacherInMyFavorites ? AppColors.redColor : Colors.black,),
+                  icon: Icon(
+                    isTeacherInMyFavorites
+                        ? Icons.favorite
+                        : Icons.favorite_border_outlined,
+                    size: 22.sp,
+                    color:
+                        isTeacherInMyFavorites
+                            ? AppColors.redColor
+                            : Colors.black,
+                  ),
                 ),
               ],
             ),
@@ -132,8 +186,9 @@ class TeacherItem extends StatelessWidget {
       ),
     );
   }
+
   bool get isTeacherInMyFavorites {
-    if(teacher.favoriteStudentsUid.isNotEmpty) {
+    if (teacher.favoriteStudentsUid.isNotEmpty) {
       return teacher.favoriteStudentsUid.contains(myUid);
     }
     return false; // Placeholder return value

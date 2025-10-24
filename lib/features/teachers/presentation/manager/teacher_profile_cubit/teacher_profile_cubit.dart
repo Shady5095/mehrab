@@ -66,15 +66,15 @@ class TeacherProfileCubit extends Cubit<TeacherProfileState> {
     teacherRef
         .get()
         .then((value) {
-          if (value.exists) {
-            teacherRef.delete();
-          } else {
-            teacherRef.set(currentUserModel!.toJson());
-          }
-        })
+      if (value.exists) {
+        teacherRef.delete();
+      } else {
+        teacherRef.set(currentUserModel!.toJson());
+      }
+    })
         .catchError((error) {
-          printWithColor(error);
-        });
+      printWithColor(error);
+    });
   }
 
   void addTeacherInStudentCollection(TeacherModel model) {
@@ -90,15 +90,15 @@ class TeacherProfileCubit extends Cubit<TeacherProfileState> {
     studentRef
         .get()
         .then((value) {
-          if (value.exists) {
-            studentRef.delete();
-          } else {
-            studentRef.set(model.toJson());
-          }
-        })
+      if (value.exists) {
+        studentRef.delete();
+      } else {
+        studentRef.set(model.toJson());
+      }
+    })
         .catchError((error) {
-          printWithColor(error);
-        });
+      printWithColor(error);
+    });
   }
 
   PageController pageController = PageController();

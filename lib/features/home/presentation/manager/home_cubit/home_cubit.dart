@@ -261,7 +261,7 @@ class HomeCubit extends Cubit<HomeState> {
     db
         .collection('users')
         .doc(myUid)
-        .update({"isOnline": teacherAvailability})
+        .update({"isOnline": teacherAvailability,'isBusy': false})
         .then((value) {
           if (!context.mounted) return;
           if (teacherAvailability) {

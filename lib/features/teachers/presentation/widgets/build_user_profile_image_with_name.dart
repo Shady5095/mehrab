@@ -25,11 +25,11 @@ class UserProfileImageWithName extends StatelessWidget {
       builder: (context, state) {
 
         return SizedBox(
-          height: 27.hR + MediaQuery.of(context).padding.top,
+          height: 29.hR + MediaQuery.of(context).padding.top,
           child: Stack(
             children: [
               Container(
-                height: 17.hR,
+                height: 18.hR,
                 alignment: Alignment.topCenter,
                 decoration: const BoxDecoration(
                   color: AppColors.myAppColor,
@@ -47,6 +47,7 @@ class UserProfileImageWithName extends StatelessWidget {
                     child: Row(
                       children: [
                         IconButton(
+                          padding: EdgeInsets.all(10),
                           onPressed: () {
                             Navigator.pop(context);
                           },
@@ -60,12 +61,12 @@ class UserProfileImageWithName extends StatelessWidget {
                           onPressed: () {
                             cubit.toggleTeacherFav(teacher.uid);
                             cubit.addStudentInTeacherCollection(teacher.uid);
-                            cubit.addTeacherInStudentCollection(teacher);
-                            if(teacher.favoriteStudentsUid.contains(myUid)){
-                              teacher.favoriteStudentsUid.remove(myUid);
-                            }else{
-                              teacher.favoriteStudentsUid.add(myUid);
-                            }
+                            cubit.addTeacherInStudentCollection(teacher.copyWith(
+                              favoriteStudentsUid:
+                              isTeacherInMyFavorites(teacher)
+                                  ? (teacher.favoriteStudentsUid..remove(myUid))
+                                  : (teacher.favoriteStudentsUid..add(myUid)),
+                            ),);
                           },
                           icon: Container(
                             padding: const EdgeInsets.all(6),
@@ -95,7 +96,7 @@ class UserProfileImageWithName extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Container(
-                    height: 22.hR,
+                    height: 24.hR,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
@@ -166,10 +167,10 @@ class UserProfileImageWithName extends StatelessWidget {
             );
           },
           child: CircleAvatar(
-            radius: 69.sp,
+            radius: 9.hR,
             backgroundColor: context.backgroundColor,
             child: CircleAvatar(
-              radius: 65.sp,
+              radius: 7.hR,
               backgroundImage: CachedNetworkImageProvider(teacher.imageUrl!),
             ),
           ),

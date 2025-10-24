@@ -1500,6 +1500,9 @@ class AppStrings {
   static const String availableTime = 'availableTime';
   static const String sessionsCount = 'sessionsCount';
   static const String minutesCount = 'minutesCount';
+  static const String busy = 'busy';
+  static const String teacherIsBusy = 'teacherIsBusy';
+  static const String inAppProblem = 'inAppProblem';
 
 
 

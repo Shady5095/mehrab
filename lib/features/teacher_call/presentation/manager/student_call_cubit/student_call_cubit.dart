@@ -28,7 +28,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   final AudioPlayer _player = AudioPlayer();
 
   Future<void> requestPermissions() async {
-    if(Platform.isIOS)return;
+    if (Platform.isIOS) return;
     var micStatus = await Permission.microphone.status;
 
     if (micStatus.isDenied) {
@@ -97,56 +97,58 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   String? callDocId;
 
   Future<void> sendCallToTeacher() async {
-    await db
-        .collection('calls')
-        .add({
-          'teacherUid': teacherModel.uid,
-          'timestamp': FieldValue.serverTimestamp(),
-          'studentUid': currentUserModel?.uid ?? '',
-          "studentName": currentUserModel?.name ?? '',
-          "teacherName": teacherModel.name,
-          "studentPhoto": currentUserModel?.imageUrl,
-          "teacherPhoto": teacherModel.imageUrl,
-          'status': "ringing",
-        })
-        .then((value) {
-          callDocId = value.id;
-          value.update({'callId': value.id});
-        })
-        .catchError((error) {
-          emit(SendCallToTeacherFailure(error: error.toString()));
-        });
-  }
+    try {
+      final callRef = await db.collection('calls').add({
+        'teacherUid': teacherModel.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+        'studentUid': currentUserModel?.uid ?? '',
+        'studentName': currentUserModel?.name ?? '',
+        'teacherName': teacherModel.name,
+        'studentPhoto': currentUserModel?.imageUrl,
+        'teacherPhoto': teacherModel.imageUrl,
+        'status': 'ringing',
+      });
+      callDocId = callRef.id;
+      final updateCallId = callRef.update({'callId': callRef.id});
+      final updateTeacherBusy = db
+          .collection('users')
+          .doc(teacherModel.uid)
+          .update({'isBusy': true});
 
-  Future<bool> checkIfAnotherCallRinging() async {
-    final querySnapshot =
-        await db
-            .collection('calls')
-            .where('teacherUid', isEqualTo: teacherModel.uid)
-            .where('status', whereIn: ['answered', 'ringing'])
-            .get();
-
-    return querySnapshot.docs.isNotEmpty;
+      await Future.wait([updateCallId, updateTeacherBusy]);
+    } catch (error) {
+      emit(SendCallToTeacherFailure(error: error.toString()));
+    }
   }
 
   Future<void> endCallBeforeAnswer({bool isByUser = false}) async {
-    if (callDocId != null) {
-      await db
+    if (callDocId == null) return;
+    try {
+      final updateCall = db
           .collection('calls')
           .doc(callDocId)
-          .update({'status': 'missed'})
-          .then((value) {
-            if (isByUser) {
-              emit(CallEndedByUserState());
-            } else {
-              emit(CallEndedByTimeOut());
-            }
-          })
-          .catchError((error) {
-            emit(SendCallToTeacherFailure(error: error.toString()));
-          });
+          .update({'status': 'missed'});
+
+      final updateTeacher = db
+          .collection('users')
+          .doc(teacherModel.uid)
+          .update({'isBusy': false});
+
+      await Future.wait([
+        updateCall,
+        updateTeacher,
+      ]);
+
+      if (isByUser) {
+        emit(CallEndedByUserState());
+      } else {
+        emit(CallEndedByTimeOut());
+      }
+    } catch (error) {
+      emit(SendCallToTeacherFailure(error: error.toString()));
     }
   }
+
 
   Future<void> endCallAfterAnswer({bool isByUser = false}) async {
     if (callDocId == null) return;
@@ -156,16 +158,12 @@ class StudentCallCubit extends Cubit<StudentCallState> {
         'endedTime': FieldValue.serverTimestamp(),
       });
       final endCallAgora = endAgoraCall();
-      await Future.wait([
-        updateCall,
-        endCallAgora,
-      ]);
+      await Future.wait([updateCall, endCallAgora]);
       if (isByUser) {
         emit(CallFinished(model: teacherModel));
       } else {
         emit(MaxDurationReached());
       }
-
     } catch (error) {
       emit(AgoraConnectionError(error: error.toString()));
     }

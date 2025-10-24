@@ -1222,5 +1222,8 @@
   "dedication": "Gewidmet der Seele unseres geliebten Propheten Muhammad ﷺ",
   "availableTime": "Rund um die Uhr verfügbar",
   "sessionsCount": "Sitzungenanzahl",
-  "minutesCount": "Minutenanzahl"
+  "minutesCount": "Minutenanzahl",
+  "busy": "Beschäftigt",
+  "teacherIsBusy": "Der Lehrer ist mit einer anderen Sitzung beschäftigt. Bitte versuchen Sie es später noch einmal.",
+  "inAppProblem": "Bei Problemen mit der Anwendung wenden Sie sich bitte an:"
 }
