@@ -10,11 +10,9 @@ import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/buttons_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../../../core/utilities/services/call_service.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 import '../manager/student_call_cubit/student_call_cubit.dart';
 import '../manager/student_call_cubit/student_call_state.dart';
-import 'network_indicator.dart';
 
 class StudentCallScreenBody extends StatelessWidget {
   const StudentCallScreenBody({super.key});
@@ -329,8 +327,8 @@ class StudentCallScreenBody extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                            if (cubit.isAnotherUserJoined) ...[
-                              StreamBuilder<CallQuality>(
+                            if (cubit.isAnotherUserJoined)
+                              /*StreamBuilder<CallQuality>(
                                 stream: cubit.networkQualityStream,
                                 initialData: cubit.currentNetworkQuality,
                                 builder: (context, snapshot) {
@@ -340,8 +338,22 @@ class StudentCallScreenBody extends StatelessWidget {
                                     size: 30.sp,
                                   );
                                 },
+                              ),*/
+                              Container(
+                                width: 15,
+                                height: 15,
+                                decoration: BoxDecoration(
+                                  color: AppColors.coolGreen,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.coolGreen,
+                                      blurRadius: 8,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
                             SizedBox(width: 10.sp),
                             Text(
                               cubit.isAnotherUserJoined

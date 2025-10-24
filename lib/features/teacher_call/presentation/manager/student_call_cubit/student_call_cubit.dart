@@ -289,7 +289,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
 
   Future<void> toggleVideo() async {
     try {
-      if (!isVideoEnabled) {
+      if (!isVideoEnabled && Platform.isAndroid) {
         bool hasPermission = await requestCameraPermission();
         if (!hasPermission) {
           return;

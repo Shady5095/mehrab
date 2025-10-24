@@ -10,10 +10,8 @@ import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/buttons_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/config/routes/app_routes.dart';
-import '../../../../core/utilities/services/call_service.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 import '../manager/teacher_call_cubit/teacher_call_cubit.dart';
-import 'network_indicator.dart';
 
 class TeacherCallScreenBody extends StatelessWidget {
   const TeacherCallScreenBody({super.key});
@@ -174,8 +172,8 @@ class TeacherCallScreenBody extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                            if (cubit.isCallConnected) ...[
-                              StreamBuilder<CallQuality>(
+                            if (cubit.isCallConnected)
+                              /*StreamBuilder<CallQuality>(
                                 stream: cubit.networkQualityStream,
                                 initialData: cubit.currentNetworkQuality,
                                 builder: (context, snapshot) {
@@ -185,8 +183,22 @@ class TeacherCallScreenBody extends StatelessWidget {
                                     size: 30.sp,
                                   );
                                 },
+                              ),*/
+                              Container(
+                                width: 15,
+                                height: 15,
+                                decoration: BoxDecoration(
+                                  color: AppColors.coolGreen,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.coolGreen,
+                                      blurRadius: 8,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
                             SizedBox(width: 10.sp),
                             Text(
                               cubit.isCallConnected

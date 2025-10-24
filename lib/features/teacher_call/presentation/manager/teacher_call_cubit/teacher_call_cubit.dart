@@ -145,15 +145,12 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
 
   Future<void> toggleVideo() async {
     try {
-      // If video is currently off and user wants to turn it on, request permission first
-      if (!isVideoEnabled) {
+      if (!isVideoEnabled && Platform.isAndroid) {
         bool hasPermission = await requestCameraPermission();
         if (!hasPermission) {
-          // Permission denied, don't toggle video
           return;
         }
       }
-
       await callService.toggleVideo();
       isVideoEnabled = callService.isVideoEnabled;
       HapticFeedback.heavyImpact();
