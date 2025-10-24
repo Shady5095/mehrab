@@ -149,25 +149,25 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   }
 
   Future<void> endCallAfterAnswer({bool isByUser = false}) async {
-    if (callDocId != null) {
-      await db
-          .collection('calls')
-          .doc(callDocId)
-          .update({
-            'status': 'ended',
-            "endedTime": FieldValue.serverTimestamp(),
-          })
-          .then((value) async {
-            await endAgoraCall();
-            if (isByUser) {
-              emit(CallFinished(model: teacherModel));
-            } else {
-              emit(MaxDurationReached());
-            }
-          })
-          .catchError((error) {
-            emit(SendCallToTeacherFailure(error: error.toString()));
-          });
+    if (callDocId == null) return;
+    try {
+      final updateCall = db.collection('calls').doc(callDocId).update({
+        'status': 'ended',
+        'endedTime': FieldValue.serverTimestamp(),
+      });
+      final endCallAgora = endAgoraCall();
+      await Future.wait([
+        updateCall,
+        endCallAgora,
+      ]);
+      if (isByUser) {
+        emit(CallFinished(model: teacherModel));
+      } else {
+        emit(MaxDurationReached());
+      }
+
+    } catch (error) {
+      emit(AgoraConnectionError(error: error.toString()));
     }
   }
 

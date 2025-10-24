@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'dart:async';
@@ -74,21 +73,29 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   }
 
   Future<void> endCall() async {
-    await db
-        .collection('calls')
-        .doc(callModel.callId)
-        .update({
-      'status': 'ended',
-      "endedTime": FieldValue.serverTimestamp()
-    })
-        .then((value) async {
-      await endAgoraCall();
+    try {
+      final batch = db.batch();
+      final callRef = db.collection('calls').doc(callModel.callId);
+      final userRef = db.collection('users').doc(callModel.teacherUid);
+      batch.update(callRef, {
+        'status': 'ended',
+        'endedTime': FieldValue.serverTimestamp(),
+      });
+
+      batch.update(userRef, {
+        'totalMinutes': FieldValue.increment(_elapsedTime.inMinutes),
+        'totalSessions': FieldValue.increment(1),
+      });
+      await Future.wait([
+        batch.commit(),
+        endAgoraCall(),
+      ]);
       emit(CallFinished());
-    })
-        .catchError((error) {
-      emit(SendCallToTeacherFailure(error: error.toString()));
-    });
+    } catch (error) {
+      emit(AgoraConnectionError(error: error.toString()));
+    }
   }
+
 
   StreamSubscription<DocumentSnapshot>? _callSubscription;
 
