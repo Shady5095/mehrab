@@ -19,21 +19,39 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   final CallModel callModel;
   TeacherCallCubit({
     required this.callModel,
-}) : super(TeacherCallInitial());
+  }) : super(TeacherCallInitial());
 
   static TeacherCallCubit get(context) => BlocProvider.of(context);
 
-  late AgoraCallService callService ;
+  late AgoraCallService callService;
   final db = FirebaseFirestore.instance;
   final AudioPlayer _player = AudioPlayer();
+
   Future<void> requestPermissions() async {
     // check and request microphone permission
     var status = await Permission.microphone.status;
     if (!status.isGranted) {
       await Permission.microphone.request();
-      /*if(await Permission.microphone.isGranted == false){
-        emit(AgoraConnectionError(error: "لم يتم منح إذن الميكروفون"));
-      }*/
+    }
+  }
+
+  Future<bool> requestCameraPermission() async {
+    var cameraStatus = await Permission.camera.status;
+
+    if (cameraStatus.isDenied) {
+      cameraStatus = await Permission.camera.request();
+    }
+
+    if (cameraStatus.isPermanentlyDenied) {
+      emit(CameraPermissionPermanentlyDenied());
+      return false;
+    }
+
+    if (cameraStatus.isGranted) {
+      return true;
+    } else {
+      emit(CameraPermissionDenied());
+      return false;
     }
   }
 
@@ -48,50 +66,64 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
 
   void initCall() async {
     await requestPermissions();
-    await Future.delayed(Duration(
-        milliseconds: 300
-    ));
+    await Future.delayed(Duration(milliseconds: 300));
     await playAnswerSound();
     await setupAgoraCallService();
     joinAgoraChannel(callModel.callId);
   }
 
   Future<void> endCall() async {
-      await db
-          .collection('calls')
-          .doc(callModel.callId)
-          .update({'status': 'ended',"endedTime" : FieldValue.serverTimestamp()})
-          .then((value) async {
-        await endAgoraCall();
-        emit(CallFinished());
-      })
-          .catchError((error) {
-        emit(SendCallToTeacherFailure(error: error.toString()));
-      });
+    await db
+        .collection('calls')
+        .doc(callModel.callId)
+        .update({
+      'status': 'ended',
+      "endedTime": FieldValue.serverTimestamp()
+    })
+        .then((value) async {
+      await endAgoraCall();
+      emit(CallFinished());
+    })
+        .catchError((error) {
+      emit(SendCallToTeacherFailure(error: error.toString()));
+    });
   }
+
   StreamSubscription<DocumentSnapshot>? _callSubscription;
 
   bool isCallConnected = false;
   bool isMicMuted = false;
   bool isSpeakerOn = true;
+  bool isVideoEnabled = false;
+  bool isRemoteVideoEnabled = false;
+  int? remoteUid;
+
   Future<void> setupAgoraCallService() async {
     callService = AgoraCallService();
-    callService.onUserJoined = (uid) {};
+    callService.onUserJoined = (uid) {
+      remoteUid = uid;
+    };
     callService.onUserLeft = (uid) async {
       await endCall();
     };
     callService.onError = (error) {
       emit(AgoraConnectionError(error: error));
     };
-    callService.onCallEnded = () {
-
-    };
+    callService.onCallEnded = () {};
     callService.onConnectionSuccess = () {
       startCallTimer();
       isCallConnected = true;
       playAnswerSound();
       HapticFeedback.vibrate();
       emit(TeacherCallInitial());
+    };
+    callService.onRemoteVideoStateChanged = (uid, enabled) {
+      isRemoteVideoEnabled = enabled;
+      emit(RemoteVideoStateChanged());
+    };
+    callService.onNetworkQualityChanged = (quality) {
+      _currentNetworkQuality = quality;
+      _networkQualityController.add(quality);
     };
     await callService.initialize();
   }
@@ -108,7 +140,43 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     await callService.toggleMute();
     isMicMuted = callService.isMicMuted;
     HapticFeedback.heavyImpact();
+    emit(TeacherCallInitial());
+  }
 
+  Future<void> toggleVideo() async {
+    try {
+      // If video is currently off and user wants to turn it on, request permission first
+      if (!isVideoEnabled) {
+        bool hasPermission = await requestCameraPermission();
+        if (!hasPermission) {
+          // Permission denied, don't toggle video
+          return;
+        }
+      }
+
+      await callService.toggleVideo();
+      isVideoEnabled = callService.isVideoEnabled;
+      HapticFeedback.heavyImpact();
+
+      // When video is enabled, automatically turn on speaker and disable proximity sensor
+      if (isVideoEnabled) {
+        if (!isSpeakerOn) {
+          await switchSpeaker();
+        }
+        if (Platform.isAndroid) {
+          disableProximitySensor();
+        }
+      }
+
+      emit(VideoStateChanged());
+    } catch (e) {
+      emit(AgoraConnectionError(error: 'فشل تشغيل الفيديو: $e'));
+    }
+  }
+
+  Future<void> switchCamera() async {
+    await callService.switchCamera();
+    HapticFeedback.heavyImpact();
     emit(TeacherCallInitial());
   }
 
@@ -117,14 +185,22 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     isSpeakerOn = callService.isSpeakerOn;
     HapticFeedback.heavyImpact();
     if (Platform.isAndroid) {
-      if(!isSpeakerOn){
+      if (!isSpeakerOn && !isVideoEnabled) {
         enableProximitySensor();
-      }else{
+      } else {
         disableProximitySensor();
       }
     }
     emit(TeacherCallInitial());
   }
+
+  // 🆕 Stream لجودة الشبكة
+  final StreamController<CallQuality> _networkQualityController =
+  StreamController<CallQuality>.broadcast();
+  Stream<CallQuality> get networkQualityStream => _networkQualityController.stream;
+
+  CallQuality _currentNetworkQuality = CallQuality.excellent;
+  CallQuality get currentNetworkQuality => _currentNetworkQuality;
 
   final StreamController<String> _callTimerController =
   StreamController<String>.broadcast();
@@ -159,6 +235,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     _callDurationTimer?.cancel();
     _callDurationTimer = null;
   }
+
   StreamSubscription<dynamic>? _proximitySubscription;
   bool _isNear = false;
 
@@ -177,6 +254,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     _proximitySubscription?.cancel();
     _proximitySubscription = null;
   }
+
   @override
   Future<void> close() {
     stopSound();
@@ -185,7 +263,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     stopCallTimer();
     _callSubscription?.cancel();
     callService.dispose();
-    if(Platform.isAndroid){
+    if (Platform.isAndroid) {
       disableProximitySensor();
     }
     return super.close();

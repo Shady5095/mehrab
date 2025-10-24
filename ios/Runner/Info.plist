@@ -43,6 +43,8 @@
 	<string>Our apps uses photo library to select photos to add it as profile image</string>
 	<key>NSMicrophoneUsageDescription</key>
     <string>Our app uses the microphone to capture your voice during voice calls.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Our app uses the camera to let you participate in video calls.</string>
     <key>NSLocalNetworkUsageDescription</key>
     <string>Our app uses the local network to establish secure audio connections.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

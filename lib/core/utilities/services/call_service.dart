@@ -2,11 +2,20 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/utilities/services/sensitive_app_constants.dart';
 
+// Enum لمستويات جودة الاتصال
+enum CallQuality {
+  excellent, // 3 شرط
+  good,      // شرطين
+  poor,      // شرطه واحدة
+}
+
 class AgoraCallService {
   RtcEngine? _engine;
   bool isMicMuted = false;
   bool isInitialized = false;
   bool _isSpeakerOn = true;
+  bool isVideoEnabled = false;
+  bool isFrontCamera = true;
 
   // Callbacks
   Function(int uid)? onUserJoined;
@@ -14,16 +23,16 @@ class AgoraCallService {
   Function(String error)? onError;
   Function()? onCallEnded;
   Function()? onConnectionSuccess;
+  Function(int uid, bool enabled)? onRemoteVideoStateChanged;
+  Function(CallQuality quality)? onNetworkQualityChanged; // 🆕 Callback للجودة
 
   // Initialize Agora Engine
   Future<void> initialize() async {
     if (isInitialized) return;
 
     try {
-      // Create RTC engine
       _engine = createAgoraRtcEngine();
 
-      // Initialize first before any other operations
       await _engine!.initialize(
         RtcEngineContext(
           appId: SensitiveAppConstants.agoraAppId,
@@ -33,7 +42,6 @@ class AgoraCallService {
 
       debugPrint('✅ Agora Engine created and initialized');
 
-      // Register event handlers AFTER initialization
       _engine!.registerEventHandler(
         RtcEngineEventHandler(
           onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
@@ -68,23 +76,64 @@ class AgoraCallService {
           onAudioRoutingChanged: (int num) {
             debugPrint('🔊 Audio route changed to: $num');
           },
+          onRemoteVideoStateChanged: (RtcConnection connection, int remoteUid,
+              RemoteVideoState state, RemoteVideoStateReason reason, int elapsed) {
+            debugPrint('📹 Remote video state changed: uid=$remoteUid, state=$state');
+            if (state == RemoteVideoState.remoteVideoStateDecoding ||
+                state == RemoteVideoState.remoteVideoStateStarting) {
+              onRemoteVideoStateChanged?.call(remoteUid, true);
+            } else if (state == RemoteVideoState.remoteVideoStateStopped) {
+              onRemoteVideoStateChanged?.call(remoteUid, false);
+            }
+          },
+          // 🆕 مراقبة جودة الشبكة
+          onNetworkQuality: (RtcConnection connection, int remoteUid,
+              QualityType txQuality, QualityType rxQuality) {
+            final worstQuality = txQuality.index > rxQuality.index ? txQuality : rxQuality;
+            CallQuality quality;
+            switch (worstQuality) {
+              case QualityType.qualityExcellent:
+              case QualityType.qualityGood:
+                quality = CallQuality.excellent; // 3 شرط
+                break;
+              case QualityType.qualityPoor:
+              case QualityType.qualityBad:
+                quality = CallQuality.good; // شرطين
+                break;
+              case QualityType.qualityVbad:
+              case QualityType.qualityDown:
+              default:
+                quality = CallQuality.poor; // شرطه
+                break;
+            }
+            onNetworkQualityChanged?.call(quality);
+          },
         ),
       );
 
-      // Enable audio AFTER initialization
       await _engine!.enableAudio();
       debugPrint('✅ Audio enabled');
 
-      // Set audio profile for voice call
       await _engine!.setAudioProfile(
         profile: AudioProfileType.audioProfileDefault,
         scenario: AudioScenarioType.audioScenarioChatroom,
       );
       debugPrint('✅ Audio profile set');
 
-      // Configure audio settings
       await _engine!.setDefaultAudioRouteToSpeakerphone(true);
       debugPrint('✅ Default audio route set to speakerphone');
+
+      await _engine!.enableVideo();
+      debugPrint('✅ Video enabled');
+
+      await _engine!.setVideoEncoderConfiguration(
+        const VideoEncoderConfiguration(
+          dimensions: VideoDimensions(width: 1280, height: 720),
+          frameRate: 25,
+          bitrate: 0,
+        ),
+      );
+      debugPrint('✅ Video encoder configured');
 
       isInitialized = true;
       debugPrint('✅ Agora Engine fully initialized');
@@ -96,10 +145,6 @@ class AgoraCallService {
     }
   }
 
-  // Request necessary permissions
-
-
-  // Join channel
   Future<void> joinChannel(String channelId, {int uid = 0}) async {
     if (!isInitialized) {
       debugPrint('⚠️ Engine not initialized, initializing now...');
@@ -121,7 +166,9 @@ class AgoraCallService {
           channelProfile: ChannelProfileType.channelProfileCommunication,
           clientRoleType: ClientRoleType.clientRoleBroadcaster,
           autoSubscribeAudio: true,
+          autoSubscribeVideo: true,
           publishMicrophoneTrack: true,
+          publishCameraTrack: false,
         ),
       );
 
@@ -133,7 +180,6 @@ class AgoraCallService {
     }
   }
 
-  // Leave channel
   Future<void> leaveChannel() async {
     if (_engine != null && isInitialized) {
       try {
@@ -145,7 +191,6 @@ class AgoraCallService {
     }
   }
 
-  // Toggle microphone
   Future<void> toggleMute() async {
     if (_engine != null && isInitialized) {
       try {
@@ -154,13 +199,53 @@ class AgoraCallService {
         debugPrint('🎤 Audio ${isMicMuted ? 'muted' : 'enabled'}');
       } catch (e) {
         debugPrint('❌ Error toggling audio: $e');
-        // Revert state on error
         isMicMuted = !isMicMuted;
       }
     }
   }
 
-  // Switch speaker
+  Future<void> toggleVideo() async {
+    if (_engine != null && isInitialized) {
+      try {
+        isVideoEnabled = !isVideoEnabled;
+
+        if (isVideoEnabled) {
+          await _engine!.startPreview();
+          await _engine!.enableLocalVideo(true);
+          await _engine!.muteLocalVideoStream(false);
+        } else {
+          await _engine!.muteLocalVideoStream(true);
+          await _engine!.enableLocalVideo(false);
+          await _engine!.stopPreview();
+        }
+
+        await _engine!.updateChannelMediaOptions(
+          ChannelMediaOptions(
+            publishCameraTrack: isVideoEnabled,
+          ),
+        );
+
+        debugPrint('📹 Video ${isVideoEnabled ? 'enabled' : 'disabled'}');
+      } catch (e) {
+        debugPrint('❌ Error toggling video: $e');
+        isVideoEnabled = !isVideoEnabled;
+        rethrow;
+      }
+    }
+  }
+
+  Future<void> switchCamera() async {
+    if (_engine != null && isInitialized && isVideoEnabled) {
+      try {
+        await _engine!.switchCamera();
+        isFrontCamera = !isFrontCamera;
+        debugPrint('📹 Camera switched to ${isFrontCamera ? 'front' : 'back'}');
+      } catch (e) {
+        debugPrint('❌ Error switching camera: $e');
+      }
+    }
+  }
+
   Future<void> switchSpeaker(bool useSpeaker) async {
     if (_engine != null && isInitialized) {
       try {
@@ -169,16 +254,14 @@ class AgoraCallService {
         debugPrint('🔊 Speaker ${useSpeaker ? 'enabled' : 'disabled'}');
       } catch (e) {
         debugPrint('❌ Error switching speaker: $e');
-        // Revert state on error
         _isSpeakerOn = !useSpeaker;
       }
     }
   }
 
-  // Get current speaker state
   bool get isSpeakerOn => _isSpeakerOn;
+  RtcEngine? get engine => _engine;
 
-  // Adjust recording volume (0-400, default 100)
   Future<void> adjustRecordingSignalVolume(int volume) async {
     if (_engine != null && isInitialized) {
       try {
@@ -190,7 +273,6 @@ class AgoraCallService {
     }
   }
 
-  // Adjust playback volume (0-400, default 100)
   Future<void> adjustPlaybackSignalVolume(int volume) async {
     if (_engine != null && isInitialized) {
       try {
@@ -202,9 +284,11 @@ class AgoraCallService {
     }
   }
 
-  // End call and cleanup
   Future<void> endCall() async {
     try {
+      if (isVideoEnabled) {
+        await toggleVideo();
+      }
       await leaveChannel();
       onCallEnded?.call();
       debugPrint('✅ Call ended successfully');
@@ -213,9 +297,11 @@ class AgoraCallService {
     }
   }
 
-  // Dispose and release resources
   Future<void> dispose() async {
     try {
+      if (isVideoEnabled) {
+        await _engine!.stopPreview();
+      }
       await leaveChannel();
 
       if (_engine != null) {

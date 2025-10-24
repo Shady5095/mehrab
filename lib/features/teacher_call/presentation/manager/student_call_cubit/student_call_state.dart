@@ -46,3 +46,16 @@ final class MicrophoneNotAllowed extends StudentCallState {}
 final class MicrophonePermanentlyDenied extends StudentCallState {}
 
 final class MicrophoneAllowed extends StudentCallState {}
+
+final class RemoteVideoStateChanged extends StudentCallState {}
+
+final class VideoStateChanged extends StudentCallState {}
+
+final class CameraPermissionPermanentlyDenied extends StudentCallState {}
+
+final class CameraPermissionDenied extends StudentCallState {}
+
+final class NetworkQualityUpdated extends StudentCallState {}
+
+
+

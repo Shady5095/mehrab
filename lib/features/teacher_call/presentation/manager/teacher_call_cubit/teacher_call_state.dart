@@ -37,3 +37,10 @@ final class AgoraConnectionError extends TeacherCallState {
   final String error;
   AgoraConnectionError({required this.error});
 }
+final class CameraPermissionDenied extends TeacherCallState {}
+
+final class CameraPermissionPermanentlyDenied extends TeacherCallState {}
+
+final class VideoStateChanged extends TeacherCallState {}
+
+final class RemoteVideoStateChanged extends TeacherCallState {}

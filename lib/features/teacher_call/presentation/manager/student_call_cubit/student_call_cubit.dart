@@ -16,7 +16,6 @@ import 'package:screen_off/screen_off.dart';
 
 import '../../../../../core/utilities/services/call_service.dart';
 
-
 class StudentCallCubit extends Cubit<StudentCallState> {
   StudentCallCubit({required this.teacherModel}) : super(TeacherCallInitial());
 
@@ -24,35 +23,57 @@ class StudentCallCubit extends Cubit<StudentCallState> {
 
   static StudentCallCubit get(context) => BlocProvider.of(context);
 
-  late AgoraCallService callService ;
+  late AgoraCallService callService;
   final db = FirebaseFirestore.instance;
   final AudioPlayer _player = AudioPlayer();
-  Future<void> requestPermissions() async {
-    var status = await Permission.microphone.status;
 
-    if (status.isDenied) {
-      status = await Permission.microphone.request();
+  Future<void> requestPermissions() async {
+    var micStatus = await Permission.microphone.status;
+
+    if (micStatus.isDenied) {
+      micStatus = await Permission.microphone.request();
     }
 
-    if (status.isPermanentlyDenied) {
-      if(Platform.isIOS){
+    if (micStatus.isPermanentlyDenied) {
+      if (Platform.isIOS) {
         emit(MicrophoneAllowed());
-      }else{
+      } else {
         emit(MicrophonePermanentlyDenied());
       }
       return;
     }
 
-    if (status.isGranted) {
+    if (micStatus.isGranted) {
       emit(MicrophoneAllowed());
     } else {
-      if(Platform.isIOS){
+      if (Platform.isIOS) {
         emit(MicrophoneAllowed());
-      }else{
+      } else {
         emit(MicrophoneNotAllowed());
       }
     }
   }
+
+  Future<bool> requestCameraPermission() async {
+    var cameraStatus = await Permission.camera.status;
+
+    if (cameraStatus.isDenied) {
+      cameraStatus = await Permission.camera.request();
+    }
+
+    if (cameraStatus.isPermanentlyDenied) {
+      emit(CameraPermissionPermanentlyDenied());
+      return false;
+    }
+
+    if (cameraStatus.isGranted) {
+      return true;
+    } else {
+      emit(CameraPermissionDenied());
+      return false;
+    }
+  }
+
   Future<void> playSound() async {
     _player.setReleaseMode(ReleaseMode.loop);
     await _player.play(AssetSource('audio/phone-ringing.mp3'));
@@ -70,7 +91,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   void initCall() async {
     await playSound();
     await requestPermissions();
-    if(state is MicrophoneAllowed ) {
+    if (state is MicrophoneAllowed) {
       await sendCallToTeacher();
       await setupAgoraCallService();
       callPushNotification();
@@ -83,9 +104,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   String? callDocId;
 
   Future<void> sendCallToTeacher() async {
-    await db
-        .collection('calls')
-        .add({
+    await db.collection('calls').add({
       'teacherUid': teacherModel.uid,
       'timestamp': FieldValue.serverTimestamp(),
       'studentUid': currentUserModel?.uid ?? '',
@@ -94,23 +113,19 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       "studentPhoto": currentUserModel?.imageUrl,
       "teacherPhoto": teacherModel.imageUrl,
       'status': "ringing",
-    })
-        .then((value) {
+    }).then((value) {
       callDocId = value.id;
       value.update({'callId': value.id});
-    })
-        .catchError((error) {
+    }).catchError((error) {
       emit(SendCallToTeacherFailure(error: error.toString()));
     });
   }
 
   Future<bool> checkIfAnotherCallRinging() async {
-    final querySnapshot =
-    await db
+    final querySnapshot = await db
         .collection('calls')
         .where('teacherUid', isEqualTo: teacherModel.uid)
-        .where('status', whereIn: ['answered', 'ringing'])
-        .get();
+        .where('status', whereIn: ['answered', 'ringing']).get();
 
     return querySnapshot.docs.isNotEmpty;
   }
@@ -120,15 +135,13 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       await db
           .collection('calls')
           .doc(callDocId)
-          .update({'status': 'missed'})
-          .then((value) {
+          .update({'status': 'missed'}).then((value) {
         if (isByUser) {
           emit(CallEndedByUserState());
         } else {
           emit(CallEndedByTimeOut());
         }
-      })
-          .catchError((error) {
+      }).catchError((error) {
         emit(SendCallToTeacherFailure(error: error.toString()));
       });
     }
@@ -139,21 +152,24 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       await db
           .collection('calls')
           .doc(callDocId)
-          .update({'status': 'ended',"endedTime" : FieldValue.serverTimestamp()})
-          .then((value) async {
-            await endAgoraCall();
+          .update({
+        'status': 'ended',
+        "endedTime": FieldValue.serverTimestamp()
+      }).then((value) async {
+        await endAgoraCall();
         if (isByUser) {
           emit(CallFinished(model: teacherModel));
         } else {
           emit(MaxDurationReached());
         }
-      })
-          .catchError((error) {
+      }).catchError((error) {
         emit(SendCallToTeacherFailure(error: error.toString()));
       });
     }
   }
+
   StreamSubscription<DocumentSnapshot>? _callSubscription;
+
   void callListener() {
     _callSubscription?.cancel();
     _callSubscription = FirebaseFirestore.instance
@@ -162,7 +178,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
         .snapshots()
         .listen((snapshot) {
       if (snapshot.exists) {
-        CallModel data = CallModel.fromJson(snapshot.data()??{});
+        CallModel data = CallModel.fromJson(snapshot.data() ?? {});
         if (data.status == 'answered') {
           if (!isCallAnswered) {
             onTeacherAnswer(data);
@@ -179,12 +195,11 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     isCallAnswered = true;
     emit(CallAnsweredState());
     stopSound();
-    await Future.delayed(Duration(
-      milliseconds: 300
-    ));
+    await Future.delayed(Duration(milliseconds: 300));
     _callTimeoutTimer?.cancel();
     joinAgoraChannel(data.callId);
   }
+
   void closeListener() {
     FirebaseFirestore.instance
         .collection('calls')
@@ -197,7 +212,6 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   Timer? _callTimeoutTimer;
 
   void startCallTimeout() {
-    // make a timer for 2 minutes to end the call if not answered even if the user closes the app
     _callTimeoutTimer = Timer(const Duration(minutes: 2), () {
       endCallBeforeAnswer();
     });
@@ -211,15 +225,28 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     });
   }
 
-
   bool isCallAnswered = false;
   bool isAnotherUserJoined = false;
   bool isMicMuted = false;
   bool isSpeakerOn = true;
+  bool isVideoEnabled = false;
+  bool isRemoteVideoEnabled = false;
+  int? remoteUid;
+
+  // 🆕 Stream لجودة الشبكة
+  final StreamController<CallQuality> _networkQualityController =
+  StreamController<CallQuality>.broadcast();
+
+  Stream<CallQuality> get networkQualityStream => _networkQualityController.stream;
+
+  CallQuality _currentNetworkQuality = CallQuality.excellent;
+  CallQuality get currentNetworkQuality => _currentNetworkQuality;
+
   Future<void> setupAgoraCallService() async {
     callService = AgoraCallService();
     callService.onUserJoined = (uid) {
       isAnotherUserJoined = true;
+      remoteUid = uid;
       startCallTimer();
       playAnswerSound();
       HapticFeedback.vibrate();
@@ -231,12 +258,17 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     callService.onError = (error) {
       emit(AgoraConnectionError(error: error));
     };
-    callService.onCallEnded = () {
-
+    callService.onCallEnded = () {};
+    callService.onConnectionSuccess = () {};
+    callService.onRemoteVideoStateChanged = (uid, enabled) {
+      isRemoteVideoEnabled = enabled;
+      emit(RemoteVideoStateChanged());
     };
-    callService.onConnectionSuccess = () {
-
+    callService.onNetworkQualityChanged = (quality) {
+      _currentNetworkQuality = quality;
+      _networkQualityController.add(quality);
     };
+
     await callService.initialize();
   }
 
@@ -255,14 +287,47 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     emit(TeacherCallInitial());
   }
 
+  Future<void> toggleVideo() async {
+    try {
+      if (!isVideoEnabled) {
+        bool hasPermission = await requestCameraPermission();
+        if (!hasPermission) {
+          return;
+        }
+      }
+      await callService.toggleVideo();
+      isVideoEnabled = callService.isVideoEnabled;
+      HapticFeedback.heavyImpact();
+
+      if (isVideoEnabled) {
+        if (!isSpeakerOn) {
+          await switchSpeaker();
+        }
+        if (Platform.isAndroid) {
+          disableProximitySensor();
+        }
+      }
+
+      emit(VideoStateChanged());
+    } catch (e) {
+      emit(AgoraConnectionError(error: 'فشل تشغيل الفيديو: $e'));
+    }
+  }
+
+  Future<void> switchCamera() async {
+    await callService.switchCamera();
+    HapticFeedback.heavyImpact();
+    emit(TeacherCallInitial());
+  }
+
   Future<void> switchSpeaker() async {
     await callService.switchSpeaker(!callService.isSpeakerOn);
     isSpeakerOn = callService.isSpeakerOn;
     HapticFeedback.heavyImpact();
     if (Platform.isAndroid) {
-      if(!isSpeakerOn){
+      if (!isSpeakerOn && !isVideoEnabled) {
         enableProximitySensor();
-      }else{
+      } else {
         disableProximitySensor();
       }
     }
@@ -312,12 +377,13 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     _callDurationTimer?.cancel();
     _callDurationTimer = null;
   }
+
   StreamSubscription<dynamic>? _proximitySubscription;
   bool _isNear = false;
 
   void enableProximitySensor() {
     _proximitySubscription = ProximitySensor.events.listen((event) async {
-        _isNear = event > 0;
+      _isNear = event > 0;
       if (_isNear) {
         await ScreenOff.turnScreenOff();
       } else {
@@ -339,10 +405,11 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     _callTimeoutTimer?.cancel();
     maxCallDurationTimer?.cancel();
     _callTimerController.close();
+    _networkQualityController.close();
     stopCallTimer();
     _callSubscription?.cancel();
     callService.dispose();
-    if(Platform.isAndroid){
+    if (Platform.isAndroid) {
       disableProximitySensor();
     }
     return super.close();
