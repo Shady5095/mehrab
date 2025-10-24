@@ -65,9 +65,10 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   }
 
   void initCall() async {
-    await requestPermissions();
-    await Future.delayed(Duration(milliseconds: 300));
-    await playAnswerSound();
+    if (Platform.isAndroid) {
+      await requestPermissions();
+      await Future.delayed(Duration(milliseconds: 300));
+    }
     await setupAgoraCallService();
     joinAgoraChannel(callModel.callId);
   }
