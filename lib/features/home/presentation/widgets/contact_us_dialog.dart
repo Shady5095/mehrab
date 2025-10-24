@@ -15,7 +15,7 @@ class ContactUsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return MyAlertDialog(
       makeIosAndAndroidSameDialog: true,
-      width: 85.wR,
+      width: 65.wR,
       actions: [],
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -38,7 +38,7 @@ class ContactUsDialog extends StatelessWidget {
               size: 32.sp,
             ),
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 10),
           Text(
             AppStrings.contactUs.tr(context),
             style: TextStyle(
@@ -55,7 +55,7 @@ class ContactUsDialog extends StatelessWidget {
               color: Colors.grey[600],
             ),
           ),
-          SizedBox(height: 24),
+          SizedBox(height: 10),
           Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -144,9 +144,7 @@ class ContactUsDialog extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 24),
-
-          // Social Media Section
+          SizedBox(height: 10),
           Text(
             'تابعنا على',
             style: TextStyle(
@@ -156,7 +154,6 @@ class ContactUsDialog extends StatelessWidget {
             ),
           ),
           SizedBox(height: 12),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -185,7 +182,6 @@ class ContactUsDialog extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 8),
         ],
       ),
     );
