@@ -26,6 +26,8 @@ class TeacherModel {
    double averageRating;
    List<String> favoriteStudentsUid ;
    String? igazPdfUrl ;
+   num minutesCount = 0;
+   num sessionsCount = 0;
 
   TeacherModel({
     required this.uid,
@@ -52,6 +54,8 @@ class TeacherModel {
     required this.school,
     required this.igazah,
     this.igazPdfUrl,
+    this.minutesCount = 0,
+    this.sessionsCount = 0,
   });
 
   factory TeacherModel.fromJson(Map<String, dynamic> json) {
@@ -80,6 +84,8 @@ class TeacherModel {
       school: json['school'],
       igazah: json['igazah'],
       igazPdfUrl: json['igazPdfUrl'],
+      minutesCount: json['totalMinutes']??0,
+      sessionsCount: json['totalSessions']??0,
     );
   }
 
@@ -109,6 +115,8 @@ class TeacherModel {
       'school': school,
       'igazah': igazah,
       'igazPdfUrl': igazPdfUrl,
+      'totalMinutes': minutesCount,
+      'totalSessions': sessionsCount,
     };
   }
 
@@ -138,6 +146,8 @@ class TeacherModel {
     double? averageRating,
     List<String>? favoriteStudentsUid,
     String? igazPdfUrl,
+    num ? minutesCount,
+    num ? sessionsCount,
   }) {
     return TeacherModel(
       uid: uid ?? this.uid,
@@ -164,6 +174,8 @@ class TeacherModel {
       school: school ?? this.school,
       igazah: igazah ?? this.igazah,
       igazPdfUrl:  igazPdfUrl ?? this.igazPdfUrl,
+      minutesCount: minutesCount ?? this.minutesCount,
+      sessionsCount: sessionsCount ?? this.sessionsCount,
     );
   }
 }

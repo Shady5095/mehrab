@@ -1220,5 +1220,7 @@
   "path2": "Öğretim ve Sertifikasyon",
   "path3": "Ezber ve İnceleme",
   "dedication": "Sevgili Peygamberimiz Muhammed ﷺ'in ruhuna ithaf edilmiştir",
-  "availableTime": "7/24 Kullanılabilir"
+  "availableTime": "7/24 Kullanılabilir",
+  "sessionsCount": "oturum sayısı",
+  "minutesCount": "dakika Sayısı"
 }

@@ -1220,5 +1220,7 @@
   "path2": "Lehren und Zertifizierung",
   "path3": "Auswendiglernen und Wiederholung",
   "dedication": "Gewidmet der Seele unseres geliebten Propheten Muhammad ﷺ",
-  "availableTime": "Rund um die Uhr verfügbar"
+  "availableTime": "Rund um die Uhr verfügbar",
+  "sessionsCount": "Sitzungenanzahl",
+  "minutesCount": "Minutenanzahl"
 }

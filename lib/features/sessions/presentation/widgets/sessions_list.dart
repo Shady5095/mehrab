@@ -58,7 +58,7 @@ class _SessionsListState extends State<SessionsList> {
     } else {
       query = query
           .where('studentUid', isEqualTo: myUid)
-          .where('status', whereIn: ['ended', 'answered']);
+          .where('status', isEqualTo: 'ended');
     }
 
     if (_lastDoc != null) {

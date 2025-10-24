@@ -1219,5 +1219,7 @@
   "path2": "Teaching and Certification",
   "path3": "Memorization and Review",
   "dedication": "Dedicated to the soul of our beloved Prophet Muhammad ﷺ",
-  "availableTime": "Available 24/7"
+  "availableTime": "Available 24/7",
+  "sessionsCount": "Sessions",
+  "minutesCount": "Minutes"
 }

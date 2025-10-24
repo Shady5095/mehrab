@@ -1498,6 +1498,8 @@ class AppStrings {
   static const String path3 = 'path3';
   static const String dedication = 'dedication';
   static const String availableTime = 'availableTime';
+  static const String sessionsCount = 'sessionsCount';
+  static const String minutesCount = 'minutesCount';
 
 
 

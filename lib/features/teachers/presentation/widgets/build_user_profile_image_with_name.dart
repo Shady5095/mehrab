@@ -25,11 +25,11 @@ class UserProfileImageWithName extends StatelessWidget {
       builder: (context, state) {
 
         return SizedBox(
-          height: 32.hR + MediaQuery.of(context).padding.top,
+          height: 27.hR + MediaQuery.of(context).padding.top,
           child: Stack(
             children: [
               Container(
-                height: 20.hR,
+                height: 17.hR,
                 alignment: Alignment.topCenter,
                 decoration: const BoxDecoration(
                   color: AppColors.myAppColor,
@@ -95,7 +95,7 @@ class UserProfileImageWithName extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Container(
-                    height: 25.5.hR,
+                    height: 22.hR,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
