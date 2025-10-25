@@ -89,62 +89,78 @@ class HomeItemsIcons extends StatelessWidget {
     final List<Map<String, dynamic>> items = AppConstants.isAdmin
         ? adminItems
         : AppConstants.isStudent
-            ? studentItems
-            : teacherItems;
-
+        ? studentItems
+        : teacherItems;
 
     List<Function()> adminOnTapFunctions = [
-      () {
-        context.navigateTo(pageName: AppRoutes.teachersScreen,arguments: [true]).then((value) => cubit.getFavoriteTeachersCount());
+          () {
+        context
+            .navigateTo(pageName: AppRoutes.teachersScreen, arguments: [true])
+            .then((value) => cubit.getFavoriteTeachersCount());
       },
-      () {
-        context.navigateTo(pageName: AppRoutes.allStudentsScreen).then((value) => cubit.getStudentsCount());
+          () {
+        context
+            .navigateTo(pageName: AppRoutes.allStudentsScreen)
+            .then((value) => cubit.getStudentsCount());
       },
-      () {
+          () {
         context.navigateTo(pageName: AppRoutes.prayerTimesScreen);
       },
-      () {
+          () {
         context.navigateTo(pageName: AppRoutes.quranWebView);
       },
     ];
     List<Function()> studentOnTapFunctions = [
-      () {
-        context.navigateTo(pageName: AppRoutes.teachersScreen,arguments: [true]).then((value) => cubit.getFavoriteTeachersCount());
+          () {
+        context
+            .navigateTo(pageName: AppRoutes.teachersScreen, arguments: [true])
+            .then((value) => cubit.getFavoriteTeachersCount());
       },
-      () {
+          () {
         context.navigateTo(pageName: AppRoutes.prayerTimesScreen);
       },
-      () {
+          () {
         context.navigateTo(pageName: AppRoutes.quranWebView);
       },
     ];
     List<Function()> teacherOnTapFunctions = [
-      () {
-        context.navigateTo(pageName: AppRoutes.favoriteStudentsScreen,arguments: [true]);
+          () {
+        context.navigateTo(
+            pageName: AppRoutes.favoriteStudentsScreen, arguments: [true]);
       },
-      () {
+          () {
         context.navigateTo(pageName: AppRoutes.teacherReviewsScreen);
       },
-      () {
+          () {
         context.navigateTo(pageName: AppRoutes.prayerTimesScreen);
       },
-      () {
+          () {
         context.navigateTo(pageName: AppRoutes.quranWebView);
       },
     ];
+
+    // حساب الـ text scale factor لتكبير الارتفاع بناءً عليه
+    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
+    // حساب childAspectRatio بناءً على text scale
+    // كلما كبر الخط، نقلل الـ aspect ratio (يعني البطاقة تبقى أطول)
+    final baseAspectRatio = 1.4;
+    final adjustedAspectRatio = baseAspectRatio / textScaleFactor.clamp(1.0, 1.5);
 
     return AnimationLimiter(
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(15.0),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // 2 items per row
-          crossAxisSpacing: 15.0,
-          mainAxisSpacing: 15.0,
-          childAspectRatio: 1.5, // Square items
+        padding: EdgeInsets.symmetric(
+          horizontal: 20.0 * textScaleFactor.clamp(1.0, 1.2),
+          vertical: 10.0 * textScaleFactor.clamp(1.0, 1.2),
         ),
-        itemCount: items.length, // Total 4 items
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 15.0 * textScaleFactor.clamp(1.0, 1.2),
+          mainAxisSpacing: 15.0 * textScaleFactor.clamp(1.0, 1.2),
+          childAspectRatio: adjustedAspectRatio,
+        ),
+        itemCount: items.length,
         itemBuilder: (context, index) {
           return AnimationConfiguration.staggeredGrid(
             position: index,
@@ -154,7 +170,7 @@ class HomeItemsIcons extends StatelessWidget {
               duration: const Duration(milliseconds: 500),
               child: FadeInAnimation(
                 duration: const Duration(milliseconds: 500),
-                child: _buildGlassContainer(
+                child: _buildModernGlassContainer(
                   context,
                   items[index]['name']!,
                   items[index]['icon']!,
@@ -163,8 +179,8 @@ class HomeItemsIcons extends StatelessWidget {
                   onTap: AppConstants.isAdmin
                       ? adminOnTapFunctions[index]
                       : AppConstants.isStudent
-                          ? studentOnTapFunctions[index]
-                          : teacherOnTapFunctions[index],
+                      ? studentOnTapFunctions[index]
+                      : teacherOnTapFunctions[index],
                 ),
               ),
             ),
@@ -174,73 +190,166 @@ class HomeItemsIcons extends StatelessWidget {
     );
   }
 
-  Widget _buildGlassContainer(
-    BuildContext context,
-    String name,
-    String iconPath,
-    String? details,
-    Color color, {
-    required Function() onTap,
-  }) {
+  Widget _buildModernGlassContainer(
+      BuildContext context,
+      String name,
+      String iconPath,
+      String? details,
+      Color color, {
+        required Function() onTap,
+      }) {
+    // الحصول على text scale factor
+    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
+    // حساب أحجام responsive
+    final responsivePadding = 10.0 * textScaleFactor.clamp(1.0, 1.3);
+    final responsiveIconPadding = 8.0 * textScaleFactor.clamp(1.0, 1.3);
+    final responsiveBorderRadius = 20.0 * textScaleFactor.clamp(1.0, 1.2);
+
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(responsiveBorderRadius),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white, // Glass effect with main color
-          borderRadius: BorderRadius.circular(10.0),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              color.withValues(alpha: 0.05),
+              color.withValues(alpha: 0.08),
+              color.withValues(alpha: 0.1),
+              color.withValues(alpha: 0.1),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(responsiveBorderRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 5.0,
-              spreadRadius: 2.0,
+              color: color.withValues(alpha: 0.0),
+              blurRadius: 5,
+              offset: Offset(0, 5),
+              spreadRadius: 0,
             ),
           ],
+          border: Border.all(
+            color: color.withValues(alpha: 0.15),
+            width: 1.5,
+          ),
         ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Row(
+        child: Stack(
+          children: [
+            // Decorative pattern in background
+            Positioned(
+              left: -15 * textScaleFactor.clamp(1.0, 1.3),
+              top: -15 * textScaleFactor.clamp(1.0, 1.3),
+              child: Opacity(
+                opacity: 0.06,
+                child: Icon(
+                  Icons.auto_awesome_rounded,
+                  size: 80 * textScaleFactor.clamp(1.0, 1.2),
+                  color: color,
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(responsivePadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Image.asset(
-                    iconPath,
-                    width: 30.sp,
-                    height: 30.sp,
-                    color: name == AppStrings.reviewsAndComments ? null : color,
-                    errorBuilder: (context, error, stackTrace) {
-                      // Fallback if asset image fails to load
-                      return Icon(Icons.error, size: 30.sp, color: color);
-                    },
+                  // Icon with circular background
+                  Container(
+                    padding: EdgeInsets.all(responsiveIconPadding),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          color.withValues(alpha: 0.15),
+                          color.withValues(alpha: 0.08),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Image.asset(
+                      iconPath,
+                      width: 26 * textScaleFactor.clamp(1.0, 1.3),
+                      height: 26 * textScaleFactor.clamp(1.0, 1.3),
+                      color: name == AppStrings.reviewsAndComments ? null : color,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.error,
+                          size: 26 * textScaleFactor.clamp(1.0, 1.3),
+                          color: color,
+                        );
+                      },
+                    ),
                   ),
-                  const Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 20.sp,
-                    color: AppColors.myAppColor,
+                  // النصوص مع responsive sizing
+                  Flexible(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name.tr(context),
+                                style: TextStyle(
+                                  fontSize: name == AppStrings.favoriteTeachers || name == AppStrings.reviewsAndComments || name == AppStrings.favStudents ?12.sp : 13.5.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (details != null) ...[
+                                SizedBox(height: 1 * textScaleFactor.clamp(1.0, 1.2)),
+                                Text(
+                                  details == "quran"
+                                      ? "اقرأ وتعلّم مع التفسير"
+                                      : details == "prayerTimes"
+                                      ? "إن الصلاة كانت على المؤمنين كتابًا موقوتًا"
+                                      : details,
+                                  style: TextStyle(
+                                    fontSize: details == "prayerTimes"
+                                        ? 8.5
+                                        : details == "quran"
+                                        ? 11
+                                        : 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black54,
+                                    fontFamily: details == "prayerTimes" ||
+                                        details == "quran"
+                                        ? 'Amiri'
+                                        : null,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.all(
+                              6 * textScaleFactor.clamp(1.0, 1.2)),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                                8 * textScaleFactor.clamp(1.0, 1.2)),
+                          ),
+                          child: Icon(
+                            Icons.arrow_forward_ios,
+                            size: 14 * textScaleFactor.clamp(1.0, 1.3),
+                            color: color,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10.0),
-              Text(
-                name.tr(context),
-                style: TextStyle(fontSize:  13.5.sp, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              if (details != null)
-                Text(
-                  details == "quran" ? "اقرأ وتعلّم مع التفسير" : details == "prayerTimes" ? "إن الصلاة كانت على المؤمنين كتابًا موقوتًا" : details,
-                  style: TextStyle(
-                    fontSize:details == "prayerTimes" ? 9.5.sp : details == "quran" ? 12.sp : 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey,
-                    fontFamily: 'Amiri'
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

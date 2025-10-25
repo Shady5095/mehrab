@@ -100,7 +100,7 @@ class HomeItemsIconsShimmer extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white, // Glass effect with main color
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(20.0),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),

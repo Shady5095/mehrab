@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
-import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/shimmer_rectangle_widget.dart';
 import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.dart';
 
@@ -11,87 +10,86 @@ import '../../../../core/utilities/resources/constants.dart';
 import '../../../../core/widgets/my_cached_image_widget.dart';
 
 class UserNameAndPhotoWidget extends StatelessWidget {
-  const UserNameAndPhotoWidget({super.key});
+
+  const UserNameAndPhotoWidget({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         final cubit = HomeCubit.instance(context);
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              cubit.userModel == null
-                  ? ShimmerRectangleWidget(
-                    width: 150.sp,
-                    height: 20.sp,
-                    borderRadius: BorderRadius.circular(10),
-                  )
-                  : Text(
-                    "${AppStrings.hello.tr(context)} ${cubit.userModel?.name.firstName ?? ''}",
-                    style: TextStyle(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-              InkWell(
-                onTap: () {
-                  if (!context.mounted ||
-                      HomeCubit.instance(context).userModel == null) {
-                    return;
-                  }
-                  if (currentUserModel?.userRole == "teacher") {
-                    context
-                        .navigateTo(
-                      pageName: AppRoutes.myProfileScreenTeacher,
-                      arguments: [HomeCubit.instance(context).teacherModel],
-                    )
-                        .then((value) {
-                      if (value == true) {
-                        if (!context.mounted) {
-                          return;
-                        }
-                        HomeCubit.instance(context).userModel = null;
-                        HomeCubit.instance(context).teacherModel = null;
-                        HomeCubit.instance(context).getUserData(context);
-                      }
-                    });
-                  }else{
-                    context
-                        .navigateTo(
-                      pageName: AppRoutes.myProfileRoute,
-                      arguments: [HomeCubit.instance(context).userModel],
-                    )
-                        .then((value) {
-                      if (value == true) {
-                        if (!context.mounted) {
-                          return;
-                        }
-                        HomeCubit.instance(context).currentScreenIndex = 0;
-                        HomeCubit.instance(context).userModel = null;
-                        HomeCubit.instance(context).getUserData(context);
-                      }
-                    });
-                  }
-                },
-                child: Hero(tag: "myProfile" ,child: buildPhoto(context)),
-              ),
-            ],
-          ),
-        );
+          return InkWell(
+            onTap: () => _navigateToProfile(context, cubit),
+            child: Hero(tag: "myProfile", child: buildPhoto(context)),
+          );
+
       },
     );
   }
 
+  void _navigateToProfile(BuildContext context, HomeCubit cubit) {
+    if (!context.mounted || cubit.userModel == null) {
+      return;
+    }
+
+    if (currentUserModel?.userRole == "teacher") {
+      context
+          .navigateTo(
+        pageName: AppRoutes.myProfileScreenTeacher,
+        arguments: [cubit.teacherModel],
+      )
+          .then((value) {
+        if (value == true) {
+          if (!context.mounted) {
+            return;
+          }
+          cubit.userModel = null;
+          cubit.teacherModel = null;
+          cubit.getUserData(context);
+        }
+      });
+    } else {
+      context
+          .navigateTo(
+        pageName: AppRoutes.myProfileRoute,
+        arguments: [cubit.userModel],
+      )
+          .then((value) {
+        if (value == true) {
+          if (!context.mounted) {
+            return;
+          }
+          cubit.currentScreenIndex = 0;
+          cubit.userModel = null;
+          cubit.getUserData(context);
+        }
+      });
+    }
+  }
+
   Widget buildPhoto(BuildContext context) {
     final cubit = HomeCubit.instance(context);
+
     if (cubit.userModel == null) {
       return ShimmerCircleWidget(radius: 30.sp);
     } else if (cubit.userModel?.imageUrl != null) {
       return Container(
-        decoration: BoxDecoration(shape: BoxShape.circle),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color: Colors.white,
+            width: 3,
+          ),
+        ),
         child: MyCachedNetworkImage(
           width: 60.sp,
           height: 60.sp,
@@ -101,10 +99,26 @@ class UserNameAndPhotoWidget extends StatelessWidget {
         ),
       );
     } else {
-      return CircleAvatar(
-        radius: 30.sp,
-        backgroundColor: context.backgroundColor,
-        child: Image.asset(AppAssets.profilePlaceholder),
+      return Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color: Colors.white,
+            width: 3,
+          ),
+        ),
+        child: CircleAvatar(
+          radius: 30.sp,
+          backgroundColor: context.backgroundColor,
+          child: Image.asset(AppAssets.profilePlaceholder),
+        ),
       );
     }
   }
