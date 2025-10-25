@@ -143,7 +143,7 @@ class HomeItemsIcons extends StatelessWidget {
     final textScaleFactor = MediaQuery.of(context).textScaleFactor;
     // حساب childAspectRatio بناءً على text scale
     // كلما كبر الخط، نقلل الـ aspect ratio (يعني البطاقة تبقى أطول)
-    final baseAspectRatio = 1.4;
+    final baseAspectRatio = 1.35;
     final adjustedAspectRatio = baseAspectRatio / textScaleFactor.clamp(1.0, 1.5);
 
     return AnimationLimiter(

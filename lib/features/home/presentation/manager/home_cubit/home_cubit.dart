@@ -87,9 +87,9 @@ class HomeCubit extends Cubit<HomeState> {
                   teacherModel?.favoriteStudentsUid.length ?? 0;
               teacherAvailability = teacherModel?.isOnline ?? false;
               getTeacherRatingAndComments();
-              if(context.mounted){
+              /*if(context.mounted){
                 listenToTeacherNewCalls(context);
-              }
+              }*/
               getMissedCallsCount();
             } else {
               AppConstants.isStudent = true;

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'dart:async';
@@ -12,6 +13,7 @@ import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:screen_off/screen_off.dart';
 
 import '../../../../../core/utilities/services/call_service.dart';
+import '../../../../../core/utilities/services/firebase_notification.dart';
 part 'teacher_call_state.dart';
 
 class TeacherCallCubit extends Cubit<TeacherCallState> {
@@ -64,39 +66,30 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   }
 
   void initCall() async {
-    if (Platform.isAndroid) {
-      await requestPermissions();
-      await Future.delayed(Duration(milliseconds: 300));
-    }
+    await requestPermissions();
+    await Future.delayed(Duration(milliseconds: 300));
+    await playAnswerSound();
     await setupAgoraCallService();
     joinAgoraChannel(callModel.callId);
   }
 
   Future<void> endCall() async {
-    try {
-      final batch = db.batch();
-      final callRef = db.collection('calls').doc(callModel.callId);
-      final userRef = db.collection('users').doc(callModel.teacherUid);
-      batch.update(callRef, {
-        'status': 'ended',
-        'endedTime': FieldValue.serverTimestamp(),
-      });
-
-      batch.update(userRef, {
-        'totalMinutes': FieldValue.increment(_elapsedTime.inMinutes),
-        'totalSessions': FieldValue.increment(1),
-        'isBusy': false,
-      });
-      await Future.wait([
-        batch.commit(),
-        endAgoraCall(),
-      ]);
+    await db
+        .collection('calls')
+        .doc(callModel.callId)
+        .update({
+      'status': 'ended',
+      "endedTime": FieldValue.serverTimestamp()
+    })
+        .then((value) async {
+      await endAgoraCall();
+      await AppFirebaseNotification.endCall(callModel.callId);
       emit(CallFinished());
-    } catch (error) {
-      emit(AgoraConnectionError(error: error.toString()));
-    }
+    })
+        .catchError((error) {
+      emit(SendCallToTeacherFailure(error: error.toString()));
+    });
   }
-
 
   StreamSubscription<DocumentSnapshot>? _callSubscription;
 
@@ -130,10 +123,6 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       isRemoteVideoEnabled = enabled;
       emit(RemoteVideoStateChanged());
     };
-    callService.onNetworkQualityChanged = (quality) {
-      _currentNetworkQuality = quality;
-      _networkQualityController.add(quality);
-    };
     await callService.initialize();
   }
 
@@ -154,12 +143,15 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
 
   Future<void> toggleVideo() async {
     try {
-      if (!isVideoEnabled && Platform.isAndroid) {
+      // If video is currently off and user wants to turn it on, request permission first
+      if (!isVideoEnabled) {
         bool hasPermission = await requestCameraPermission();
         if (!hasPermission) {
+          // Permission denied, don't toggle video
           return;
         }
       }
+
       await callService.toggleVideo();
       isVideoEnabled = callService.isVideoEnabled;
       HapticFeedback.heavyImpact();
@@ -199,14 +191,6 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     }
     emit(TeacherCallInitial());
   }
-
-  // 🆕 Stream لجودة الشبكة
-  final StreamController<CallQuality> _networkQualityController =
-  StreamController<CallQuality>.broadcast();
-  Stream<CallQuality> get networkQualityStream => _networkQualityController.stream;
-
-  CallQuality _currentNetworkQuality = CallQuality.excellent;
-  CallQuality get currentNetworkQuality => _currentNetworkQuality;
 
   final StreamController<String> _callTimerController =
   StreamController<String>.broadcast();

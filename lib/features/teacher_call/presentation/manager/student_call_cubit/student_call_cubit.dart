@@ -14,6 +14,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:screen_off/screen_off.dart';
 
+import '../../../../../core/utilities/services/call_kit_service.dart';
 import '../../../../../core/utilities/services/call_service.dart';
 
 class StudentCallCubit extends Cubit<StudentCallState> {
@@ -28,7 +29,6 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   final AudioPlayer _player = AudioPlayer();
 
   Future<void> requestPermissions() async {
-    if (Platform.isIOS) return;
     var micStatus = await Permission.microphone.status;
 
     if (micStatus.isDenied) {
@@ -36,14 +36,22 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     }
 
     if (micStatus.isPermanentlyDenied) {
-      emit(MicrophonePermanentlyDenied());
+      if (Platform.isIOS) {
+        emit(MicrophoneAllowed());
+      } else {
+        emit(MicrophonePermanentlyDenied());
+      }
       return;
     }
 
     if (micStatus.isGranted) {
       emit(MicrophoneAllowed());
     } else {
-      emit(MicrophoneNotAllowed());
+      if (Platform.isIOS) {
+        emit(MicrophoneAllowed());
+      } else {
+        emit(MicrophoneNotAllowed());
+      }
     }
   }
 
@@ -84,7 +92,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   void initCall() async {
     await playSound();
     await requestPermissions();
-    if (state is MicrophoneAllowed || Platform.isIOS) {
+    if (state is MicrophoneAllowed) {
       await sendCallToTeacher();
       await setupAgoraCallService();
       callPushNotification();
@@ -97,75 +105,67 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   String? callDocId;
 
   Future<void> sendCallToTeacher() async {
-    try {
-      final callRef = await db.collection('calls').add({
-        'teacherUid': teacherModel.uid,
-        'timestamp': FieldValue.serverTimestamp(),
-        'studentUid': currentUserModel?.uid ?? '',
-        'studentName': currentUserModel?.name ?? '',
-        'teacherName': teacherModel.name,
-        'studentPhoto': currentUserModel?.imageUrl,
-        'teacherPhoto': teacherModel.imageUrl,
-        'status': 'ringing',
-      });
-      callDocId = callRef.id;
-      final updateCallId = callRef.update({'callId': callRef.id});
-      final updateTeacherBusy = db
-          .collection('users')
-          .doc(teacherModel.uid)
-          .update({'isBusy': true});
-
-      await Future.wait([updateCallId, updateTeacherBusy]);
-    } catch (error) {
+    await db.collection('calls').add({
+      'teacherUid': teacherModel.uid,
+      'timestamp': FieldValue.serverTimestamp(),
+      'studentUid': currentUserModel?.uid ?? '',
+      "studentName": currentUserModel?.name ?? '',
+      "teacherName": teacherModel.name,
+      "studentPhoto": currentUserModel?.imageUrl,
+      "teacherPhoto": teacherModel.imageUrl,
+      'status': "ringing",
+    }).then((value) {
+      callDocId = value.id;
+      value.update({'callId': value.id});
+    }).catchError((error) {
       emit(SendCallToTeacherFailure(error: error.toString()));
-    }
+    });
+  }
+
+  Future<bool> checkIfAnotherCallRinging() async {
+    final querySnapshot = await db
+        .collection('calls')
+        .where('teacherUid', isEqualTo: teacherModel.uid)
+        .where('status', whereIn: ['answered', 'ringing']).get();
+
+    return querySnapshot.docs.isNotEmpty;
   }
 
   Future<void> endCallBeforeAnswer({bool isByUser = false}) async {
-    if (callDocId == null) return;
-    try {
-      final updateCall = db
+    if (callDocId != null) {
+      await db
           .collection('calls')
           .doc(callDocId)
-          .update({'status': 'missed'});
-
-      final updateTeacher = db
-          .collection('users')
-          .doc(teacherModel.uid)
-          .update({'isBusy': false});
-
-      await Future.wait([
-        updateCall,
-        updateTeacher,
-      ]);
-
-      if (isByUser) {
-        emit(CallEndedByUserState());
-      } else {
-        emit(CallEndedByTimeOut());
-      }
-    } catch (error) {
-      emit(SendCallToTeacherFailure(error: error.toString()));
+          .update({'status': 'missed'}).then((value) {
+        if (isByUser) {
+          emit(CallEndedByUserState());
+        } else {
+          emit(CallEndedByTimeOut());
+        }
+      }).catchError((error) {
+        emit(SendCallToTeacherFailure(error: error.toString()));
+      });
     }
   }
 
-
   Future<void> endCallAfterAnswer({bool isByUser = false}) async {
-    if (callDocId == null) return;
-    try {
-      final updateCall = db.collection('calls').doc(callDocId).update({
+    if (callDocId != null) {
+      await db
+          .collection('calls')
+          .doc(callDocId)
+          .update({
         'status': 'ended',
-        'endedTime': FieldValue.serverTimestamp(),
+        "endedTime": FieldValue.serverTimestamp()
+      }).then((value) async {
+        await endAgoraCall();
+        if (isByUser) {
+          emit(CallFinished(model: teacherModel));
+        } else {
+          emit(MaxDurationReached());
+        }
+      }).catchError((error) {
+        emit(SendCallToTeacherFailure(error: error.toString()));
       });
-      final endCallAgora = endAgoraCall();
-      await Future.wait([updateCall, endCallAgora]);
-      if (isByUser) {
-        emit(CallFinished(model: teacherModel));
-      } else {
-        emit(MaxDurationReached());
-      }
-    } catch (error) {
-      emit(AgoraConnectionError(error: error.toString()));
     }
   }
 
@@ -178,18 +178,18 @@ class StudentCallCubit extends Cubit<StudentCallState> {
         .doc(callDocId)
         .snapshots()
         .listen((snapshot) {
-          if (snapshot.exists) {
-            CallModel data = CallModel.fromJson(snapshot.data() ?? {});
-            if (data.status == 'answered') {
-              if (!isCallAnswered) {
-                onTeacherAnswer(data);
-              }
-            } else if (data.status == 'declined') {
-              stopSound();
-              emit(TeacherInAnotherCall());
-            }
+      if (snapshot.exists) {
+        CallModel data = CallModel.fromJson(snapshot.data() ?? {});
+        if (data.status == 'answered') {
+          if (!isCallAnswered) {
+            onTeacherAnswer(data);
           }
-        });
+        } else if (data.status == 'declined') {
+          stopSound();
+          emit(TeacherInAnotherCall());
+        }
+      }
+    });
   }
 
   Future<void> onTeacherAnswer(CallModel data) async {
@@ -234,17 +234,6 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   bool isRemoteVideoEnabled = false;
   int? remoteUid;
 
-  // 🆕 Stream لجودة الشبكة
-  final StreamController<CallQuality> _networkQualityController =
-      StreamController<CallQuality>.broadcast();
-
-  Stream<CallQuality> get networkQualityStream =>
-      _networkQualityController.stream;
-
-  CallQuality _currentNetworkQuality = CallQuality.excellent;
-
-  CallQuality get currentNetworkQuality => _currentNetworkQuality;
-
   Future<void> setupAgoraCallService() async {
     callService = AgoraCallService();
     callService.onUserJoined = (uid) {
@@ -267,11 +256,6 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       isRemoteVideoEnabled = enabled;
       emit(RemoteVideoStateChanged());
     };
-    callService.onNetworkQualityChanged = (quality) {
-      _currentNetworkQuality = quality;
-      _networkQualityController.add(quality);
-    };
-
     await callService.initialize();
   }
 
@@ -292,16 +276,20 @@ class StudentCallCubit extends Cubit<StudentCallState> {
 
   Future<void> toggleVideo() async {
     try {
-      if (!isVideoEnabled && Platform.isAndroid) {
+      // If video is currently off and user wants to turn it on, request permission first
+      if (!isVideoEnabled) {
         bool hasPermission = await requestCameraPermission();
         if (!hasPermission) {
+          // Permission denied, don't toggle video
           return;
         }
       }
+
       await callService.toggleVideo();
       isVideoEnabled = callService.isVideoEnabled;
       HapticFeedback.heavyImpact();
 
+      // When video is enabled, automatically turn on speaker and disable proximity sensor
       if (isVideoEnabled) {
         if (!isSpeakerOn) {
           await switchSpeaker();
@@ -338,17 +326,19 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   }
 
   void callPushNotification() {
-    AppFirebaseNotification.pushNotification(
-      title: "اتصال جديد 📞",
-      body:
-          "يريد الطالب ${currentUserModel?.name ?? ''} بدأ جلسة معك, برجاء فتح التطبيق الان",
-      dataInNotification: {},
-      topic: teacherModel.uid,
+    final studentPhoto = ImageHelper.getValidImageUrl(currentUserModel?.imageUrl);
+
+    AppFirebaseNotification.pushIncomingCallNotification(
+      callId: callDocId!,
+      callerName: currentUserModel?.name ?? 'طالب',
+      callerPhoto: studentPhoto,
+      teacherUid: teacherModel.uid,
+      studentUid: currentUserModel?.uid ?? '',
     );
   }
 
   final StreamController<String> _callTimerController =
-      StreamController<String>.broadcast();
+  StreamController<String>.broadcast();
 
   Stream<String> get callTimerStream => _callTimerController.stream;
 
@@ -408,12 +398,15 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     _callTimeoutTimer?.cancel();
     maxCallDurationTimer?.cancel();
     _callTimerController.close();
-    _networkQualityController.close();
     stopCallTimer();
     _callSubscription?.cancel();
     callService.dispose();
     if (Platform.isAndroid) {
       disableProximitySensor();
+    }
+    // End any active CallKit calls
+    if (callDocId != null) {
+      AppFirebaseNotification.endCall(callDocId!);
     }
     return super.close();
   }
