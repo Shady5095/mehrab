@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
@@ -13,7 +14,7 @@ import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:screen_off/screen_off.dart';
-
+import 'package:uuid/uuid.dart';
 import '../../../../../core/utilities/services/call_kit_service.dart';
 import '../../../../../core/utilities/services/call_service.dart';
 
@@ -27,6 +28,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   late AgoraCallService callService;
   final db = FirebaseFirestore.instance;
   final AudioPlayer _player = AudioPlayer();
+  static const _uuid = Uuid();
 
   Future<void> requestPermissions() async {
     var micStatus = await Permission.microphone.status;
@@ -105,21 +107,27 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   String? callDocId;
 
   Future<void> sendCallToTeacher() async {
-    await db.collection('calls').add({
-      'teacherUid': teacherModel.uid,
-      'timestamp': FieldValue.serverTimestamp(),
-      'studentUid': currentUserModel?.uid ?? '',
-      "studentName": currentUserModel?.name ?? '',
-      "teacherName": teacherModel.name,
-      "studentPhoto": currentUserModel?.imageUrl,
-      "teacherPhoto": teacherModel.imageUrl,
-      'status': "ringing",
-    }).then((value) {
-      callDocId = value.id;
-      value.update({'callId': value.id});
-    }).catchError((error) {
+    try {
+      // ✅ Generate UUID v4
+      callDocId = _uuid.v4();
+      debugPrint('📞 Creating call with UUID: $callDocId');
+      await db.collection('calls').doc(callDocId).set({
+        'callId': callDocId,
+        'teacherUid': teacherModel.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+        'studentUid': currentUserModel?.uid ?? '',
+        "studentName": currentUserModel?.name ?? '',
+        "teacherName": teacherModel.name,
+        "studentPhoto": currentUserModel?.imageUrl,
+        "teacherPhoto": teacherModel.imageUrl,
+        'status': "ringing",
+      });
+
+      debugPrint('✅ Call document created successfully with UUID: $callDocId');
+    } catch (error) {
+      debugPrint('❌ Error creating call: $error');
       emit(SendCallToTeacherFailure(error: error.toString()));
-    });
+    }
   }
 
   Future<bool> checkIfAnotherCallRinging() async {
@@ -132,40 +140,49 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   }
 
   Future<void> endCallBeforeAnswer({bool isByUser = false}) async {
-    if (callDocId != null) {
-      await db
+    if (callDocId == null) return;
+    try {
+      final updateCall = db
           .collection('calls')
           .doc(callDocId)
-          .update({'status': 'missed'}).then((value) {
-        if (isByUser) {
-          emit(CallEndedByUserState());
-        } else {
-          emit(CallEndedByTimeOut());
-        }
-      }).catchError((error) {
-        emit(SendCallToTeacherFailure(error: error.toString()));
-      });
+          .update({'status': 'missed'});
+
+      final updateTeacher = db
+          .collection('users')
+          .doc(teacherModel.uid)
+          .update({'isBusy': false});
+
+      await Future.wait([
+        updateCall,
+        updateTeacher,
+      ]);
+
+      if (isByUser) {
+        emit(CallEndedByUserState());
+      } else {
+        emit(CallEndedByTimeOut());
+      }
+    } catch (error) {
+      emit(SendCallToTeacherFailure(error: error.toString()));
     }
   }
 
   Future<void> endCallAfterAnswer({bool isByUser = false}) async {
-    if (callDocId != null) {
-      await db
-          .collection('calls')
-          .doc(callDocId)
-          .update({
+    if (callDocId == null) return;
+    try {
+      final updateCall = db.collection('calls').doc(callDocId).update({
         'status': 'ended',
-        "endedTime": FieldValue.serverTimestamp()
-      }).then((value) async {
-        await endAgoraCall();
-        if (isByUser) {
-          emit(CallFinished(model: teacherModel));
-        } else {
-          emit(MaxDurationReached());
-        }
-      }).catchError((error) {
-        emit(SendCallToTeacherFailure(error: error.toString()));
+        'endedTime': FieldValue.serverTimestamp(),
       });
+      final endCallAgora = endAgoraCall();
+      await Future.wait([updateCall, endCallAgora]);
+      if (isByUser) {
+        emit(CallFinished(model: teacherModel));
+      } else {
+        emit(MaxDurationReached());
+      }
+    } catch (error) {
+      emit(AgoraConnectionError(error: error.toString()));
     }
   }
 
@@ -277,7 +294,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   Future<void> toggleVideo() async {
     try {
       // If video is currently off and user wants to turn it on, request permission first
-      if (!isVideoEnabled) {
+      if (!isVideoEnabled&& Platform.isAndroid) {
         bool hasPermission = await requestCameraPermission();
         if (!hasPermission) {
           // Permission denied, don't toggle video
@@ -326,7 +343,14 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   }
 
   void callPushNotification() {
+    if (callDocId == null || callDocId!.isEmpty) {
+      debugPrint('❌ ERROR: callDocId is null or empty, cannot send notification');
+      return;
+    }
+
     final studentPhoto = ImageHelper.getValidImageUrl(currentUserModel?.imageUrl);
+
+    debugPrint('📱 Sending call notification with UUID: $callDocId');
 
     AppFirebaseNotification.pushIncomingCallNotification(
       callId: callDocId!,

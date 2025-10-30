@@ -18,6 +18,7 @@ import '../../../../teacher_call/presentation/widgets/incoming_call_dialog.dart'
 import '../../../../teachers/presentation/screens/teachers_screen.dart';
 import '../../views/home_view.dart';
 import '../../views/more_screen.dart';
+
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
@@ -87,9 +88,9 @@ class HomeCubit extends Cubit<HomeState> {
                   teacherModel?.favoriteStudentsUid.length ?? 0;
               teacherAvailability = teacherModel?.isOnline ?? false;
               getTeacherRatingAndComments();
-              /*if(context.mounted){
+              if (context.mounted) {
                 listenToTeacherNewCalls(context);
-              }*/
+              }
               getMissedCallsCount();
             } else {
               AppConstants.isStudent = true;
@@ -261,7 +262,7 @@ class HomeCubit extends Cubit<HomeState> {
     db
         .collection('users')
         .doc(myUid)
-        .update({"isOnline": teacherAvailability,'isBusy': false})
+        .update({"isOnline": teacherAvailability, 'isBusy': false})
         .then((value) {
           if (!context.mounted) return;
           if (teacherAvailability) {
@@ -296,20 +297,21 @@ class HomeCubit extends Cubit<HomeState> {
       AppFirebaseNotification.pushNotification(
         topic: studentUid,
         // only take the first name and second if the name contains spaces
-        title: "المعلم ${teacherModel?.name.split(' ').take(3).join(' ')} متاح الآن🟢",
+        title:
+            "المعلم ${teacherModel?.name.split(' ').take(3).join(' ')} متاح الآن🟢",
         dataInNotification: {},
         body: "يمكنك الآن بدء جلسة معه.",
       );
     }
   }
+
   void setLastActive() {
     db.collection('users').doc(myUid).update({
       "lastActive": FieldValue.serverTimestamp(),
     });
   }
 
-
-  bool _isDialogShowing = false; // Tracks if a dialog is currently shown
+  bool isDialogShowing = false; // Tracks if a dialog is currently shown
 
   void listenToTeacherNewCalls(BuildContext context) {
     db
@@ -321,9 +323,9 @@ class HomeCubit extends Cubit<HomeState> {
         .listen((event) {
           if (event.docs.isNotEmpty) {
             if ((event.docs.first.data()['status'] == 'ringing') &&
-                !_isDialogShowing) {
+                !isDialogShowing) {
               if (!context.mounted) return;
-              _isDialogShowing = true; // Set flag to prevent multiple dialogs
+              isDialogShowing = true; // Set flag to prevent multiple dialogs
               showDialog(
                 barrierDismissible: false,
                 context: context,
@@ -337,13 +339,13 @@ class HomeCubit extends Cubit<HomeState> {
                   );
                 },
               ).then((_) {
-                _isDialogShowing = false; // Reset flag when dialog is dismissed
+                isDialogShowing = false; // Reset flag when dialog is dismissed
               });
-            }
-            if ((event.docs.first.data()['status'] == 'missed') &&
-                _isDialogShowing) {
+            } else if ((event.docs.first.data()['status'] == 'missed' ||
+                event.docs.first.data()['status'] == 'ended' ||
+                event.docs.first.data()['status'] == 'declined')&& isDialogShowing) {
               if (!context.mounted) return;
-              _isDialogShowing = false; // Reset flag when dialog is dismissed
+              isDialogShowing = false; // Reset flag when dialog is dismissed
               Navigator.of(
                 context,
               ).pop(); // Close the dialog if the call is missed
@@ -366,16 +368,18 @@ class HomeCubit extends Cubit<HomeState> {
     await db
         .collection("calls")
         .doc(callDocId)
-        .update({"status": "answered", "acceptedTime": FieldValue.serverTimestamp()})
-        .then((value) async {
+        .update({
+          "status": "answered",
+          "acceptedTime": FieldValue.serverTimestamp(),
         })
+        .then((value) async {})
         .catchError((error) {});
   }
 
-  void onSignOut(){
+  void onSignOut() {
     userModel = null;
     teacherModel = null;
-    currentScreenIndex = 0 ;
+    currentScreenIndex = 0;
     emit(NotificationsRefresh());
   }
 }

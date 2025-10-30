@@ -35,7 +35,7 @@ class AgoraCallService {
 
       await _engine!.initialize(
         RtcEngineContext(
-          appId: SensitiveAppConstants.agoraAppId,
+          appId: SensitiveAppConstants.getCurrentAppId,
           channelProfile: ChannelProfileType.channelProfileCommunication,
         ),
       );

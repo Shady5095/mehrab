@@ -23,7 +23,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.CAMERA" />
-
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"
+        tools:node="remove" />
     <!-- CallKit Incoming permissions -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
@@ -44,10 +49,14 @@
 
     <application
         android:requestLegacyExternalStorage="true"
-        android:label="محراب القرآن"
+        android:label="محراب القرآن للمعلمين"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         tools:replace="android:icon, android:label">
+        <!-- 🧹 إزالة خدمة Screen Sharing الخاصة بـ Agora -->
+        <service
+            android:name="io.agora.rtc2.extensions.MediaProjectionMgr$LocalScreenSharingService"
+            tools:node="remove" />
 
         <!-- Firebase notification settings -->
         <meta-data
@@ -71,7 +80,9 @@
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true">
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"/>
@@ -81,6 +92,14 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="FLUTTER_NOTIFICATION_CLICK"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <!-- ✅ CallKit Intent Filter -->
+            <intent-filter>
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_ACCEPT"/>
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_DECLINE"/>
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_ENDED"/>
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TIMEOUT"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
@@ -114,6 +133,22 @@
             android:exported="true"
             android:launchMode="singleInstance"
             tools:replace="android:launchMode"/>
+
+        <!-- ✅ CallKit Background Handlers -->
+        <receiver
+            android:name="com.hiennv.flutter_callkit_incoming.CallkitReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_EVENT" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name="com.hiennv.flutter_callkit_incoming.CallkitService"
+            android:exported="true"
+            android:foregroundServiceType="phoneCall"
+            tools:replace="android:foregroundServiceType"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <!-- Flutter plugin metadata -->
         <meta-data

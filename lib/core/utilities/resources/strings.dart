@@ -1503,6 +1503,7 @@ class AppStrings {
   static const String busy = 'busy';
   static const String teacherIsBusy = 'teacherIsBusy';
   static const String inAppProblem = 'inAppProblem';
+  static const String followUs = 'followUs';
 
 
 

@@ -52,6 +52,10 @@ class AppFirebaseNotification {
       BuildContext context, HomeCubit homeCubit) async {
     await notificationPermission;
 
+    // Request full screen intent permission for Android 14+
+    if (Platform.isAndroid) {
+      await CallKitPermissionHelper.ensureFullScreenIntentPermission();
+    }
     if (context.mounted) {
       // Setup notification handlers
       whileAppOpenHandleNotification(homeCubit, context);
@@ -59,7 +63,7 @@ class AppFirebaseNotification {
       whileAppOnBackgroundHandleNotification(context);
 
       // Setup CallKit listeners
-      initCallKitListeners(context);
+      initCallKitListeners(context,homeCubit);
 
       // Get access token for FCM
       getAccessToken();
@@ -313,8 +317,11 @@ class AppFirebaseNotification {
         'apns': {
           'payload': {
             'aps': {
+              'interruption-level': 'time-sensitive',
               'content-available': 1,
+              'mutable-content': 1,
               'sound': 'default',
+              //'badge': 1,
             },
           },
         },
@@ -362,13 +369,21 @@ class AppFirebaseNotification {
   }
 
   /// Initialize CallKit event listeners
-  static void initCallKitListeners(BuildContext context) {
+  static void initCallKitListeners(BuildContext context,HomeCubit homeCubit) {
     FlutterCallkitIncoming.onEvent.listen((CallEvent? event) {
       if (event == null) return;
 
       printWithColor('🔔 CallKit Event: ${event.event}');
 
       switch (event.event) {
+        case Event.actionCallIncoming:
+          if(event.body != null){
+            if(homeCubit.isDialogShowing && context.mounted){
+              Navigator.pop(context);
+              homeCubit.isDialogShowing = false;
+            }
+          }
+          break;
         case Event.actionCallAccept:
           _handleCallAccept(event.body, context);
           break;
@@ -451,6 +466,10 @@ class AppFirebaseNotification {
     printWithColor('🔚 Call ended: $callId');
 
     try {
+      await _db.collection('calls').doc(callId).update({
+        'status': 'ended',
+        'endedTime': FieldValue.serverTimestamp(),
+      });
       await FlutterCallkitIncoming.endCall(callId);
     } catch (e) {
       printWithColor('❌ Error ending call: $e');

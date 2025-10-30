@@ -146,7 +146,7 @@ class ContactUsDialog extends StatelessWidget {
 
           SizedBox(height: 10),
           Text(
-            'تابعنا على',
+            AppStrings.followUs.tr(context),
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w600,

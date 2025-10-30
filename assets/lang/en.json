@@ -1224,5 +1224,6 @@
   "minutesCount": "Minutes",
   "busy": "Busy",
   "teacherIsBusy": "The teacher is busy in another session, please try again later.",
-  "inAppProblem": "If you encounter any issues with the application, please contact us:"
+  "inAppProblem": "If you encounter any issues with the application, please contact us:",
+  "followUs": "Follow Us"
 }

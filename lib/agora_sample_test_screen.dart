@@ -228,7 +228,7 @@ class _CallPageState extends State<CallPage> {
 }
 
 
-final appId = SensitiveAppConstants.agoraAppId;
+final appId = SensitiveAppConstants.getCurrentAppId;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

@@ -56,7 +56,7 @@ class CallModel {
     return CallModel(
       callId: map['callId'] ?? '',
       teacherUid: map['teacherUid'] ?? '',
-      timestamp: map['timestamp'] ,
+      timestamp: map['timestamp'] ?? Timestamp.now(),
       studentUid: map['studentUid'] ?? '',
       studentName: map['studentName'] ?? '',
       teacherName: map['teacherName'] ?? '',

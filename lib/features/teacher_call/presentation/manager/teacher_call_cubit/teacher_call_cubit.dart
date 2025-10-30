@@ -66,29 +66,38 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   }
 
   void initCall() async {
-    await requestPermissions();
-    await Future.delayed(Duration(milliseconds: 300));
-    await playAnswerSound();
+    if (Platform.isAndroid) {
+      await requestPermissions();
+      await Future.delayed(Duration(milliseconds: 300));
+    }
     await setupAgoraCallService();
     joinAgoraChannel(callModel.callId);
   }
 
   Future<void> endCall() async {
-    await db
-        .collection('calls')
-        .doc(callModel.callId)
-        .update({
-      'status': 'ended',
-      "endedTime": FieldValue.serverTimestamp()
-    })
-        .then((value) async {
-      await endAgoraCall();
-      await AppFirebaseNotification.endCall(callModel.callId);
+    try {
+      final batch = db.batch();
+      final callRef = db.collection('calls').doc(callModel.callId);
+      final userRef = db.collection('users').doc(callModel.teacherUid);
+      batch.update(callRef, {
+        'status': 'ended',
+        'endedTime': FieldValue.serverTimestamp(),
+      });
+
+      batch.update(userRef, {
+        'totalMinutes': FieldValue.increment(_elapsedTime.inMinutes),
+        'totalSessions': FieldValue.increment(1),
+        'isBusy': false,
+      });
+      await Future.wait([
+        batch.commit(),
+        endAgoraCall(),
+        AppFirebaseNotification.endCall(callModel.callId),
+      ]);
       emit(CallFinished());
-    })
-        .catchError((error) {
-      emit(SendCallToTeacherFailure(error: error.toString()));
-    });
+    } catch (error) {
+      emit(AgoraConnectionError(error: error.toString()));
+    }
   }
 
   StreamSubscription<DocumentSnapshot>? _callSubscription;
@@ -143,8 +152,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
 
   Future<void> toggleVideo() async {
     try {
-      // If video is currently off and user wants to turn it on, request permission first
-      if (!isVideoEnabled) {
+      if (!isVideoEnabled && Platform.isAndroid) {
         bool hasPermission = await requestCameraPermission();
         if (!hasPermission) {
           // Permission denied, don't toggle video

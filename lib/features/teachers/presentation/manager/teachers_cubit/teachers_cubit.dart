@@ -139,12 +139,14 @@ class TeachersCubit extends Cubit<TeachersState> {
                 .collection('users')
                 .where("userRole", isEqualTo: "teacher")
                 .orderBy("isOnline", descending: true)
+                .orderBy("lastActive", descending: true)
                 .orderBy("name", descending: false)
             : db
                 .collection('users')
                 .where("userRole", isEqualTo: "teacher")
                 .where("isMale", isEqualTo: currentUserModel?.isMale ?? true)
                 .orderBy("isOnline", descending: true)
+                .orderBy("lastActive", descending: true)
                 .orderBy("name", descending: false);
 
     if (searchQuery != null && searchQuery.isNotEmpty) {

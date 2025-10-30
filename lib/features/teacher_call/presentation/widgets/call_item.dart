@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
-import 'package:mehrab/core/utilities/functions/toast.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
-import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
-import 'package:mehrab/features/teacher_call/presentation/manager/calls_cubit/calls_cubit.dart';
-
-import '../../../../app/main_app_cubit/main_app_cubit.dart';
 import '../../../../core/utilities/functions/format_date_and_time.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 
@@ -17,7 +12,6 @@ class CallItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = CallsCubit.get(context);
     return Padding(
       padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
       child: Column(
@@ -64,49 +58,6 @@ class CallItem extends StatelessWidget {
                   ),
                 ],
               )
-            ],
-          ),
-          if(model.status == 'answered')
-          Row(
-            children: [
-              if(model.meetingLink != null)
-              Expanded(
-                child: TextButton(
-                  onPressed: () {
-                    cubit.openMeet(model.meetingLink!).catchError((error) {
-                      myToast(msg: error.toString(), state: error);
-                    });
-                  },
-                  child: Text(
-                    AppStrings.reJoin.tr(context),
-                    style: TextStyle(
-                        color: AppColors.myAppColor.withValues(alpha: 0.8),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: MainAppCubit.instance(context).setFontFamily()
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: TextButton(
-                  onPressed: () {
-                    cubit.endCall(model.callId,model.studentUid,model.teacherName).catchError((error) {
-                      myToast(msg: error.toString(), state: error);
-                    });
-                  },
-                  child: Text(
-                    AppStrings.endCall.tr(context),
-                    style: TextStyle(
-                      color: AppColors.redColor.withValues(alpha: 0.8),
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: MainAppCubit.instance(context).setFontFamily()
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ],

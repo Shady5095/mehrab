@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_callkit_incoming/entities/android_params.dart';
 import 'package:flutter_callkit_incoming/entities/call_kit_params.dart';
 import 'package:flutter_callkit_incoming/entities/ios_params.dart';
@@ -168,5 +170,49 @@ class ImageHelper {
   static String generateAvatarFromName(String name, {String bgColor = '0955fa'}) {
     final encodedName = Uri.encodeComponent(name);
     return 'https://ui-avatars.com/api/?name=$encodedName&background=$bgColor&color=fff&size=200&bold=true';
+  }
+}
+
+class CallKitPermissionHelper {
+  /// Check and request full screen intent permission for Android 14+
+  static Future<bool> ensureFullScreenIntentPermission() async {
+    if (!Platform.isAndroid) {
+      return true; // iOS doesn't need this
+    }
+
+    try {
+      // Check if we can use full screen intent
+      final canUse = await FlutterCallkitIncoming.canUseFullScreenIntent();
+
+      debugPrint('📱 Can use full screen intent: $canUse');
+
+      if (canUse == false) {
+        // Request permission
+        debugPrint('📱 Requesting full screen intent permission...');
+        final result = await FlutterCallkitIncoming.requestFullIntentPermission();
+        debugPrint('📱 Full screen intent permission result: $result');
+        return result ?? false;
+      }
+
+      return canUse ?? true;
+    } catch (e) {
+      debugPrint('❌ Error checking full screen intent permission: $e');
+      return false;
+    }
+  }
+
+  /// Check permission without requesting
+  static Future<bool> checkFullScreenIntentPermission() async {
+    if (!Platform.isAndroid) {
+      return true;
+    }
+
+    try {
+      final canUse = await FlutterCallkitIncoming.canUseFullScreenIntent();
+      return canUse ?? false;
+    } catch (e) {
+      debugPrint('❌ Error checking full screen intent: $e');
+      return false;
+    }
   }
 }

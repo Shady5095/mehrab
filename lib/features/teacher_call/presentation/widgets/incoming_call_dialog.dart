@@ -40,13 +40,13 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
 
   @override
   void initState() {
-    playSound();
+    //playSound();
     super.initState();
   }
 
   @override
   void dispose() {
-    stopSound();
+    //stopSound();
     super.dispose();
   }
 
@@ -131,6 +131,7 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
                         ),
                         onPressed: () {
                           widget.cubit.declineCall(widget.model.callId);
+                          widget.cubit.isDialogShowing =false;
                           context.pop();
                         },
                       ),
@@ -160,8 +161,9 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
   }
 
   void onTapAccept() {
-    stopSound();
+   // stopSound();
     context.pop();
+    widget.cubit.isDialogShowing =false;
     widget.cubit.acceptCall(widget.model.callId);
     context.navigateTo(pageName: AppRoutes.teacherCallScreen,arguments: [widget.model]);
   }

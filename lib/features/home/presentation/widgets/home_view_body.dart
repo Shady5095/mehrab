@@ -17,11 +17,11 @@ import 'home_items_icons_shimmer.dart';
 class HomeViewBody extends StatelessWidget {
   const HomeViewBody({super.key});
 
-  String getGreeting() {
+  String get getGreeting {
     final hour = DateTime.now().hour;
-    if (hour < 12) return "صباح الخير";
-    if (hour < 17) return "مساء الخير";
-    return "مساء الخير";
+    if (hour < 12) return AppStrings.goodMorning;
+    if (hour < 17) return AppStrings.goodAfternoon;
+    return AppStrings.goodNight;
   }
 
   String getGreetingEmoji() {
@@ -196,7 +196,7 @@ class HomeViewBody extends StatelessWidget {
                                         Row(
                                           children: [
                                             Text(
-                                              getGreeting(),
+                                              getGreeting.tr(context),
                                               style: TextStyle(
                                                 fontSize: 14.sp,
                                                 color: Colors.grey[600],
