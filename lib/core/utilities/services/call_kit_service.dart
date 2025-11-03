@@ -131,7 +131,7 @@ class CallKitParamsBuilder {
         isShowCallID: false,
       ),
       ios: const IOSParams(
-        iconName: 'AppIcon',
+        iconName: '',
         handleType: 'generic',
         supportsVideo: true,
         maximumCallGroups: 1,
