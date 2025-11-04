@@ -106,66 +106,52 @@ class StudentCallCubit extends Cubit<StudentCallState> {
 
   String? callDocId;
 
+
   Future<void> sendCallToTeacher() async {
     try {
-      // ✅ Generate UUID v4
+      final batch = db.batch();
       callDocId = _uuid.v4();
-      debugPrint('📞 Creating call with UUID: $callDocId');
-      await db.collection('calls').doc(callDocId).set({
+      final callRef = db.collection('calls').doc(callDocId);
+      batch.set(callRef, {
         'callId': callDocId,
         'teacherUid': teacherModel.uid,
         'timestamp': FieldValue.serverTimestamp(),
         'studentUid': currentUserModel?.uid ?? '',
-        "studentName": currentUserModel?.name ?? '',
-        "teacherName": teacherModel.name,
-        "studentPhoto": currentUserModel?.imageUrl,
-        "teacherPhoto": teacherModel.imageUrl,
-        'status': "ringing",
+        'studentName': currentUserModel?.name ?? '',
+        'teacherName': teacherModel.name,
+        'studentPhoto': currentUserModel?.imageUrl,
+        'teacherPhoto': teacherModel.imageUrl,
+        'status': 'ringing',
       });
+      final teacherRef = db.collection('users').doc(teacherModel.uid);
+      batch.update(teacherRef, {'isBusy': true});
+      await batch.commit();
 
-      debugPrint('✅ Call document created successfully with UUID: $callDocId');
     } catch (error) {
-      debugPrint('❌ Error creating call: $error');
       emit(SendCallToTeacherFailure(error: error.toString()));
     }
-  }
-
-  Future<bool> checkIfAnotherCallRinging() async {
-    final querySnapshot = await db
-        .collection('calls')
-        .where('teacherUid', isEqualTo: teacherModel.uid)
-        .where('status', whereIn: ['answered', 'ringing']).get();
-
-    return querySnapshot.docs.isNotEmpty;
   }
 
   Future<void> endCallBeforeAnswer({bool isByUser = false}) async {
     if (callDocId == null) return;
     try {
-      final updateCall = db
-          .collection('calls')
-          .doc(callDocId)
-          .update({'status': 'missed'});
-
-      final updateTeacher = db
-          .collection('users')
-          .doc(teacherModel.uid)
-          .update({'isBusy': false});
-
-      await Future.wait([
-        updateCall,
-        updateTeacher,
-      ]);
-
+      final batch = db.batch();
+      final callRef = db.collection('calls').doc(callDocId);
+      final teacherRef = db.collection('users').doc(teacherModel.uid);
+      batch.update(callRef, {'status': 'missed'});
+      batch.update(teacherRef, {'isBusy': false});
+      await batch.commit();
       if (isByUser) {
         emit(CallEndedByUserState());
       } else {
         emit(CallEndedByTimeOut());
       }
+
     } catch (error) {
       emit(SendCallToTeacherFailure(error: error.toString()));
     }
   }
+
 
   Future<void> endCallAfterAnswer({bool isByUser = false}) async {
     if (callDocId == null) return;
@@ -195,18 +181,18 @@ class StudentCallCubit extends Cubit<StudentCallState> {
         .doc(callDocId)
         .snapshots()
         .listen((snapshot) {
-      if (snapshot.exists) {
-        CallModel data = CallModel.fromJson(snapshot.data() ?? {});
-        if (data.status == 'answered') {
-          if (!isCallAnswered) {
-            onTeacherAnswer(data);
+          if (snapshot.exists) {
+            CallModel data = CallModel.fromJson(snapshot.data() ?? {});
+            if (data.status == 'answered') {
+              if (!isCallAnswered) {
+                onTeacherAnswer(data);
+              }
+            } else if (data.status == 'declined') {
+              onCallDecline();
+              emit(TeacherInAnotherCall());
+            }
           }
-        } else if (data.status == 'declined') {
-          stopSound();
-          emit(TeacherInAnotherCall());
-        }
-      }
-    });
+        });
   }
 
   Future<void> onTeacherAnswer(CallModel data) async {
@@ -218,6 +204,10 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     joinAgoraChannel(data.callId);
   }
 
+  Future<void> onCallDecline() async {
+    stopSound();
+    await db.collection('users').doc(teacherModel.uid).update({'isBusy': false});
+  }
   void closeListener() {
     FirebaseFirestore.instance
         .collection('calls')
@@ -294,7 +284,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   Future<void> toggleVideo() async {
     try {
       // If video is currently off and user wants to turn it on, request permission first
-      if (!isVideoEnabled&& Platform.isAndroid) {
+      if (!isVideoEnabled && Platform.isAndroid) {
         bool hasPermission = await requestCameraPermission();
         if (!hasPermission) {
           // Permission denied, don't toggle video
@@ -344,11 +334,15 @@ class StudentCallCubit extends Cubit<StudentCallState> {
 
   void callPushNotification() {
     if (callDocId == null || callDocId!.isEmpty) {
-      debugPrint('❌ ERROR: callDocId is null or empty, cannot send notification');
+      debugPrint(
+        '❌ ERROR: callDocId is null or empty, cannot send notification',
+      );
       return;
     }
 
-    final studentPhoto = ImageHelper.getValidImageUrl(currentUserModel?.imageUrl);
+    final studentPhoto = ImageHelper.getValidImageUrl(
+      currentUserModel?.imageUrl,
+    );
 
     debugPrint('📱 Sending call notification with UUID: $callDocId');
 
@@ -362,7 +356,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   }
 
   final StreamController<String> _callTimerController =
-  StreamController<String>.broadcast();
+      StreamController<String>.broadcast();
 
   Stream<String> get callTimerStream => _callTimerController.stream;
 
