@@ -86,39 +86,43 @@ class TeacherProfileTabs extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 5),
-              Expanded(
-                child: InkWell(
-                  onTap: () {
-                    cubit.changeIndex(2);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: currentIndex == 2 ? AppColors.myAppColor : Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withValues(alpha: 0.3),
-                          spreadRadius: 3,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3), // changes position of shadow
+              if(AppConstants.isAdmin)
+                ...[
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        cubit.changeIndex(2);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: currentIndex == 2 ? AppColors.myAppColor : Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withValues(alpha: 0.3),
+                              spreadRadius: 3,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3), // changes position of shadow
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        AppStrings.sessions.tr(context),
-                        style:  TextStyle(
-                          color: currentIndex ==2 ? Colors.white : Colors.black54,
-                          fontWeight: FontWeight.bold,
+                        child: Center(
+                          child: Text(
+                            AppStrings.sessions.tr(context),
+                            style:  TextStyle(
+                              color: currentIndex ==2 ? Colors.white : Colors.black54,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
+                ],
+
             ],
           ),
         );

@@ -61,7 +61,7 @@ class AppFirebaseNotification {
       whileAppOpenHandleNotification(homeCubit, context);
       whileAppCloseHandleNotification(context);
       whileAppOnBackgroundHandleNotification(context);
-
+      //deleteData();
       // Setup CallKit listeners
       initCallKitListeners(context,homeCubit);
 
@@ -537,4 +537,22 @@ class AppFirebaseNotification {
       printWithColor('❌ Error deleting token: $onError');
     });
   }
+
+  /*static void deleteData(){
+    _db.collection("calls").get().then((value){
+      // count documents that duration is less than or equal 1 from difference between endedTime and acceptedTime
+      int count = 0;
+      for(var doc in value.docs){
+        if(doc.data().containsKey("endedTime") && doc.data().containsKey("acceptedTime")){
+          Timestamp endedTime = doc.data()["endedTime"];
+          Timestamp answeredTime = doc.data()["acceptedTime"];
+          Duration difference = endedTime.toDate().difference(answeredTime.toDate());
+          if(difference.inMinutes <= 1){
+            _db.collection("calls").doc(doc.id).delete();
+            //print('🗑️ Deleted call document: ${doc.id}');
+          }
+        }
+      }
+    });
+  }*/
 }
