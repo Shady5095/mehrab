@@ -32,21 +32,31 @@
 				<string>com.googleusercontent.apps.736983329149-ir3gu9av3cetgicntnpikj5btfh6u7rc</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>mehrab</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Our app uses the camera to let you participate in video calls.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Our apps uses Face ID to securely verify your identity when signing in and to quickly access your saved accounts.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Our app uses the local network to establish secure audio connections.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Our app uses the microphone to capture your voice during voice calls.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Our apps uses photo library to select photos to add it as profile image</string>
-	<key>NSMicrophoneUsageDescription</key>
-    <string>Our app uses the microphone to capture your voice during voice calls.</string>
-    <key>NSCameraUsageDescription</key>
-    <string>Our app uses the camera to let you participate in video calls.</string>
-    <key>NSLocalNetworkUsageDescription</key>
-    <string>Our app uses the local network to establish secure audio connections.</string>
+	<key>NSVoIPUsageDescription</key>
+	<string>Our app uses the VoIP service to let you allow receiving sessions calls from students</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
@@ -54,8 +64,8 @@
 		<string>remote-notification</string>
 		<string>fetch</string>
 		<string>audio</string>
-        <string>voip</string>
-        <string>processing</string>
+		<string>voip</string>
+		<string>processing</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
