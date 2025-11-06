@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/format_date_and_time.dart';
+import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
 import '../../../../core/config/routes/app_routes.dart';
 import 'build_user_item_photo.dart';
+import 'edit_student_bottom_sheet.dart';
 
 class StudentItem extends StatelessWidget {
   final UserModel userModel;
@@ -17,6 +19,16 @@ class StudentItem extends StatelessWidget {
       color: Colors.white,
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
+        onLongPress: (){
+          if(AppConstants.isAdmin){
+            showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                return EditStudentBottomSheet(userModel: userModel);
+              },
+            );
+          }
+        },
         onTap: () {
           context.navigateTo(
             pageName: AppRoutes.studentsProfileScreen,

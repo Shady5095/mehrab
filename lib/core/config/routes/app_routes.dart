@@ -15,6 +15,7 @@ import '../../../features/notifications/presentation/screens/add_notification_sc
 import '../../../features/onboarding/screens/onboarding_screen.dart';
 import '../../../features/onboarding/screens/start_screen.dart';
 import '../../../features/prayer_times/presentation/screens/prayer_times_screen.dart';
+import '../../../features/students/presentation/screens/edit_student_screen.dart';
 import '../../../features/students/presentation/screens/students_profile_screen.dart';
 import '../../../features/students/presentation/screens/students_screen.dart';
 import '../../../features/teaacher_reviews/presentation/screens/teacher_reviews_screen.dart';
@@ -56,6 +57,7 @@ abstract class AppRoutes {
   static const String igazPdfScreen = 'igazPdfScreen';
   static const String pdfNetworkViewer = 'pdfNetworkViewer';
   static const String aboutUsRoute = 'aboutUsRoute';
+  static const String editStudentScreen = 'editStudentScreen';
 
 }
 
@@ -200,6 +202,11 @@ abstract class RouteGenerator {
         return getPageRoute(
           settings: settings,
           builder: (BuildContext context) => AboutUsPage(),
+        );
+        case AppRoutes.editStudentScreen:
+        return getPageRoute(
+          settings: settings,
+          builder: (BuildContext context) => EditStudentScreen(),
         );
       default:
         return noRoute();
