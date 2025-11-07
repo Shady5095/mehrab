@@ -19,7 +19,7 @@ class RegisterProfilePhotoBuild extends StatelessWidget {
     return BlocBuilder<RegisterCubit, RegisterState>(
       builder: (context, state) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: 10.0),
+          padding: const EdgeInsets.only(bottom: 0.0),
           child: Stack(
             alignment: AlignmentDirectional.bottomEnd,
             children: [

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
-import 'package:mehrab/core/utilities/functions/print_with_color.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
 import 'package:mehrab/features/students/presentation/widgets/student_profile_data_item.dart';
@@ -30,6 +29,7 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
     AppStrings.phone,
     AppStrings.nationality,
     AppStrings.educationLevel,
+    AppStrings.favoriteIgaz,
   ];
 
   @override
@@ -47,7 +47,6 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
   }
 
   void _setProfileDataDescriptions() {
-    printWithColor(widget.model.educationalLevel);
     profileDataDescriptions = [
       widget.model.name,
       if(AppConstants.isAdmin)
@@ -58,6 +57,7 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
         widget.model.phoneNumber.isEmpty  ? null : "${widget.model.countryCodeNumber.replaceAll('+', '')}${widget.model.phoneNumber}",
       widget.model.nationality,
       widget.model.educationalLevel,
+      widget.model.favoriteIgaz,
     ];
   }
 
@@ -77,10 +77,10 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
               itemCount: profileDataTitles.length,
               itemBuilder:
                   (context, index) {
-                bool isLastTwoItems = index == profileDataTitles.length - 1 || index == profileDataTitles.length - 2;
+                bool isTr = profileDataTitles[index] == AppStrings.nationality || profileDataTitles[index] == AppStrings.educationLevel ;
                     return StudentProfileDataItem(
                 title: profileDataTitles[index],
-                description: isLastTwoItems ? profileDataDescriptions[index]?.tr(context) : profileDataDescriptions[index],
+                description: isTr ? profileDataDescriptions[index]?.tr(context) : profileDataDescriptions[index],
               );
                   },
             ),

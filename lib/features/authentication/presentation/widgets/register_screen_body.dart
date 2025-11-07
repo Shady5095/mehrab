@@ -303,44 +303,78 @@ class RegisterScreenBody extends StatelessWidget {
                               return null;
                             },
                           ),
-                        CustomDropDownMenu(
-                          dropdownItems:
-                          isArabic(context)
-                              ? AppConstants.arabicNationalities
-                              : AppConstants.nationalities,
-                          value: cubit.selectedNationality,
-                          isTextTranslated: true,
-                          onChanged: (value) {
-                            cubit.selectedNationality = value;
-                          },
-                          label: AppStrings.nationality.tr(context),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: context.invertedColor,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: CustomDropDownMenu(
+                                dropdownItems:
+                                isArabic(context)
+                                    ? AppConstants.arabicNationalities
+                                    : AppConstants.nationalities,
+                                value: cubit.selectedNationality,
+                                isTextTranslated: true,
+                                onChanged: (value) {
+                                  cubit.selectedNationality = value;
+                                },
+                                label: AppStrings.nationality.tr(context),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: context.invertedColor,
+                                  ),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: context.invertedColor,
+                                  ),
+                                ),
+                                disabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: context.invertedColor,
+                                  ),
+                                ),
+                                errorBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.red),
+                                ),
+                              ),
                             ),
-                          ),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: context.invertedColor,
+                            SizedBox(width: 7),
+                            Expanded(
+                              child: CustomDropDownMenu(
+                                dropdownItems: AppConstants.educationLevelKeys,
+                                value: cubit.selectedEducationLevel,
+                                isTextTranslated: true,
+                                onChanged: (value) {
+                                  cubit.selectedEducationLevel = value;
+                                },
+                                label: AppStrings.educationLevel.tr(context),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: context.invertedColor,
+                                  ),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: context.invertedColor,
+                                  ),
+                                ),
+                                disabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: context.invertedColor,
+                                  ),
+                                ),
+                                errorBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.red),
+                                ),
+                              ),
                             ),
-                          ),
-                          disabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: context.invertedColor,
-                            ),
-                          ),
-                          errorBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.red),
-                          ),
+                          ],
                         ),
                         CustomDropDownMenu(
-                          dropdownItems: AppConstants.educationLevelKeys,
-                          value: cubit.selectedEducationLevel,
-                          isTextTranslated: true,
+                          dropdownItems: cubit.qiraatList,
+                          value: cubit.favoriteIgaz,
                           onChanged: (value) {
-                            cubit.selectedEducationLevel = value;
+                            cubit.favoriteIgaz = value;
                           },
-                          label: AppStrings.educationLevel.tr(context),
                           enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(
                               color: context.invertedColor,
@@ -359,6 +393,7 @@ class RegisterScreenBody extends StatelessWidget {
                           errorBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.red),
                           ),
+                          label: AppStrings.favoriteIgaz.tr(context),
                         ),
                         CircleToggleButtonGridView(
                           height: 5.hR,

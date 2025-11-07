@@ -95,7 +95,19 @@ class RegisterCubit extends Cubit<RegisterState> {
   String countryCode = 'EG';
 
   bool isMale = true;
-
+  String? favoriteIgaz;
+  final List<String> qiraatList = [
+    'قراءة نافع المدني',
+    'قراءة ابن كثير',
+    'قراءة ابن عامر',
+    'قراءة أبي عمرو',
+    'قراءة عاصم',
+    'قراءة حمزة',
+    'قراءة الكسائي',
+    'قراءة أبي جعفر',
+    'قراءة خلف البزار',
+    'قراءة يعقوب',
+  ];
   void toggleGender() {
     isMale = !isMale;
     emit(ProfileImagePickedState());
@@ -158,6 +170,7 @@ class RegisterCubit extends Cubit<RegisterState> {
       imageUrl: imageUrl,
       countryCode: countryCode,
       countryCodeNumber: countryCodeNumber,
+      favoriteIgaz: favoriteIgaz
     );
   }
   Future<bool> isEmailAlreadyRegistered() async {

@@ -96,7 +96,19 @@ class MyProfileCubit extends Cubit<MyProfileState> {
   String countryCode = 'EG';
 
   bool isMale = true;
-
+  String? favoriteIgaz;
+  final List<String> qiraatList = [
+    'قراءة نافع المدني',
+    'قراءة ابن كثير',
+    'قراءة ابن عامر',
+    'قراءة أبي عمرو',
+    'قراءة عاصم',
+    'قراءة حمزة',
+    'قراءة الكسائي',
+    'قراءة أبي جعفر',
+    'قراءة خلف البزار',
+    'قراءة يعقوب',
+  ];
   void toggleGender() {
     isMale = !isMale;
     emit(ProfileImagePickedState());
@@ -112,6 +124,7 @@ class MyProfileCubit extends Cubit<MyProfileState> {
     isMale = userModel.isMale ;
     countryCode = userModel.countryCode;
     countryCodeNumber = userModel.countryCodeNumber;
+    favoriteIgaz = userModel.favoriteIgaz;
   }
 
   UserModel get getUserModel {
@@ -130,6 +143,7 @@ class MyProfileCubit extends Cubit<MyProfileState> {
       imageUrl: imageUrl,
       countryCode: countryCode,
       countryCodeNumber: countryCodeNumber,
+      favoriteIgaz: favoriteIgaz
     );
   }
 
