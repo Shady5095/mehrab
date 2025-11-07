@@ -15,3 +15,12 @@ final class RateSessionError extends RateSessionState {
   final String message;
   RateSessionError(this.message);
 }
+
+final class DeleteSessionLoading extends RateSessionState {}
+
+final class DeleteSessionSuccess extends RateSessionState {}
+
+final class DeleteSessionError extends RateSessionState {
+  final String message;
+  DeleteSessionError(this.message);
+}

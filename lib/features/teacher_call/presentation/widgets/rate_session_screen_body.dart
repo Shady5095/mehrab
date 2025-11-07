@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/toast.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
@@ -414,14 +415,13 @@ class RateSessionScreenBody extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 5),
                   child: ButtonWidget(
                     onPressed: () {
-                      if (!cubit.formKey.currentState!.validate() ||
-                          !cubit.checkIfStudentRated()) {
-                        return;
+                      if (cubit.formKey.currentState!.validate() ||
+                          cubit.checkIfStudentRated()) {
+                        cubit.updateSession();
                       }
-                      cubit.updateSession();
                     },
                     label:
                         cubit.isEditMode
@@ -430,6 +430,32 @@ class RateSessionScreenBody extends StatelessWidget {
                     height: 38,
                     isLoading: state is RateSessionLoading,
                   ),
+                ),
+                if(cubit.isSessionHasConnectionError)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 5, 20, 0),
+                  child: ButtonWidget(
+                    color: Colors.red,
+                    labelFontSize: 13.sp,
+                    onPressed: () {
+                      Navigator.pop(context);
+                      cubit.deleteSession();
+                      cubit.notifyStudentToTryAgain();
+                      myToast(
+                        msg:
+                            "تم ابلاغ الطالب بأعادة الاتصال مره اخري, ابقي متاح ومنتظر مكالمته",
+                        state: ToastStates.normal,
+                        toastLength: Toast.LENGTH_LONG,
+                      );
+                    },
+                    label: "حدث خطأ في الاتصال, ابلغ الطالب بأعادة المحاولة",
+
+                    height: 38,
+                    isLoading: state is RateSessionLoading,
+                  ),
+                ),
+                SizedBox(
+                  height: 15,
                 ),
               ],
             ),

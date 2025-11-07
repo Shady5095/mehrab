@@ -1,4 +1,5 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -78,7 +79,7 @@ class TeacherCallScreenBody extends StatelessWidget {
           context.pop();
           context.navigateTo(
             pageName: AppRoutes.rateSessionScreen,
-            arguments: [cubit.callModel, false],
+            arguments: [cubit.callModel.copyWith(endedTime: Timestamp.now()), false],
           );
         }
       },

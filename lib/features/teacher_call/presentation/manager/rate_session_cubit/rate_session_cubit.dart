@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/utilities/functions/print_with_color.dart';
+import 'package:mehrab/core/utilities/services/firebase_notification.dart';
 import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
 import 'package:meta/meta.dart';
 
@@ -25,18 +26,21 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   final db = FirebaseFirestore.instance;
 
   GlobalKey<FormState> formKey = GlobalKey();
+
   void updateRating(double newRating) {
     rating = newRating;
-    if(newRating == 0){
-      isStudentRated = false ;
-    }else{
-      isStudentRated = true ;
+    if (newRating == 0) {
+      isStudentRated = false;
+    } else {
+      isStudentRated = true;
     }
     emit(RateSessionUpdated());
   }
 
-  String? record ;
-  String? qiraat ;
+  String? record;
+
+  String? qiraat;
+
   TextEditingController fromSurahController = TextEditingController();
   TextEditingController toSurahController = TextEditingController();
   TextEditingController fromAyahController = TextEditingController();
@@ -53,7 +57,7 @@ class RateSessionCubit extends Cubit<RateSessionState> {
     "تلقين",
     "تصحيح تلاوة",
     "حفظ ومراجعة",
-    "إقراء وإجازة"
+    "إقراء وإجازة",
   ];
   final List<String> qiraatList = [
     'قراءة نافع المدني',
@@ -74,17 +78,19 @@ class RateSessionCubit extends Cubit<RateSessionState> {
     emit(RateSessionInitial());
   }
 
-  bool isStudentRated = true ;
+  bool isStudentRated = true;
+
   bool checkIfStudentRated() {
     if (rating == 0) {
       emit(RateSessionInitial());
-      isStudentRated = false ;
+      isStudentRated = false;
       return false;
-    }else{
-      isStudentRated = true ;
+    } else {
+      isStudentRated = true;
       return true;
     }
   }
+
   Timestamp? startTime;
   Timestamp? endTime;
 
@@ -125,8 +131,8 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   void fillControllersWithExistingData(BuildContext context) {
     if (!isEditMode) return;
     rating = callModel.rating?.toDouble() ?? 0;
-    record = callModel.record?.trim() ;
-    qiraat = callModel.qiraat ;
+    record = callModel.record?.trim();
+    qiraat = callModel.qiraat;
     fromSurahController.text = callModel.fromSurah ?? '';
     toSurahController.text = callModel.toSurah ?? '';
     fromAyahController.text = callModel.fromAyah?.toString() ?? '';
@@ -278,15 +284,65 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   void setFromSurah(String surah) {
     fromSurahController.text = surah;
     toSurahController.text = surah;
-    if(fromAyahController.text.isEmpty){
+    if (fromAyahController.text.isEmpty) {
       fromAyahController.text = '1';
     }
     toAyahController.clear();
     emit(RateSessionInitial());
   }
+
   void setToSurah(String surah) {
     toSurahController.text = surah;
     toAyahController.clear();
     emit(RateSessionInitial());
+  }
+
+  bool isSessionHasConnectionError = false;
+
+  void checkIfConnectionError() {
+    if (isEditMode) return;
+    if (callModel.acceptedTime != null && callModel.endedTime != null) {
+      Timestamp endedTime = callModel.endedTime!;
+      Timestamp answeredTime = callModel.acceptedTime!;
+      Duration difference = endedTime.toDate().difference(
+        answeredTime.toDate(),
+      );
+      if (difference.inSeconds <= 120) {
+        isSessionHasConnectionError = true;
+      }
+    }
+  }
+
+  Future<void> deleteSession() async {
+    try {
+      await db.collection('calls').doc(callModel.callId).delete();
+    } catch (e) {
+      printWithColor(e.toString());
+    }
+  }
+
+  Future<void> notifyStudentToTryAgain() async {
+    AppFirebaseNotification.pushNotification(
+      title: "نأسف لقطع الاتصال يبدو ان هناك مشكله في الخادم",
+      body: "يرجي اعادة الاتصال بالمعلم ${callModel.teacherName.split(' ').take(2).join(' ')} مرة اخري",
+      dataInNotification: {'type': 'call_connection_error'},
+      topic: callModel.studentUid,
+    );
+  }
+
+  @override
+  Future<void> close() {
+    fromSurahController.dispose();
+    toSurahController.dispose();
+    fromAyahController.dispose();
+    toAyahController.dispose();
+    numberOfFacesController.dispose();
+    wordErrorsController.dispose();
+    theHesitationController.dispose();
+    tajweedErrorsController.dispose();
+    commentController.dispose();
+    startTimeController.dispose();
+    endTimeController.dispose();
+    return super.close();
   }
 }

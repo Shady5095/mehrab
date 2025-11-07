@@ -17,7 +17,7 @@ class RateSessionScreen extends StatelessWidget {
         create: (context) => RateSessionCubit(
           callModel: args[0],
           isEditMode: isEditMode,
-        )..fillControllersWithExistingData(context),
+        )..fillControllersWithExistingData(context)..checkIfConnectionError(),
         child: Scaffold(
           body: RateSessionScreenBody(),
         ),
