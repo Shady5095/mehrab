@@ -47,6 +47,13 @@ class LoginTextFormAndButton extends StatelessWidget {
             toastLength: Toast.LENGTH_LONG,
           );
         }
+        else if (state is ThisEmailSignedWithEmailAndPasswordMethod) {
+          myToast(
+            msg: AppStrings.accountSignedWithAnotherMethod.tr(context),
+            state: ToastStates.error,
+            toastLength: Toast.LENGTH_LONG,
+          );
+        }
       },
       child: AutofillGroup(
         child: Form(

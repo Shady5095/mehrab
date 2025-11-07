@@ -64,3 +64,5 @@ class BiometricsLoginErrorState extends LoginStates {
 
   BiometricsLoginErrorState(this.error);
 }
+
+class ThisEmailSignedWithEmailAndPasswordMethod extends LoginStates {}

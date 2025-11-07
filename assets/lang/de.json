@@ -1130,7 +1130,7 @@
   "youAreNowNotAvailable": "Sie sind jetzt nicht verfügbar",
   "ringing": "Wird angerufen...",
   "callEnded": "Anruf beendet",
-  "callEndedDescription": "Der Anruf wurde beendet, keine Antwort vom Lehrer",
+  "callEndedDescription": "Der Anruf wurde beendet, keine Antwort vom Lehrer, Bitte wählen Sie einen anderen Lehrer.",
   "lineBusy": "Lehrer ist beschäftigt",
   "lineBusyDescription": "Der Lehrer ist in einem anderen Anruf beschäftigt, bitte versuchen Sie es später erneut",
   "callAccepted": "Anruf angenommen, bitte warten Sie, Ihre Sitzung beginnt in Kürze und Sie werden zu Google Meet weitergeleitet",
@@ -1226,5 +1226,6 @@
   "busy": "Beschäftigt",
   "teacherIsBusy": "Der Lehrer ist mit einer anderen Sitzung beschäftigt. Bitte versuchen Sie es später noch einmal.",
   "inAppProblem": "Bei Problemen mit der Anwendung wenden Sie sich bitte an:",
-  "followUs": "Folgen Sie uns auf sozialen Medien"
+  "followUs": "Folgen Sie uns auf sozialen Medien",
+  "accountSignedWithAnotherMethod": "Diese E-Mail-Adresse ist bereits über den regulären Login registriert, nicht über Google. Bitte melden Sie sich mit Ihrer E-Mail-Adresse und Ihrem Passwort an."
 }

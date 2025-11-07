@@ -181,7 +181,7 @@ class LoginViewBody extends StatelessWidget {
             ),
             BlocBuilder<LoginCubit, LoginStates>(
               builder: (context, state) {
-                if (state is! BiometricsLoginLoadingState) {
+                if (state is! BiometricsLoginLoadingState && state is !GoogleSignInWaitingState) {
                   return SizedBox.shrink();
                 }
                 return Container(

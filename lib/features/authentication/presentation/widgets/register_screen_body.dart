@@ -191,6 +191,16 @@ class RegisterScreenBody extends StatelessWidget {
                           onChanged: (phone) {
                             cubit.countryCode = phone.countryISOCode;
                             cubit.countryCodeNumber = phone.countryCode;
+                            // ✅ إزالة الصفر في حالة مصر فقط
+                            if (phone.countryISOCode == 'EG') {
+                              final text = cubit.phoneController.text;
+                              if (text.startsWith('0')) {
+                                cubit.phoneController.text = text.substring(1);
+                                cubit.phoneController.selection = TextSelection.fromPosition(
+                                  TextPosition(offset: cubit.phoneController.text.length),
+                                );
+                              }
+                            }
                           },
                           //countries: AppConstants.arabCountries,
                         ),
@@ -233,6 +243,11 @@ class RegisterScreenBody extends StatelessWidget {
                                 return AppStrings.passRequired.tr(context);
                               } else if (value.length < 6) {
                                 return AppStrings.passwordShort.tr(context);
+                              }else if (value.contains(' ')) {
+                                return 'كلمة السر لا يجب أن تحتوي على مسافات';
+                              }
+                              else if (!RegExp(r'^[a-zA-Z0-9!@#\$%^&*()_+\-=\[\]{};:\\|,.<>\/?]*$').hasMatch(value)) {
+                                return 'يرجى إدخال كلمة السر باللغة الإنجليزية فقط';
                               }
                               return null;
                             },
@@ -275,6 +290,12 @@ class RegisterScreenBody extends StatelessWidget {
                             validator: (String? value) {
                               if (value == null || value.isEmpty) {
                                 return AppStrings.passRequired.tr(context);
+                              }
+                              else if (value.contains(' ')) {
+                                return 'كلمة السر لا يجب أن تحتوي على مسافات';
+                              }
+                              else if (!RegExp(r'^[a-zA-Z0-9!@#\$%^&*()_+\-=\[\]{};:\\|,.<>\/?]*$').hasMatch(value)) {
+                                return 'يرجى إدخال كلمة السر باللغة الإنجليزية فقط';
                               } else if (value !=
                                   cubit.passwordController.text) {
                                 return AppStrings.passNotMatch.tr(context);

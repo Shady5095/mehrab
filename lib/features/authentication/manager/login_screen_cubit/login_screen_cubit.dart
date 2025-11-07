@@ -44,6 +44,12 @@ class LoginCubit extends Cubit<LoginStates> {
 
       if (googleUser == null) {
         return;
+      }else{
+        if(await isEmailAlreadyRegistered(googleUser.email)){
+          await GoogleSignIn().signOut();
+          emit(ThisEmailSignedWithEmailAndPasswordMethod());
+          return;
+        }
       }
 
       final GoogleSignInAuthentication googleAuth =
@@ -91,7 +97,6 @@ class LoginCubit extends Cubit<LoginStates> {
     }
   }
 
-  // إضافة جديدة: signInWithApple() بنفس الطريقة بالضبط
   Future<void> signInWithApple() async {
     emit(GoogleSignInWaitingState());
     try {
@@ -105,22 +110,10 @@ class LoginCubit extends Cubit<LoginStates> {
           redirectUri: Uri.parse('https://yourapp.com/callbacks/sign_in_with_apple_cb'),
         ),
       );
-      // تحقق إذا كانت أول مرة بناءً على وجود الاسم أو الإيميل
-      final isFirstTime = appleCredential.givenName != null || appleCredential.email != null;
-
-      if (isFirstTime) {
-        print("🟢 This is the FIRST TIME sign in with Apple for this user.");
-        print("Full Name: ${appleCredential.givenName} ${appleCredential.familyName}");
-        print("Email: ${appleCredential.email}");
-      } else {
-        print("🔵 This is NOT the first time sign in with Apple (Apple returned only the user ID).");
-      }
-
       final firebaseCredential = firebase_auth.OAuthProvider("apple.com").credential(
         idToken: appleCredential.identityToken,
         accessToken: appleCredential.authorizationCode,
       );
-
       UserCredential userCredential =
       await FirebaseAuth.instance.signInWithCredential(firebaseCredential);
       final socialModel = GoogleSignInModel(
@@ -318,6 +311,18 @@ class LoginCubit extends Cubit<LoginStates> {
       } catch (e) {
         emit(LoginErrorState("فشل تسجيل الدخول: $e"));
       }
+    }
+  }
+  Future<bool> isEmailAlreadyRegistered(String email) async {
+    try {
+      final querySnapshot = await db
+          .collection('users')
+          .where('email', isEqualTo: email).where("password", isNotEqualTo: '')
+          .get();
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      printWithColor("Error checking email: $e");
+      return false;
     }
   }
 

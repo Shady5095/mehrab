@@ -1130,7 +1130,7 @@
   "youAreNowNotAvailable": "Şimdi müsait değilsiniz",
   "ringing": "Aranıyor...",
   "callEnded": "Arama sona erdi",
-  "callEndedDescription": "Arama sona erdi, öğretmenden cevap yok",
+  "callEndedDescription": "Arama sona erdi, öğretmenden cevap yok, Lütfen başka bir öğretmen seçin.",
   "lineBusy": "Öğretmen meşgul",
   "lineBusyDescription": "Öğretmen başka bir aramada meşgul, lütfen daha sonra tekrar deneyin",
   "callAccepted": "Arama kabul edildi, lütfen bekleyin, oturumunuz yakında başlayacak ve Google Meet'e yönlendirileceksiniz",
@@ -1226,5 +1226,6 @@
   "busy": "Meşgul",
   "teacherIsBusy": "Öğretmen başka bir derste meşgul, lütfen daha sonra tekrar deneyin.",
   "inAppProblem": "Uygulamada herhangi bir sorunla karşılaşırsanız lütfen bizimle iletişime geçin:",
-  "followUs": "Bizi Takip Edin"
+  "followUs": "Bizi Takip Edin",
+  "accountSignedWithAnotherMethod": "Bu e-posta adresi Google üzerinden değil, normal giriş yoluyla zaten kayıtlı. Lütfen e-posta adresinizi ve şifrenizi kullanarak giriş yapın."
 }

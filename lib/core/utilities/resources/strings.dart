@@ -1504,6 +1504,7 @@ class AppStrings {
   static const String teacherIsBusy = 'teacherIsBusy';
   static const String inAppProblem = 'inAppProblem';
   static const String followUs = 'followUs';
+  static const String accountSignedWithAnotherMethod = 'accountSignedWithAnotherMethod';
 
 
 

@@ -1129,7 +1129,7 @@
   "youAreNowNotAvailable": "You are now unavailable",
   "ringing": "Ringing...",
   "callEnded": "Call Ended",
-  "callEndedDescription": "The call has ended, no answer from the Teacher",
+  "callEndedDescription": "The call has ended, no answer from the Teacher, Please choose another teacher.",
   "lineBusy": "Line Busy",
   "lineBusyDescription": "The call has ended, the Teacher is busy on another call",
   "callAccepted": "Call Accepted, please wait your session will start soon and redirect you to google meet",
@@ -1225,5 +1225,6 @@
   "busy": "Busy",
   "teacherIsBusy": "The teacher is busy in another session, please try again later.",
   "inAppProblem": "If you encounter any issues with the application, please contact us:",
-  "followUs": "Follow Us"
+  "followUs": "Follow Us",
+  "accountSignedWithAnotherMethod": "This email address is already registered via regular login, not Google. Please log in using your email address and password."
 }
