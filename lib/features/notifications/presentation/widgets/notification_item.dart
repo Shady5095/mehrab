@@ -45,7 +45,7 @@ class NotificationItem extends StatelessWidget {
                   Expanded(
                     child: Text(
                       model.title,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 14.sp,

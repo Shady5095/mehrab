@@ -1226,5 +1226,6 @@
   "teacherIsBusy": "The teacher is busy in another session, please try again later.",
   "inAppProblem": "If you encounter any issues with the application, please contact us:",
   "followUs": "Follow Us",
-  "accountSignedWithAnotherMethod": "This email address is already registered via regular login, not Google. Please log in using your email address and password."
+  "accountSignedWithAnotherMethod": "This email address is already registered via regular login, not Google. Please log in using your email address and password.",
+  "favoriteIgaz": "Favorite Igaz"
 }

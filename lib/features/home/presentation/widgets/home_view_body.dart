@@ -5,6 +5,7 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/resources/assets.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
+import 'package:mehrab/core/utilities/services/app_review_service.dart';
 import 'package:mehrab/core/utilities/services/cache_service.dart';
 import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.dart';
 import 'package:mehrab/features/home/presentation/widgets/user_name_and_photo_widget.dart';
@@ -123,6 +124,23 @@ class HomeViewBody extends StatelessWidget {
                                       fit: BoxFit.cover,
                                     ),
                                   ),
+                                  InkWell(
+                                    onTap: (){
+                                      AppReviewService.openStoreReviewPage();
+                                    },
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(0),
+                                        bottomRight: Radius.circular(0),
+                                      ),
+                                      child: Image(
+                                        image: const AssetImage(AppAssets.welcome4),
+                                        width: double.infinity,
+                                        height: 200,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
                                   ClipRRect(
                                     borderRadius: BorderRadius.only(
                                       bottomLeft: Radius.circular(0),
@@ -155,7 +173,7 @@ class HomeViewBody extends StatelessWidget {
                           // Carousel Indicators
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(3, (index) {
+                            children: List.generate(4, (index) {
                               final isActive = index == context.watch<HomeCubit>().sliderIndex;
                               return AnimatedContainer(
                                 duration: const Duration(milliseconds: 300),

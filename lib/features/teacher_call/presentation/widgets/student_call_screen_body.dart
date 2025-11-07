@@ -10,6 +10,7 @@ import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/buttons_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../../../core/utilities/services/app_review_service.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 import '../manager/student_call_cubit/student_call_cubit.dart';
 import '../manager/student_call_cubit/student_call_state.dart';
@@ -226,6 +227,7 @@ class StudentCallScreenBody extends StatelessWidget {
               ),
             ),
           );
+          AppReviewService.showReviewPromptIfNeeded();
         }
       },
       builder: (context, state) {

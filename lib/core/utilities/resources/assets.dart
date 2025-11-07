@@ -10,6 +10,7 @@ class AppAssets {
   static const String unlimitedTime = 'assets/images/unlimited_time.png';
   static const String welcome2 = 'assets/images/welcome2.png';
   static const String welcome3 = 'assets/images/welcome3.png';
+  static const String welcome4 = 'assets/images/welcome4.png';
   static const String arabicLang = 'assets/images/arabicIcon.png';
   static const String englishLang = 'assets/images/englishIcon.png';
   static const String notification = 'assets/images/notification.png';

@@ -7,6 +7,7 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/toast.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
+import 'package:mehrab/core/utilities/services/app_review_service.dart';
 import 'package:mehrab/core/utilities/validator.dart';
 import 'package:mehrab/core/widgets/buttons_widget.dart';
 import 'package:mehrab/core/widgets/my_text_field.dart';
@@ -34,6 +35,7 @@ class RateSessionScreenBody extends StatelessWidget {
               state: ToastStates.success,
             );
             context.pop(result: true);
+            AppReviewService.showReviewPromptIfNeeded();
           }
         },
         builder: (context, state) {
@@ -455,7 +457,7 @@ class RateSessionScreenBody extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  height: 15,
+                  height: 20,
                 ),
               ],
             ),

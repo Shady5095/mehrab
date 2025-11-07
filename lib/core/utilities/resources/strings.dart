@@ -1505,6 +1505,7 @@ class AppStrings {
   static const String inAppProblem = 'inAppProblem';
   static const String followUs = 'followUs';
   static const String accountSignedWithAnotherMethod = 'accountSignedWithAnotherMethod';
+  static const String favoriteIgaz = 'favoriteIgaz';
 
 
 
