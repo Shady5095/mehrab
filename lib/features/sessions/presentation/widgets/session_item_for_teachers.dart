@@ -128,7 +128,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                         SizedBox(height: 5),
                         Text(
                           formatTime(context, widget.model.timestamp),
-                          style: TextStyle(fontSize: 12.sp, color: Colors.black),
+                          style: TextStyle(fontSize: 12.sp, color: Colors.black,fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -142,7 +142,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                         SizedBox(height: 5),
                         Text(
                           formatTime(context, widget.model.endedTime),
-                          style: TextStyle(fontSize: 12.sp, color: Colors.black),
+                          style: TextStyle(fontSize: 12.sp, color: Colors.black,fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -160,7 +160,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                             widget.model.endedTime,
                             isArabic(context),
                           ),
-                          style: TextStyle(fontSize: 12.sp, color: Colors.black),
+                          style: TextStyle(fontSize: 12.sp, color: Colors.black,fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -174,7 +174,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
               Row(
                 children: [
                   Text(
-                    "${AppStrings.record.tr(context)} 1 : ",
+                    "${AppStrings.record.tr(context)} : ",
                     style: TextStyle(
                       fontSize: 13.sp,
                       color: Colors.grey,
@@ -183,7 +183,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                   ),
                   SizedBox(width: 5),
                   Text(
-                    widget.model.record ??'---',
+                    "${widget.model.record ??'---'}${widget.model.qiraat != null ? ' / ${widget.model.qiraat}' : ''}",
                     style: TextStyle(
                       fontSize: 13.sp,
                       color: Colors.black,

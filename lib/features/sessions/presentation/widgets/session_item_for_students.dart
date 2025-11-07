@@ -114,6 +114,7 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.black,
+                              fontWeight: FontWeight.w600
                           ),
                         ),
                       ],
@@ -131,6 +132,7 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.black,
+                              fontWeight: FontWeight.w600
                           ),
                         ),
                       ],
@@ -152,6 +154,7 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.black,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -165,7 +168,7 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
               Row(
                 children: [
                   Text(
-                    "${AppStrings.record.tr(context)} 1 : ",
+                    "${AppStrings.record.tr(context)} : ",
                     style: TextStyle(
                       fontSize: 13.sp,
                       color: Colors.grey,
@@ -174,7 +177,7 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
                   ),
                   SizedBox(width: 5),
                   Text(
-                    widget.model.record ?? '---',
+                    "${widget.model.record ?? '---'}${widget.model.qiraat != null ? ' / ${widget.model.qiraat}' : ''}",
                     style: TextStyle(fontSize: 13.sp, color: Colors.black),
                   ),
                 ],

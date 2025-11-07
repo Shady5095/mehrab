@@ -27,10 +27,16 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   GlobalKey<FormState> formKey = GlobalKey();
   void updateRating(double newRating) {
     rating = newRating;
+    if(newRating == 0){
+      isStudentRated = false ;
+    }else{
+      isStudentRated = true ;
+    }
     emit(RateSessionUpdated());
   }
 
-  TextEditingController recordController = TextEditingController();
+  String? record ;
+  String? qiraat ;
   TextEditingController fromSurahController = TextEditingController();
   TextEditingController toSurahController = TextEditingController();
   TextEditingController fromAyahController = TextEditingController();
@@ -43,6 +49,42 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   TextEditingController startTimeController = TextEditingController();
   TextEditingController endTimeController = TextEditingController();
 
+  List<String> records = [
+    "تلقين",
+    "تصحيح تلاوة",
+    "حفظ ومراجعة",
+    "إقراء وإجازة"
+  ];
+  final List<String> qiraatList = [
+    'قراءة نافع المدني',
+    'قراءة ابن كثير',
+    'قراءة ابن عامر',
+    'قراءة أبي عمرو',
+    'قراءة عاصم',
+    'قراءة حمزة',
+    'قراءة الكسائي',
+    'قراءة أبي جعفر',
+    'قراءة خلف البزار',
+    'قراءة يعقوب',
+  ];
+
+  void changeRecord(String? value) {
+    record = value;
+    qiraat = null;
+    emit(RateSessionInitial());
+  }
+
+  bool isStudentRated = true ;
+  bool checkIfStudentRated() {
+    if (rating == 0) {
+      emit(RateSessionInitial());
+      isStudentRated = false ;
+      return false;
+    }else{
+      isStudentRated = true ;
+      return true;
+    }
+  }
   Timestamp? startTime;
   Timestamp? endTime;
 
@@ -51,7 +93,8 @@ class RateSessionCubit extends Cubit<RateSessionState> {
     try {
       await db.collection('calls').doc(callModel.callId).update({
         'rating': rating,
-        if (recordController.text.isNotEmpty) 'record': recordController.text,
+        if (record != null) 'record': record,
+        if (qiraat != null) 'qiraat': qiraat,
         if (fromSurahController.text.isNotEmpty)
           'fromSurah': fromSurahController.text,
         if (toSurahController.text.isNotEmpty)
@@ -82,7 +125,8 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   void fillControllersWithExistingData(BuildContext context) {
     if (!isEditMode) return;
     rating = callModel.rating?.toDouble() ?? 0;
-    recordController.text = callModel.record ?? '';
+    record = callModel.record?.trim() ;
+    qiraat = callModel.qiraat ;
     fromSurahController.text = callModel.fromSurah ?? '';
     toSurahController.text = callModel.toSurah ?? '';
     fromAyahController.text = callModel.fromAyah?.toString() ?? '';

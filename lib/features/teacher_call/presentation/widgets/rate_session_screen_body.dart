@@ -6,11 +6,13 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/toast.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
+import 'package:mehrab/core/utilities/validator.dart';
 import 'package:mehrab/core/widgets/buttons_widget.dart';
 import 'package:mehrab/core/widgets/my_text_field.dart';
 import 'package:mehrab/features/teacher_call/presentation/manager/rate_session_cubit/rate_session_cubit.dart';
 import 'package:mehrab/features/teacher_call/presentation/widgets/quran_surah_dialog.dart';
 
+import '../../../../core/widgets/app_cusstom_drop_down_menu.dart';
 import '../../../../core/widgets/my_appbar.dart';
 import '../../../../core/widgets/show_date_time_picker.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
@@ -85,6 +87,17 @@ class RateSessionScreenBody extends StatelessWidget {
                             cubit.updateRating(rating);
                           },
                         ),
+                        if (!cubit.isStudentRated)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: Text(
+                              "برجاء تقييم الطالب من 1 نجمة الي 5 نجوم",
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
                         if (cubit.isEditMode && AppConstants.isAdmin) ...[
                           const SizedBox(height: 10),
                           Row(
@@ -131,7 +144,8 @@ class RateSessionScreenBody extends StatelessWidget {
                                   onTap: () {
                                     if (cubit.startTime == null) {
                                       myToast(
-                                        msg: AppStrings.pleaseSelectStartDateFirst
+                                        msg: AppStrings
+                                            .pleaseSelectStartDateFirst
                                             .tr(context),
                                         state: ToastStates.error,
                                       );
@@ -166,11 +180,46 @@ class RateSessionScreenBody extends StatelessWidget {
                           ),
                         ],
                         const SizedBox(height: 10),
-                        MyTextField(
-                          controller: cubit.recordController,
-                          label: "${AppStrings.record.tr(context)} 1",
-                          keyboardType: TextInputType.text,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: CustomDropDownMenu(
+                                dropdownItems: cubit.records,
+                                value: cubit.record,
+                                onChanged: (value) {
+                                  cubit.changeRecord(value);
+                                },
+                                label: AppStrings.record.tr(context),
+                                validator:
+                                    (value) => AppValidator.emptyFiled(
+                                      value,
+                                      context,
+                                      AppStrings.record.tr(context),
+                                    ),
+                              ),
+                            ),
+                            if (cubit.record == "إقراء وإجازة") ...[
+                              const SizedBox(width: 7),
+                              Expanded(
+                                child: CustomDropDownMenu(
+                                  dropdownItems: cubit.qiraatList,
+                                  value: cubit.qiraat,
+                                  onChanged: (value) {
+                                    cubit.qiraat = value;
+                                  },
+                                  label: "الإجازة",
+                                  validator:
+                                      (value) => AppValidator.emptyFiled(
+                                        value,
+                                        context,
+                                        "الإجازة",
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
+
                         const SizedBox(height: 10),
                         Row(
                           children: [
@@ -185,13 +234,21 @@ class RateSessionScreenBody extends StatelessWidget {
                                     context: context,
                                     builder:
                                         (context) => QuranSurahDialog(
-                                          onSurahSelected:
-                                              (surahName, surahNum) {
+                                          onSurahSelected: (
+                                            surahName,
+                                            surahNum,
+                                          ) {
                                             cubit.setFromSurah(surahName);
-                                              },
+                                          },
                                         ),
                                   );
                                 },
+                                validator:
+                                    (value) => AppValidator.emptyFiled(
+                                      value,
+                                      context,
+                                      AppStrings.fromSurah.tr(context),
+                                    ),
                               ),
                             ),
                             const SizedBox(width: 5),
@@ -200,14 +257,32 @@ class RateSessionScreenBody extends StatelessWidget {
                                 controller: cubit.fromAyahController,
                                 label: AppStrings.ayah.tr(context),
                                 keyboardType: TextInputType.number,
-                                validator: (value){
+                                validator: (value) {
                                   final fromAyah =
-                                      int.tryParse(cubit.fromAyahController.text) ??
-                                          0;
-                                  if (cubit.getVerseCountBySurahName(cubit.fromSurahController.text) <
+                                      int.tryParse(
+                                        cubit.fromAyahController.text,
+                                      ) ??
+                                      0;
+                                  final toAyah =
+                                      int.tryParse(
+                                        cubit.toAyahController.text,
+                                      ) ??
+                                      0;
+                                  if (value == null || value.isEmpty) {
+                                    return AppValidator.emptyFiled(
+                                      value,
+                                      context,
+                                      AppStrings.ayah.tr(context),
+                                    );
+                                  }
+                                  if (cubit.getVerseCountBySurahName(
+                                        cubit.fromSurahController.text,
+                                      ) <
                                       fromAyah) {
-                                    return   "سورة ${cubit.fromSurahController.text} ${cubit.getVerseCountBySurahName(cubit.fromSurahController.text)} اية فقط " ;
-
+                                    return "سورة ${cubit.fromSurahController.text} ${cubit.getVerseCountBySurahName(cubit.fromSurahController.text)} أية فقط ";
+                                  }
+                                  if (toAyah != 0 && fromAyah > toAyah) {
+                                    return "يجب ان تكون الاية من اقل من او تساوي الاية الي";
                                   }
                                   return null;
                                 },
@@ -229,14 +304,23 @@ class RateSessionScreenBody extends StatelessWidget {
                                     context: context,
                                     builder:
                                         (context) => QuranSurahDialog(
-                                          fromSurah: cubit.fromSurahController.text,
-                                      onSurahSelected:
-                                          (surahName, surahNum) {
-                                        cubit.setToSurah(surahName);
-                                      },
-                                    ),
+                                          fromSurah:
+                                              cubit.fromSurahController.text,
+                                          onSurahSelected: (
+                                            surahName,
+                                            surahNum,
+                                          ) {
+                                            cubit.setToSurah(surahName);
+                                          },
+                                        ),
                                   );
                                 },
+                                validator:
+                                    (value) => AppValidator.emptyFiled(
+                                      value,
+                                      context,
+                                      AppStrings.toSurah.tr(context),
+                                    ),
                               ),
                             ),
                             const SizedBox(width: 5),
@@ -245,14 +329,24 @@ class RateSessionScreenBody extends StatelessWidget {
                                 controller: cubit.toAyahController,
                                 label: AppStrings.ayah.tr(context),
                                 keyboardType: TextInputType.number,
-                                validator: (value){
+                                validator: (value) {
                                   final toAyah =
-                                      int.tryParse(cubit.toAyahController.text) ??
-                                          0;
-                                  if (cubit.getVerseCountBySurahName(cubit.toSurahController.text) <
+                                      int.tryParse(
+                                        cubit.toAyahController.text,
+                                      ) ??
+                                      0;
+                                  if (value == null || value.isEmpty) {
+                                    return AppValidator.emptyFiled(
+                                      value,
+                                      context,
+                                      AppStrings.ayah.tr(context),
+                                    );
+                                  }
+                                  if (cubit.getVerseCountBySurahName(
+                                        cubit.toSurahController.text,
+                                      ) <
                                       toAyah) {
-                                    return   "سورة ${cubit.toSurahController.text} ${cubit.getVerseCountBySurahName(cubit.toSurahController.text)} اية فقط " ;
-
+                                    return "سورة ${cubit.toSurahController.text} ${cubit.getVerseCountBySurahName(cubit.toSurahController.text)} اية فقط ";
                                   }
                                   return null;
                                 },
@@ -266,9 +360,10 @@ class RateSessionScreenBody extends StatelessWidget {
                             Expanded(
                               child: MyTextField(
                                 controller: cubit.numberOfFacesController,
-                                label: AppStrings.numberOfFaces.tr(context),
+                                label:
+                                    "${AppStrings.numberOfFaces.tr(context)} ${AppStrings.optional.tr(context)}",
                                 keyboardType: TextInputType.numberWithOptions(
-                                  decimal: true
+                                  decimal: true,
                                 ),
                               ),
                             ),
@@ -276,7 +371,8 @@ class RateSessionScreenBody extends StatelessWidget {
                             Expanded(
                               child: MyTextField(
                                 controller: cubit.wordErrorsController,
-                                label: AppStrings.wordErrors.tr(context),
+                                label:
+                                    "${AppStrings.wordErrors.tr(context)}  ${AppStrings.optional.tr(context)}",
                                 keyboardType: TextInputType.number,
                               ),
                             ),
@@ -288,7 +384,8 @@ class RateSessionScreenBody extends StatelessWidget {
                             Expanded(
                               child: MyTextField(
                                 controller: cubit.theHesitationController,
-                                label: AppStrings.theHesitation.tr(context),
+                                label:
+                                    "${AppStrings.theHesitation.tr(context)} ${AppStrings.optional.tr(context)}",
                                 keyboardType: TextInputType.number,
                               ),
                             ),
@@ -296,7 +393,8 @@ class RateSessionScreenBody extends StatelessWidget {
                             Expanded(
                               child: MyTextField(
                                 controller: cubit.tajweedErrorsController,
-                                label: AppStrings.tajweedErrors.tr(context),
+                                label:
+                                    "${AppStrings.tajweedErrors.tr(context)}  ${AppStrings.optional.tr(context)}",
                                 keyboardType: TextInputType.number,
                               ),
                             ),
@@ -305,7 +403,8 @@ class RateSessionScreenBody extends StatelessWidget {
                         const SizedBox(height: 10),
                         MyTextField(
                           controller: cubit.commentController,
-                          label: AppStrings.comment.tr(context),
+                          label:
+                              "${AppStrings.comment.tr(context)}  ${AppStrings.optional.tr(context)}",
                           keyboardType: TextInputType.text,
                           maxLines: 4,
                         ),
@@ -318,7 +417,8 @@ class RateSessionScreenBody extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   child: ButtonWidget(
                     onPressed: () {
-                      if(!cubit.formKey.currentState!.validate()){
+                      if (!cubit.formKey.currentState!.validate() ||
+                          !cubit.checkIfStudentRated()) {
                         return;
                       }
                       cubit.updateSession();

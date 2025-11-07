@@ -24,6 +24,7 @@ class CallModel {
   final String? theHesitation;
   final String? tajweedErrors;
   final String? comment;
+  final String? qiraat;
 
 
   CallModel({
@@ -50,6 +51,7 @@ class CallModel {
     this.theHesitation,
     this.tajweedErrors,
     this.comment,
+    this.qiraat,
   });
 
   factory CallModel.fromJson(Map<String, dynamic> map) {
@@ -77,6 +79,7 @@ class CallModel {
       theHesitation: map['theHesitation'],
       tajweedErrors: map['tajweedErrors'],
       comment: map['comment'],
+      qiraat: map['qiraat'],
     );
   }
 

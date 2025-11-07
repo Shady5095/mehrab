@@ -23,7 +23,7 @@ class StudentProfileDataItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (description == null || description == 'null' || description == '') {
+    if (description == null || description == 'null' || description == '' || description == 'unkonwn') {
       return const SizedBox.shrink();
     }
 
