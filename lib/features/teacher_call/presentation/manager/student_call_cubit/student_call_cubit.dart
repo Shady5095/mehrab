@@ -15,6 +15,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:screen_off/screen_off.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../../core/utilities/services/call_foreground_service.dart';
 import '../../../../../core/utilities/services/call_kit_service.dart';
 import '../../../../../core/utilities/services/call_service.dart';
 
@@ -95,6 +96,9 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     await playSound();
     await requestPermissions();
     if (state is MicrophoneAllowed) {
+      if (Platform.isAndroid) {
+        await CallForegroundService.init(silentMode: false);
+      }
       await sendCallToTeacher();
       await setupAgoraCallService();
       callPushNotification();
@@ -156,6 +160,9 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   Future<void> endCallAfterAnswer({bool isByUser = false}) async {
     if (callDocId == null) return;
     try {
+      if (Platform.isAndroid) {
+        await CallForegroundService.stopCallService();
+      }
       final updateCall = db.collection('calls').doc(callDocId).update({
         'status': 'ended',
         'endedTime': FieldValue.serverTimestamp(),
@@ -378,11 +385,30 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     _elapsedTime = Duration.zero;
     _callTimerController.add(_formatDuration(_elapsedTime));
 
+    // 🆕 Start مع notification للطالب
+    if (Platform.isAndroid) {
+      CallForegroundService.startCallService(
+        callerName: teacherModel.name,
+        callDuration: _formatDuration(_elapsedTime),
+        silentMode: false, // 👈 يظهر notification
+      );
+    }
+
     _callDurationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _elapsedTime += const Duration(seconds: 1);
-      _callTimerController.add(_formatDuration(_elapsedTime));
+      final formattedTime = _formatDuration(_elapsedTime);
+      _callTimerController.add(formattedTime);
+
+      // 🆕 Update notification كل 5 ثواني للطالب بس
+      if (_elapsedTime.inSeconds % 1 == 0 && Platform.isAndroid) {
+        CallForegroundService.updateCallService(
+          callerName: teacherModel.name,
+          callDuration: formattedTime,
+        );
+      }
     });
   }
+
 
   void stopCallTimer() {
     _callDurationTimer?.cancel();
@@ -421,6 +447,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     callService.dispose();
     if (Platform.isAndroid) {
       disableProximitySensor();
+      CallForegroundService.stopCallService();
     }
     // End any active CallKit calls
     if (callDocId != null) {

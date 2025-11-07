@@ -12,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:screen_off/screen_off.dart';
 
+import '../../../../../core/utilities/services/call_foreground_service.dart';
 import '../../../../../core/utilities/services/call_service.dart';
 import '../../../../../core/utilities/services/firebase_notification.dart';
 part 'teacher_call_state.dart';
@@ -68,6 +69,8 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   void initCall() async {
     if (Platform.isAndroid) {
       await requestPermissions();
+      // 🆕 Initialize في silent mode للمعلم
+      await CallForegroundService.init(silentMode: true);
       await Future.delayed(Duration(milliseconds: 300));
     }
     await setupAgoraCallService();
@@ -76,6 +79,9 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
 
   Future<void> endCall() async {
     try {
+      if (Platform.isAndroid) {
+        await CallForegroundService.stopCallService();
+      }
       final batch = db.batch();
       final callRef = db.collection('calls').doc(callModel.callId);
       final userRef = db.collection('users').doc(callModel.teacherUid);
@@ -223,9 +229,21 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     _elapsedTime = Duration.zero;
     _callTimerController.add(_formatDuration(_elapsedTime));
 
+    // 🆕 Start في silent mode - بدون notification
+    if (Platform.isAndroid) {
+      CallForegroundService.startCallService(
+        callerName: callModel.studentName,
+        callDuration: _formatDuration(_elapsedTime),
+        silentMode: true, // 👈 المهم ده
+      );
+    }
+
     _callDurationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _elapsedTime += const Duration(seconds: 1);
-      _callTimerController.add(_formatDuration(_elapsedTime));
+      final formattedTime = _formatDuration(_elapsedTime);
+      _callTimerController.add(formattedTime);
+
+      // 🆕 مش محتاجين update لأن مفيش notification أصلاً
     });
   }
 
@@ -263,6 +281,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     callService.dispose();
     if (Platform.isAndroid) {
       disableProximitySensor();
+      CallForegroundService.stopCallService();
     }
     return super.close();
   }

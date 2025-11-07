@@ -10,13 +10,16 @@ class RateSessionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<dynamic> args = ModalRoute.of(context)!.settings.arguments as List<dynamic>;
-    return BlocProvider(
-      create: (context) => RateSessionCubit(
-        callModel: args[0],
-        isEditMode: args[1] as bool,
-      )..fillControllersWithExistingData(context),
-      child: Scaffold(
-        body: RateSessionScreenBody(),
+    return PopScope(
+      canPop: false,
+      child: BlocProvider(
+        create: (context) => RateSessionCubit(
+          callModel: args[0],
+          isEditMode: args[1] as bool,
+        )..fillControllersWithExistingData(context),
+        child: Scaffold(
+          body: RateSessionScreenBody(),
+        ),
       ),
     );
   }
