@@ -6,6 +6,7 @@ import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:meta/meta.dart';
 
 import '../../../../../core/utilities/functions/print_with_color.dart';
+import '../../../../../core/utilities/functions/toast.dart';
 import '../../../../../core/utilities/services/firebase_notification.dart';
 import '../../../data/models/teachers_model.dart';
 
@@ -158,6 +159,38 @@ class TeachersCubit extends Cubit<TeachersState> {
     return queryRef.snapshots();
   }
 
+  void changeTeacherAvailability(TeacherModel model) {
+    db
+        .collection('users')
+        .doc(model.uid)
+        .update({"isOnline": !model.isOnline, 'isBusy': false})
+        .then((value) {
+      if (!model.isOnline) {
+        myToast(
+          msg: "تم تحويل حالة المعلم الي متاح",
+          state: ToastStates.success,
+        );
+      } else {
+        myToast(
+          msg: "تم تحويل حالة المعلم الي غير متاح",
+          state: ToastStates.normal,
+        );
+        setLastActive(model);
+      }
+    })
+        .catchError((error) {
+      myToast(
+        msg: "حدث خطأ ما: $error",
+        state: ToastStates.error,
+      );
+    });
+  }
+
+  void setLastActive(TeacherModel model) {
+    db.collection('users').doc(model.uid).update({
+      "lastActive": FieldValue.serverTimestamp(),
+    });
+  }
   @override
   Future<void> close() {
     searchController.dispose();

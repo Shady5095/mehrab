@@ -45,7 +45,7 @@ class RateSessionScreenBody extends StatelessWidget {
                     child: Column(
                       children: [
                         MyAppBar(
-                          isShowBackButton: false,
+                          isShowBackButton: cubit.isEditMode,
                           title:
                               cubit.isEditMode
                                   ? AppStrings.editSessionDetails

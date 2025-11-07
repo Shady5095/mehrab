@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
-import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
+import 'package:mehrab/features/teachers/presentation/manager/teachers_cubit/teachers_cubit.dart';
 
 import '../../../../core/config/routes/app_routes.dart';
 import '../../../../core/utilities/resources/colors.dart';
@@ -25,23 +25,8 @@ class TeachersBottomSheetActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
-      value: oldContext.read<HomeCubit>(),
-      child: BlocConsumer<HomeCubit, HomeState>(
-        listener: (context, state) {
-          /*if (state is DeleteSurveySuccessState) {
-            Navigator.pop(context);
-            myToast(
-              msg:
-                  '${AppStrings.survey.tr(context)} ${successDialogText(SuccessStates.delete).tr(context)}',
-              state: ToastStates.success,
-            );
-          } else if (state is DeleteSurveyErrorState) {
-            myToast(
-              msg: state.serverFailure.errorMessage,
-              state: ToastStates.error,
-            );
-          }*/
-        },
+      value: oldContext.read<TeachersCubit>(),
+      child: BlocBuilder<TeachersCubit, TeachersState>(
         builder: (context, state) {
           return MyBottomSheetDesign(
             children: [
@@ -61,6 +46,16 @@ class TeachersBottomSheetActions extends StatelessWidget {
                 },
                 icon: Icons.edit,
                 title: AppStrings.edit.tr(context),
+              ),
+              BottomSheetItem(
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<TeachersCubit>().changeTeacherAvailability(teacherModel);
+                },
+                icon: Icons.toggle_off_outlined,
+                title: teacherModel.isOnline
+                    ? "تحويل المعلم الي غير متاح"
+                    : "تحويل المعلم الي متاح",
               ),
               BottomSheetItem(
                 onTap: () {
