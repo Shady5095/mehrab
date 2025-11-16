@@ -28,7 +28,7 @@ class StudentCallScreen extends StatelessWidget {
               Color(0xFF5bafa5),
             ],
           ),
-          body: StudentCallScreenBody(),
+          body: StudentCallScreenBody(teacherModel: args[0],),
         ),
       ),
     );

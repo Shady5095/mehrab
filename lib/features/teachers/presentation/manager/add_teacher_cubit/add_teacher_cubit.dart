@@ -149,6 +149,9 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
     school: schoolController.text.trim().isEmpty ? null : schoolController.text.trim(),
     igazah: igazahController.text.trim().isEmpty ? null : igazahController.text.trim(),
     igazPdfUrl: igazPdfUrl,
+    sessionsCount: teacherModel?.sessionsCount ?? 0,
+    minutesCount: teacherModel?.minutesCount ?? 0,
+    isBusy: teacherModel?.isBusy ?? false,
   );
   Future<void> signUpWithEmailAndPassword(BuildContext context) async {
     try {

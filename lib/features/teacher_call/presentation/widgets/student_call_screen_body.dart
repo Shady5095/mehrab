@@ -9,14 +9,17 @@ import 'package:mehrab/core/utilities/functions/toast.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/buttons_widget.dart';
+import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/utilities/services/app_review_service.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 import '../manager/student_call_cubit/student_call_cubit.dart';
 import '../manager/student_call_cubit/student_call_state.dart';
+import 'call_ended_dialog.dart';
 
 class StudentCallScreenBody extends StatelessWidget {
-  const StudentCallScreenBody({super.key});
+  final TeacherModel teacherModel;
+  const StudentCallScreenBody({super.key, required this.teacherModel});
 
   @override
   Widget build(BuildContext context) {
@@ -196,35 +199,8 @@ class StudentCallScreenBody extends StatelessWidget {
           context.pop();
           showDialog(
             context: context,
-            builder: (BuildContext context) => AlertDialog(
-              backgroundColor: Colors.white,
-              contentPadding: const EdgeInsets.all(30),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    AppStrings.onCallFinishedTitle.tr(context),
-                    style: TextStyle(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Image.asset(
-                    "assets/images/sessionEnd.png",
-                    width: 150.sp,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    AppStrings.onCallFinishedDescription.tr(context),
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+            builder: (BuildContext context) => CallEndedDialog(
+              teacherUid: teacherModel.uid,
             ),
           );
           AppReviewService.showReviewPromptIfNeeded();

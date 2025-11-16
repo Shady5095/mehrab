@@ -13,8 +13,6 @@ import 'package:mehrab/core/widgets/buttons_widget.dart';
 import 'package:mehrab/core/widgets/my_text_field.dart';
 import 'package:mehrab/features/teacher_call/presentation/manager/rate_session_cubit/rate_session_cubit.dart';
 import 'package:mehrab/features/teacher_call/presentation/widgets/quran_surah_dialog.dart';
-
-import '../../../../core/widgets/app_cusstom_drop_down_menu.dart';
 import '../../../../core/widgets/my_appbar.dart';
 import '../../../../core/widgets/show_date_time_picker.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
@@ -183,46 +181,16 @@ class RateSessionScreenBody extends StatelessWidget {
                           ),
                         ],
                         const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CustomDropDownMenu(
-                                dropdownItems: cubit.records,
-                                value: cubit.record,
-                                onChanged: (value) {
-                                  cubit.changeRecord(value);
-                                },
-                                label: AppStrings.record.tr(context),
-                                validator:
-                                    (value) => AppValidator.emptyFiled(
-                                      value,
-                                      context,
-                                      AppStrings.record.tr(context),
-                                    ),
-                              ),
-                            ),
-                            if (cubit.record == "إقراء وإجازة") ...[
-                              const SizedBox(width: 7),
-                              Expanded(
-                                child: CustomDropDownMenu(
-                                  dropdownItems: cubit.qiraatList,
-                                  value: cubit.qiraat,
-                                  onChanged: (value) {
-                                    cubit.qiraat = value;
-                                  },
-                                  label: "الإجازة",
-                                  validator:
-                                      (value) => AppValidator.emptyFiled(
-                                        value,
-                                        context,
-                                        "الإجازة",
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ],
+                        MyTextField(
+                          controller: cubit.recordController,
+                          label: AppStrings.record.tr(context),
+                          keyboardType: TextInputType.text,
+                          validator: (value) => AppValidator.emptyFiled(
+                            value,
+                            context,
+                            AppStrings.record.tr(context),
+                          ),
                         ),
-
                         const SizedBox(height: 10),
                         Row(
                           children: [
@@ -420,7 +388,7 @@ class RateSessionScreenBody extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 5),
                   child: ButtonWidget(
                     onPressed: () {
-                      if (cubit.formKey.currentState!.validate() ||
+                      if (cubit.formKey.currentState!.validate() &&
                           cubit.checkIfStudentRated()) {
                         cubit.updateSession();
                       }

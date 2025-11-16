@@ -16,7 +16,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class UpdateHelper {
+class GithubApkUpdateHelper {
   static const String versionUrl =
       'https://raw.githubusercontent.com/Shady5095/mehrab-apk-download/main/version.json';
 

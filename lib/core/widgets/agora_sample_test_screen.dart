@@ -3,7 +3,7 @@ import 'package:mehrab/core/utilities/services/sensitive_app_constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 
-class AgoraCallService {
+class AgoraCallServiceSampleTest {
   final String appId;
   late final RtcEngine _engine;
 
@@ -15,7 +15,7 @@ class AgoraCallService {
   Function(int uid)? onUserOffline;
   Function()? onJoinSuccess;
 
-  AgoraCallService({required this.appId});
+  AgoraCallServiceSampleTest({required this.appId});
 
   /// تهيئة Agora (مرة واحدة فقط)
   Future<void> initialize() async {
@@ -91,7 +91,7 @@ class CallPage extends StatefulWidget {
 }
 
 class _CallPageState extends State<CallPage> {
-  late AgoraCallService callService;
+  late AgoraCallServiceSampleTest callService;
 
   bool joined = false;
   int? remoteUid;
@@ -103,7 +103,7 @@ class _CallPageState extends State<CallPage> {
   }
 
   Future<void> setupCall() async {
-    callService = AgoraCallService(appId: widget.appId);
+    callService = AgoraCallServiceSampleTest(appId: widget.appId);
 
     callService.onJoinSuccess = () {
       setState(() => joined = true);

@@ -132,6 +132,9 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       isCallConnected = true;
       playAnswerSound();
       HapticFeedback.vibrate();
+      if (Platform.isIOS) {
+        callService.switchSpeaker(true);
+      }
       emit(TeacherCallInitial());
     };
     callService.onRemoteVideoStateChanged = (uid, enabled) {

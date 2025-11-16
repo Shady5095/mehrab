@@ -62,7 +62,6 @@ class TeacherCommentList extends StatelessWidget {
                         context: context,
                         builder:
                             (newContext) => AddCommentDialog(
-                              oldContext: context,
                               teacherUid: model.uid,
                               oldComment: null,
                               oldRating: null,
@@ -145,7 +144,6 @@ class TeacherCommentList extends StatelessWidget {
                       context: context,
                       builder:
                           (newContext) => AddCommentDialog(
-                            oldContext: context,
                             teacherUid: model.uid,
                             oldComment: myCommentModel.comment,
                             oldRating: myCommentModel.rating.toDouble(),

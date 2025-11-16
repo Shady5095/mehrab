@@ -37,11 +37,12 @@ class RateSessionCubit extends Cubit<RateSessionState> {
     emit(RateSessionUpdated());
   }
 
-  String? record;
+  //String? record;
 
   String? qiraat;
 
   TextEditingController fromSurahController = TextEditingController();
+  TextEditingController recordController = TextEditingController();
   TextEditingController toSurahController = TextEditingController();
   TextEditingController fromAyahController = TextEditingController();
   TextEditingController toAyahController = TextEditingController();
@@ -72,11 +73,11 @@ class RateSessionCubit extends Cubit<RateSessionState> {
     'قراءة يعقوب',
   ];
 
-  void changeRecord(String? value) {
+  /*void changeRecord(String? value) {
     record = value;
     qiraat = null;
     emit(RateSessionInitial());
-  }
+  }*/
 
   bool isStudentRated = true;
 
@@ -99,7 +100,7 @@ class RateSessionCubit extends Cubit<RateSessionState> {
     try {
       await db.collection('calls').doc(callModel.callId).update({
         'rating': rating,
-        if (record != null) 'record': record,
+        if (recordController.text.isNotEmpty) 'record': recordController.text,
         if (qiraat != null) 'qiraat': qiraat,
         if (fromSurahController.text.isNotEmpty)
           'fromSurah': fromSurahController.text,
@@ -131,7 +132,7 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   void fillControllersWithExistingData(BuildContext context) {
     if (!isEditMode) return;
     rating = callModel.rating?.toDouble() ?? 0;
-    record = callModel.record?.trim();
+    recordController.text = callModel.record?.trim()??'';
     qiraat = callModel.qiraat;
     fromSurahController.text = callModel.fromSurah ?? '';
     toSurahController.text = callModel.toSurah ?? '';

@@ -256,6 +256,9 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       startCallTimer();
       playAnswerSound();
       HapticFeedback.vibrate();
+      if (Platform.isIOS) {
+        callService.switchSpeaker(true);
+      }
       emit(AnotherUserJoinedSuccessfully());
     };
     callService.onUserLeft = (uid) async {
