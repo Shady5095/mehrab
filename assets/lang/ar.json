@@ -1229,5 +1229,7 @@
   "followUs": "تابعنا علي",
   "accountSignedWithAnotherMethod": "هذا الايميل مسجل من قبل عن طريق تسجيل الدخول العادي وليس عن طريق جوجل, برجاء تسجيل الدخول عن طريق البريد الالكتروني وكلمة السر الخاصة بك",
   "favoriteIgaz": "الإجازة المفضلة",
-  "rateTeacherNow": "قيم المعلم الآن"
+  "rateTeacherNow": "قيم المعلم الآن",
+  "yourAccountWasDeleted": "تم حذف حسابك",
+  "yourAccountWasDeletedDescription": "تم حذف حسابك من قبل الإدارة. إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع الدعم الفني."
 }

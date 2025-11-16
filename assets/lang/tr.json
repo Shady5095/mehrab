@@ -1229,5 +1229,7 @@
   "followUs": "Bizi Takip Edin",
   "accountSignedWithAnotherMethod": "Bu e-posta adresi Google üzerinden değil, normal giriş yoluyla zaten kayıtlı. Lütfen e-posta adresinizi ve şifrenizi kullanarak giriş yapın.",
   "favoriteIgaz": "Favori İcazetler",
-  "rateTeacherNow": "Öğretmeni Şimdi Değerlendir"
+  "rateTeacherNow": "Öğretmeni Şimdi Değerlendir",
+  "yourAccountWasDeleted": "Hesabınız Silindi",
+  "yourAccountWasDeletedDescription": "Hesabınız yönetim tarafından silindi. Bunun bir hata olduğunu düşünüyorsanız, lütfen teknik destekle iletişime geçin."
 }

@@ -1,22 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
-import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
+import 'package:mehrab/features/authentication/data/user_model.dart';
 import '../../../../../core/utilities/functions/toast.dart';
 import '../../../../../core/utilities/resources/colors.dart';
 import '../../../../../core/utilities/resources/strings.dart';
 import '../../../../../core/widgets/buttons_widget.dart';
 import '../../../../../core/widgets/my_alert_dialog.dart';
 
-class TeacherDeleteConfigurationDialog extends StatefulWidget {
-  final TeacherModel teacherModel;
-  const TeacherDeleteConfigurationDialog({super.key, required this.teacherModel});
+class StudentDeleteConfigurationDialog extends StatefulWidget {
+  final UserModel userModel;
+  const StudentDeleteConfigurationDialog({super.key, required this.userModel});
 
   @override
-  State<TeacherDeleteConfigurationDialog> createState() => _DeleteConfigurationDialog();
+  State<StudentDeleteConfigurationDialog> createState() => _DeleteConfigurationDialog();
 }
 
-class _DeleteConfigurationDialog extends State<TeacherDeleteConfigurationDialog> {
+class _DeleteConfigurationDialog extends State<StudentDeleteConfigurationDialog> {
 
   bool isLoading = false;
 
@@ -29,7 +29,7 @@ class _DeleteConfigurationDialog extends State<TeacherDeleteConfigurationDialog>
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '${AppStrings.areYouSureYouWantToDelete.tr(context)} ${AppStrings.teacher.tr(context)}',
+            '${AppStrings.areYouSureYouWantToDelete.tr(context)} الطالب',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16.sp),
           ),
@@ -72,10 +72,10 @@ class _DeleteConfigurationDialog extends State<TeacherDeleteConfigurationDialog>
               onPressed: () {
                 isLoading = true;
                 setState(() {});
-                FirebaseFirestore.instance.collection("users").doc(widget.teacherModel.uid).delete().then((
+                FirebaseFirestore.instance.collection("users").doc(widget.userModel.uid).delete().then((
                   value,
                 ) {
-                      myToast(msg: "تم حذف المعلم بنجاح", state: ToastStates.success);
+                      myToast(msg: "تم حذف الطالب بنجاح", state: ToastStates.success);
                       if(!context.mounted)return;
                       context.pop();
                 }).catchError((error){

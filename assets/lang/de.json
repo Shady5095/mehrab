@@ -1229,5 +1229,7 @@
   "followUs": "Folgen Sie uns auf sozialen Medien",
   "accountSignedWithAnotherMethod": "Diese E-Mail-Adresse ist bereits über den regulären Login registriert, nicht über Google. Bitte melden Sie sich mit Ihrer E-Mail-Adresse und Ihrem Passwort an.",
   "favoriteIgaz": "Bevorzugte Igāzāt (Zertifizierungen)",
-  "rateTeacherNow": "Bewerten Sie den Lehrer jetzt"
+  "rateTeacherNow": "Bewerten Sie den Lehrer jetzt",
+  "yourAccountWasDeleted": "Ihr Konto wurde gelöscht",
+  "yourAccountWasDeletedDescription": "Ihr Konto wurde von der Administration gelöscht. Sollten Sie der Meinung sein, dass dies ein Fehler ist, kontaktieren Sie bitte den technischen Support."
 }

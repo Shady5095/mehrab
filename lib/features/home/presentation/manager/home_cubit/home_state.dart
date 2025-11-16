@@ -32,14 +32,9 @@ class NotificationsRefresh extends HomeState {}
 
 class ChangeTeacherAvailabilityState extends HomeState {}
 
-class ToggleTeacherFavErrorState extends HomeState {
-  final String error;
-
-  ToggleTeacherFavErrorState(this.error);
-}
-
 class ErrorWhileCreateMeeting extends HomeState {
   final String error;
 
   ErrorWhileCreateMeeting(this.error);
 }
+class AccountWasDeleted extends HomeState {}

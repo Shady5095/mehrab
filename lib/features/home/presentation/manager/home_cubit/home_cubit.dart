@@ -60,55 +60,71 @@ class HomeCubit extends Cubit<HomeState> {
   TeacherModel? teacherModel;
 
   Future<void> getUserData(BuildContext context) async {
-    String? uid = CacheService.uid;
-    if (uid == null || uid.isEmpty) {
-      return;
+    try {
+      String? uid = CacheService.uid;
+
+      if (uid == null || uid.isEmpty) {
+        return;
+      }
+
+      if (userModel != null) {
+        return;
+      }
+
+      emit(GetUserDataWaitingState());
+
+      final doc = await db.collection("users").doc(uid).get();
+
+      if (!doc.exists) {
+        emit(AccountWasDeleted());
+
+        return;
+      }
+
+      // ------------------- Parse User -------------------
+      userModel = UserModel.fromJson(doc.data() ?? {});
+      await cacheRole(userModel?.userRole ?? '');
+      myUid = uid;
+      currentUserModel = userModel;
+
+      // ------------------- Roles ------------------------
+      if (userModel?.userRole == "admin") {
+        AppConstants.isAdmin = true;
+        getStudentsCount();
+      } else if (userModel?.userRole == "teacher") {
+        AppConstants.isTeacher = true;
+
+        teacherModel = TeacherModel.fromJson(doc.data() ?? {});
+        currentTeacherModel = teacherModel;
+
+        favoriteStudentsCount =
+            teacherModel?.favoriteStudentsUid.length ?? 0;
+        teacherAvailability = teacherModel?.isOnline ?? false;
+
+        getTeacherRatingAndComments();
+
+        if (context.mounted) {
+          listenToTeacherNewCalls(context);
+        }
+
+        getMissedCallsCount();
+      } else {
+        AppConstants.isStudent = true;
+      }
+
+      // ------------------- Counters --------------------
+      await getFavoriteTeachersCount();
+
+      getNotificationsCount();
+
+      emit(GetUserDataSuccessState());
+
+    } catch (error) {
+      emit(GetUserDataErrorState(error.toString()));
+      printWithColor(error.toString());
     }
-    if (userModel != null) {
-      return;
-    }
-    emit(GetUserDataWaitingState());
-    await db
-        .collection("users")
-        .doc(uid)
-        .get()
-        .then((value) async {
-          if (value.exists) {
-            userModel = UserModel.fromJson(value.data() ?? {});
-            await cacheRole(userModel?.userRole ?? '');
-            myUid = uid;
-            currentUserModel = userModel;
-            if (userModel?.userRole == "admin") {
-              AppConstants.isAdmin = true;
-            } else if (userModel?.userRole == "teacher") {
-              AppConstants.isTeacher = true;
-              teacherModel = TeacherModel.fromJson(value.data() ?? {});
-              currentTeacherModel = teacherModel;
-              favoriteStudentsCount =
-                  teacherModel?.favoriteStudentsUid.length ?? 0;
-              teacherAvailability = teacherModel?.isOnline ?? false;
-              getTeacherRatingAndComments();
-              if (context.mounted) {
-                listenToTeacherNewCalls(context);
-              }
-              getMissedCallsCount();
-            } else {
-              AppConstants.isStudent = true;
-            }
-            await getFavoriteTeachersCount();
-            getStudentsCount();
-            getNotificationsCount();
-            emit(GetUserDataSuccessState());
-          } else {
-            emit(GetUserDataErrorState("User data not found"));
-            printWithColor("User data not found");
-          }
-        })
-        .catchError((error) {
-          emit(GetUserDataErrorState(error.toString()));
-          printWithColor(error.toString());
-        });
   }
+
 
   Future<void> cacheRole(String role) async {
     if (CacheService.getData(key: AppConstants.userRole) == role) {

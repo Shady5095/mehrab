@@ -60,7 +60,7 @@ class TeachersBottomSheetActions extends StatelessWidget {
               BottomSheetItem(
                 onTap: () {
                   Navigator.pop(context);
-                  showDialog(context: context, builder: (context)=>DeleteConfigurationDialog(teacherModel: teacherModel,));
+                  showDialog(context: context, builder: (context)=>TeacherDeleteConfigurationDialog(teacherModel: teacherModel,));
 
                 },
                 icon: Icons.delete,

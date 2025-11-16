@@ -1228,5 +1228,7 @@
   "followUs": "Follow Us",
   "accountSignedWithAnotherMethod": "This email address is already registered via regular login, not Google. Please log in using your email address and password.",
   "favoriteIgaz": "Favorite Igaz",
-  "rateTeacherNow": "Rate Teacher Now"
+  "rateTeacherNow": "Rate Teacher Now",
+  "yourAccountWasDeleted": "Your Account Was Deleted",
+  "yourAccountWasDeletedDescription": "Your account has been deleted by the system administrator. For more information, please contact the administration."
 }
