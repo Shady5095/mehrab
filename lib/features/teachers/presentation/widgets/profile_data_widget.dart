@@ -36,6 +36,7 @@ class _UserProfileDataState extends State<UserProfileData> {
     AppStrings.curriculum,
     AppStrings.compatibility,
     AppStrings.universityDegree,
+    AppStrings.nationality,
     if(AppConstants.isAdmin)
     AppStrings.email,
     if(AppConstants.isAdmin)
@@ -71,6 +72,7 @@ class _UserProfileDataState extends State<UserProfileData> {
       widget.model.curriculum,
       widget.model.compatibility,
       widget.model.school,
+      widget.model.nationality,
       if(AppConstants.isAdmin)
       widget.model.email,
       if(AppConstants.isAdmin)

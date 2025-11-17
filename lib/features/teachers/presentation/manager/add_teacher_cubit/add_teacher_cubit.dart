@@ -96,6 +96,7 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
   TextEditingController compatibilityController = TextEditingController();
   TextEditingController schoolController = TextEditingController();
   TextEditingController igazahController = TextEditingController();
+  TextEditingController nationalityController = TextEditingController();
 
 
   void generatePassword() {
@@ -153,6 +154,7 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
     minutesCount: teacherModel?.minutesCount ?? 0,
     isBusy: teacherModel?.isBusy ?? false,
     rateCount: teacherModel?.rateCount ?? 0,
+    nationality: nationalityController.text.trim().isEmpty ? null : nationalityController.text.trim(),
   );
   Future<void> signUpWithEmailAndPassword(BuildContext context) async {
     try {
@@ -283,6 +285,7 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
     schoolController.text = teacherModel!.school ?? '';
     igazahController.text = teacherModel!.igazah ?? '';
     igazPdfUrl = teacherModel!.igazPdfUrl;
+    nationalityController.text = teacherModel?.nationality ?? '';
   }
 
   Future<void> updateTeacher() async {

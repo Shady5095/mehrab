@@ -538,6 +538,31 @@ class AddTeacherScreenBody extends StatelessWidget {
                             ),
                           ),
                         ),
+                        MyTextField(
+                          label:
+                              "${AppStrings.nationality.tr(context)} ${AppStrings.optional.tr(context)}",
+                          controller: cubit.nationalityController,
+                          keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.next,
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
+                          ),
+                          errorBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.red),
+                          ),
+                          disabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.invertedColor,
+                            ),
+                          ),
+                        ),
                         CircleToggleButtonGridView(
                           height: 5.hR,
                           length: 2,

@@ -30,6 +30,7 @@ class TeacherModel {
    String? igazPdfUrl ;
    num minutesCount = 0;
    num sessionsCount = 0;
+   String? nationality;
 
   TeacherModel({
     required this.uid,
@@ -60,6 +61,7 @@ class TeacherModel {
     this.sessionsCount = 0,
     this.rateCount = 0,
     this.isBusy = false,
+    this.nationality,
   });
 
   factory TeacherModel.fromJson(Map<String, dynamic> json) {
@@ -92,6 +94,7 @@ class TeacherModel {
       minutesCount: json['totalMinutes']??0,
       sessionsCount: json['totalSessions']??0,
       rateCount: json['rateCount']??0,
+      nationality: json["nationality"],
     );
   }
 
@@ -125,6 +128,7 @@ class TeacherModel {
       'totalMinutes': minutesCount,
       'totalSessions': sessionsCount,
       'rateCount': rateCount,
+      'nationality':nationality,
     };
   }
 
@@ -157,6 +161,8 @@ class TeacherModel {
     String? igazPdfUrl,
     num ? minutesCount,
     num ? sessionsCount,
+    int ? rateCount,
+    String ? nationality,
   }) {
     return TeacherModel(
       uid: uid ?? this.uid,
@@ -186,6 +192,8 @@ class TeacherModel {
       igazPdfUrl:  igazPdfUrl ?? this.igazPdfUrl,
       minutesCount: minutesCount ?? this.minutesCount,
       sessionsCount: sessionsCount ?? this.sessionsCount,
+      rateCount: rateCount ?? this.rateCount,
+      nationality: nationality ?? this.nationality
     );
   }
 }
