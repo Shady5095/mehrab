@@ -138,7 +138,7 @@ class TeachersCubit extends Cubit<TeachersState> {
             : AppConstants.isAdmin
             ? db
                 .collection('users')
-                .where("userRole", isEqualTo: "teacher")
+                .where("userRole", whereIn: ["teacher", "teacherTest"])
                 .orderBy("isOnline", descending: true)
                 .orderBy("lastActive", descending: true)
                 .orderBy("name", descending: false)

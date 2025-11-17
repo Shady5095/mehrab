@@ -34,7 +34,7 @@ class UserNameAndPhotoWidget extends StatelessWidget {
       return;
     }
 
-    if (currentUserModel?.userRole == "teacher") {
+    if (AppConstants.isTeacher) {
       context
           .navigateTo(
         pageName: AppRoutes.myProfileScreenTeacher,

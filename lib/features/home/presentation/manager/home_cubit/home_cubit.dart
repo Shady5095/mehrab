@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
+import 'package:mehrab/core/utilities/functions/internet_connection.dart';
 import 'package:mehrab/core/utilities/functions/print_with_color.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/utilities/services/cache_service.dart';
@@ -91,7 +92,7 @@ class HomeCubit extends Cubit<HomeState> {
       if (userModel?.userRole == "admin") {
         AppConstants.isAdmin = true;
         getStudentsCount();
-      } else if (userModel?.userRole == "teacher") {
+      } else if (userModel?.userRole == "teacher" || userModel?.userRole == "teacherTest") {
         AppConstants.isTeacher = true;
 
         teacherModel = TeacherModel.fromJson(doc.data() ?? {});
@@ -273,37 +274,57 @@ class HomeCubit extends Cubit<HomeState> {
 
   bool teacherAvailability = false;
 
-  void changeTeacherAvailability(bool value, BuildContext context) {
+  Future<void> changeTeacherAvailability(bool value, BuildContext context) async {
+    final bool oldValue = teacherAvailability;
     teacherAvailability = value;
-    db
-        .collection('users')
-        .doc(myUid)
-        .update({"isOnline": teacherAvailability, 'isBusy': false})
-        .then((value) {
-          if (!context.mounted) return;
-          if (teacherAvailability) {
-            myToast(
-              msg: AppStrings.youAreNowAvailable.tr(context),
-              state: ToastStates.success,
-            );
-          } else {
-            myToast(
-              msg: AppStrings.youAreNowNotAvailable.tr(context),
-              state: ToastStates.normal,
-            );
-            setLastActive();
-          }
-        })
-        .catchError((error) {
-          teacherAvailability = !teacherAvailability;
-          myToast(
-            msg: "Failed to update availability",
-            state: ToastStates.error,
-          );
-        });
-    notifyMyFavStudentsAboutMyAvailability();
     emit(ChangeTeacherAvailabilityState());
+
+    if(!await checkInternet()){
+      teacherAvailability = oldValue;
+      emit(ChangeTeacherAvailabilityStateError("No Internet Connection"));
+
+      myToast(
+        msg: "تحقق من الاتصال بالانترنت",
+        state: ToastStates.error,
+      );
+      return;
+    }
+    try {
+      await db.collection('users').doc(myUid).update({
+        "isOnline": teacherAvailability,
+        "isBusy": false,
+      });
+
+      if (!context.mounted) return;
+
+      if (teacherAvailability) {
+        myToast(
+          msg: AppStrings.youAreNowAvailable.tr(context),
+          state: ToastStates.success,
+        );
+      } else {
+        myToast(
+          msg: AppStrings.youAreNowNotAvailable.tr(context),
+          state: ToastStates.normal,
+        );
+        setLastActive();
+      }
+
+      notifyMyFavStudentsAboutMyAvailability();
+
+    } catch (error) {
+      teacherAvailability = oldValue;
+      emit(ChangeTeacherAvailabilityStateError(error.toString()));
+
+      myToast(
+        msg: "Failed to update availability",
+        state: ToastStates.error,
+      );
+
+      printWithColor("[changeTeacherAvailability] ERROR: $error");
+    }
   }
+
 
   void notifyMyFavStudentsAboutMyAvailability() {
     if (!teacherAvailability) {

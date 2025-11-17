@@ -186,7 +186,7 @@ class MainAppCubit extends Cubit<MainAppStates> {
     if (CacheService.uid != null) {
       if (CacheService.userRole == "student" ||
           CacheService.userRole == "admin" ||
-          CacheService.userRole == "teacher") {
+          CacheService.userRole == "teacher" || CacheService.userRole == "teacherTest") {
         return AppRoutes.homeLayoutRoute;
       }
     } else if (CacheService.getData(key: 'onBoarding') != true) {

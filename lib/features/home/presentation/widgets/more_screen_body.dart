@@ -37,7 +37,7 @@ class MoreScreenBody extends StatelessWidget {
                       HomeCubit.instance(context).userModel == null) {
                     return;
                   }
-                  if (currentUserModel?.userRole == "teacher") {
+                  if (AppConstants.isTeacher) {
                     context
                         .navigateTo(
                       pageName: AppRoutes.myProfileScreenTeacher,
