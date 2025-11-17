@@ -11,6 +11,7 @@ import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.
 import 'package:mehrab/features/home/presentation/widgets/user_name_and_photo_widget.dart';
 
 import '../../../../core/config/routes/app_routes.dart';
+import '../../../../core/utilities/resources/constants.dart';
 import '../../../../core/widgets/app_filter_icon.dart';
 import 'home_items_icons.dart';
 import 'home_items_icons_shimmer.dart';
@@ -255,7 +256,7 @@ class HomeViewBody extends StatelessWidget {
                             ),
                           ),
                           if (cubit.userModel != null &&
-                              cubit.userModel?.userRole == "teacher")
+                              AppConstants.isTeacher)
                             Padding(
                               padding: const EdgeInsets.only(top: 10.0, left: 20, right: 20),
                               child: Container(
