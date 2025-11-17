@@ -310,6 +310,7 @@ class RateSessionCubit extends Cubit<RateSessionState> {
       );
       if (difference.inSeconds <= 120) {
         isSessionHasConnectionError = true;
+        emit(RateSessionInitial());
       }
     }
   }

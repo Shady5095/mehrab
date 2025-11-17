@@ -386,7 +386,7 @@ class HomeCubit extends Cubit<HomeState> {
         .doc(callDocId)
         .update({
           "status": "answered",
-          "acceptedTime": FieldValue.serverTimestamp(),
+          "answeredTime": FieldValue.serverTimestamp(),
         })
         .then((value) async {})
         .catchError((error) {});

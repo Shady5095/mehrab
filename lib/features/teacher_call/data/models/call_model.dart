@@ -66,7 +66,7 @@ class CallModel {
       teacherPhoto: map['teacherPhoto'],
       status: map['status'] ?? '',
       meetingLink: map['meetingLink'],
-      acceptedTime: map['answeredTime'],
+      acceptedTime: map['answeredTime']??map['acceptedTime'],
       rating: map['rating'],
       endedTime: map['endedTime'],
       record: map['record'],

@@ -25,6 +25,7 @@ class TeacherModel {
    Timestamp? lastActive;
    Timestamp? joinedAt;
    double averageRating;
+   int rateCount;
    List<String> favoriteStudentsUid ;
    String? igazPdfUrl ;
    num minutesCount = 0;
@@ -57,6 +58,7 @@ class TeacherModel {
     this.igazPdfUrl,
     this.minutesCount = 0,
     this.sessionsCount = 0,
+    this.rateCount = 0,
     this.isBusy = false,
   });
 
@@ -89,6 +91,7 @@ class TeacherModel {
       igazPdfUrl: json['igazPdfUrl'],
       minutesCount: json['totalMinutes']??0,
       sessionsCount: json['totalSessions']??0,
+      rateCount: json['rateCount']??0,
     );
   }
 
@@ -121,6 +124,7 @@ class TeacherModel {
       'igazPdfUrl': igazPdfUrl,
       'totalMinutes': minutesCount,
       'totalSessions': sessionsCount,
+      'rateCount': rateCount,
     };
   }
 

@@ -110,7 +110,7 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
                         ),
                         SizedBox(height: 5),
                         Text(
-                          formatTime(context, widget.model.timestamp),
+                          formatTime(context, widget.model.acceptedTime?? widget.model.timestamp),
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.black,
@@ -147,7 +147,7 @@ class _SessionItemForStudentsState extends State<SessionItemForStudents> {
                         SizedBox(height: 5),
                         Text(
                           getDurationString(
-                            widget.model.timestamp,
+                            widget.model.acceptedTime?? widget.model.timestamp,
                             widget.model.endedTime,
                             isArabic(context),
                           ),

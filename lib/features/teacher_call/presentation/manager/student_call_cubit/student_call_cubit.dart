@@ -402,7 +402,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       final formattedTime = _formatDuration(_elapsedTime);
       _callTimerController.add(formattedTime);
 
-      // 🆕 Update notification كل 5 ثواني للطالب بس
+
       if (_elapsedTime.inSeconds % 1 == 0 && Platform.isAndroid) {
         CallForegroundService.updateCallService(
           callerName: teacherModel.name,

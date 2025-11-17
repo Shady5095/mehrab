@@ -112,6 +112,7 @@ class CallKitParamsBuilder {
       missedCallNotification: const NotificationParams(
         showNotification: true,
         subtitle: 'مكالمة فائتة من محراب القرآن',
+        isShowCallback: false,
       ),
       extra: extraData,
       headers: <String, dynamic>{'platform': 'flutter'},

@@ -96,14 +96,22 @@ class TeacherItem extends StatelessWidget {
                       SizedBox(height: 5),
                       Row(
                         children: [
-                          Icon(Icons.star, color: Colors.amber, size: 17.sp),
-                          SizedBox(width: 3),
                           Text(
-                            teacher.averageRating.toStringAsFixed(1),
+                          teacher.averageRating.toStringAsFixed(1),
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                          SizedBox(width: 2),
+                          Icon(Icons.star, color: Colors.amber, size: 17.sp),
+                          SizedBox(width: 2),
+                          Text(
+                            "(${teacher.rateCount})",
                             style: TextStyle(
                               fontSize: 14.sp,
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w600,
+                              color: Colors.black54,
                             ),
                           ),
                         ],

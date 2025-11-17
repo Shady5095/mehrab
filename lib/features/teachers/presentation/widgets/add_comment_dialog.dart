@@ -187,6 +187,9 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
       }
       rateTeacherPushNotification(teacherUid, newRating.toInt(),
           comment: comment);
+      if(widget.oldRating == null){
+        increaseTeacherRateCount(teacherUid);
+      }
     } catch (error) {
       printWithColor(error);
     }
@@ -204,5 +207,15 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
       dataInNotification: {"type": "studentRate"},
       topic: teacherUid,
     );
+  }
+
+  Future<void> increaseTeacherRateCount(String teacherUid) async {
+    try {
+      FirebaseFirestore.instance.collection("users").doc(teacherUid).update({
+        'rateCount': FieldValue.increment(1),
+      });
+    } catch (error) {
+      printWithColor(error);
+    }
   }
 }

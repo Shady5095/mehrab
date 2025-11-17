@@ -152,6 +152,7 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
     sessionsCount: teacherModel?.sessionsCount ?? 0,
     minutesCount: teacherModel?.minutesCount ?? 0,
     isBusy: teacherModel?.isBusy ?? false,
+    rateCount: teacherModel?.rateCount ?? 0,
   );
   Future<void> signUpWithEmailAndPassword(BuildContext context) async {
     try {
@@ -380,5 +381,25 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
       printWithColor("PDFKit upload error: $e");
       emit(RegisterErrorState("PDF upload failed"));
     }
+  }
+
+  // dispose controllers
+  @override
+  Future<void> close() {
+    nameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    passwordController.dispose();
+    experienceController.dispose();
+    specializationController.dispose();
+    foundationalTextsController.dispose();
+    categoriesController.dispose();
+    tracksController.dispose();
+    compositionsController.dispose();
+    curriculumController.dispose();
+    compatibilityController.dispose();
+    schoolController.dispose();
+    igazahController.dispose();
+    return super.close();
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -28,6 +29,9 @@ class IncomingCallDialog extends StatefulWidget {
 
 class _IncomingCallDialogState extends State<IncomingCallDialog> {
   final AudioPlayer _player = AudioPlayer();
+  Timer? _countdownTimer;
+  int _countdown = 10;
+  bool _isEnabled = false;
 
   Future<void> playSound() async {
     _player.setReleaseMode(ReleaseMode.loop);
@@ -38,14 +42,29 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
     await _player.stop();
   }
 
+  void _startCountdown() {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_countdown > 0) {
+          _countdown--;
+        } else {
+          _isEnabled = true;
+          timer.cancel();
+        }
+      });
+    });
+  }
+
   @override
   void initState() {
-    //playSound();
     super.initState();
+    //playSound();
+    _startCountdown();
   }
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     //stopSound();
     super.dispose();
   }
@@ -116,38 +135,86 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
                   AppStrings.wantsToJoinSession.tr(context),
                   style: TextStyle(fontSize: 16.sp, color: Colors.grey),
                 ),
+                if (!_isEnabled)
+                SizedBox(height: 10.sp),
+                if (!_isEnabled)
+                Text(
+                  textAlign: TextAlign.center,
+                  "برجاء انتظار المكالمه التي ستأتي من الاشعارات والرد منها, اذا لم تأتي المكالمه ف الاشعارات خلال 10 ثواني قم بالرد من هنا",
+                  style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                ),
                 SizedBox(height: 20.sp),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    CircleAvatar(
-                      radius: 25.sp,
-                      backgroundColor: Colors.red,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.call_end,
-                          color: Colors.white,
-                          size: 25.sp,
-                        ),
-                        onPressed: () {
+                    // Decline Button
+                    Opacity(
+                      opacity: _isEnabled ? 1.0 : 0.4,
+                      child: InkWell(
+                        onTap: _isEnabled
+                            ? () {
                           widget.cubit.declineCall(widget.model.callId);
-                          widget.cubit.isDialogShowing =false;
+                          widget.cubit.isDialogShowing = false;
                           context.pop();
-                        },
+                        }
+                            : null,
+                        borderRadius: BorderRadius.circular(25.sp),
+                        child: CircleAvatar(
+                          radius: 27.sp,
+                          backgroundColor: _isEnabled ? Colors.red : Colors.red.withValues(alpha: 0.5),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.call_end,
+                                color: Colors.white,
+                                size: 22.sp,
+                              ),
+                              if (!_isEnabled)
+                                Text(
+                                  '$_countdown',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                    CircleAvatar(
-                      radius: 25.sp,
-                      backgroundColor: Colors.green,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.call,
-                          color: Colors.white,
-                          size: 25.sp,
+                    // Accept Button
+                    Opacity(
+                      opacity: _isEnabled ? 1.0 : 0.4,
+                      child: InkWell(
+                        onTap: _isEnabled ? () async => onTapAccept() : null,
+                        borderRadius: BorderRadius.circular(25.sp),
+                        child: CircleAvatar(
+                          radius: 27.sp,
+                          backgroundColor: _isEnabled ? Colors.green : Colors.green.withValues(alpha: 0.5),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.call,
+                                color: Colors.white,
+                                size: 22.sp,
+                              ),
+                              if (!_isEnabled)
+                                Text(
+                                  '$_countdown',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                        onPressed: () async {
-                          onTapAccept();
-                        },
                       ),
                     ),
                   ],
@@ -161,10 +228,10 @@ class _IncomingCallDialogState extends State<IncomingCallDialog> {
   }
 
   void onTapAccept() {
-   // stopSound();
+    // stopSound();
     context.pop();
-    widget.cubit.isDialogShowing =false;
+    widget.cubit.isDialogShowing = false;
     widget.cubit.acceptCall(widget.model.callId);
-    context.navigateTo(pageName: AppRoutes.teacherCallScreen,arguments: [widget.model]);
+    context.navigateTo(pageName: AppRoutes.teacherCallScreen, arguments: [widget.model]);
   }
 }

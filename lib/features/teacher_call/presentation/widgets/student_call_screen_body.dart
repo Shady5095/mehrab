@@ -375,11 +375,12 @@ class StudentCallScreenBody extends StatelessWidget {
                               ),
                             ],
                           ),
-                          SizedBox(height: 20.sp),
+                          SizedBox(height: 10.sp),
                           Text(
                             cubit.teacherModel.name,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 26.sp,
+                              fontSize: 24.sp,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
