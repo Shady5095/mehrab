@@ -19,6 +19,7 @@ class TeacherModel {
    String? school;
    String? igazah;
    String? imageUrl;
+   String? deviceModel;
    bool isMale;
    bool isOnline ;
    bool isBusy ;
@@ -62,6 +63,7 @@ class TeacherModel {
     this.rateCount = 0,
     this.isBusy = false,
     this.nationality,
+    this.deviceModel
   });
 
   factory TeacherModel.fromJson(Map<String, dynamic> json) {
@@ -95,6 +97,7 @@ class TeacherModel {
       sessionsCount: json['totalSessions']??0,
       rateCount: json['rateCount']??0,
       nationality: json["nationality"],
+      deviceModel : json['deviceModel'],
     );
   }
 
@@ -129,6 +132,7 @@ class TeacherModel {
       'totalSessions': sessionsCount,
       'rateCount': rateCount,
       'nationality':nationality,
+      'deviceModel': deviceModel,
     };
   }
 
@@ -163,6 +167,7 @@ class TeacherModel {
     num ? sessionsCount,
     int ? rateCount,
     String ? nationality,
+    String ? deviceModel
   }) {
     return TeacherModel(
       uid: uid ?? this.uid,
@@ -193,7 +198,8 @@ class TeacherModel {
       minutesCount: minutesCount ?? this.minutesCount,
       sessionsCount: sessionsCount ?? this.sessionsCount,
       rateCount: rateCount ?? this.rateCount,
-      nationality: nationality ?? this.nationality
+      nationality: nationality ?? this.nationality,
+        deviceModel: deviceModel ?? this.deviceModel
     );
   }
 }

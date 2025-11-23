@@ -143,7 +143,8 @@ class MyProfileCubit extends Cubit<MyProfileState> {
       imageUrl: imageUrl,
       countryCode: countryCode,
       countryCodeNumber: countryCodeNumber,
-      favoriteIgaz: favoriteIgaz
+      favoriteIgaz: favoriteIgaz,
+      deviceModel: userModel.deviceModel
     );
   }
 

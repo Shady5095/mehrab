@@ -73,6 +73,7 @@ dependencies:
   flutter_callkit_incoming: ^3.0.0
   uuid: ^4.5.1
   flutter_foreground_task: 8.0.0
+  device_info_plus: ^11.5.0
 
 
 
@@ -117,7 +118,7 @@ flutter_native_splash:
   android_12:
     #image: assets/images/android12Splash.png
     color: "#E9F2F7"
-    color_dark: "#191919"
+    color_dark: "#E9F2F7"
     #image_dark: assets/images/android12Splash.png
 
 flutter:

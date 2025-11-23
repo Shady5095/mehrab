@@ -155,6 +155,7 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
     isBusy: teacherModel?.isBusy ?? false,
     rateCount: teacherModel?.rateCount ?? 0,
     nationality: nationalityController.text.trim().isEmpty ? null : nationalityController.text.trim(),
+    deviceModel: teacherModel?.deviceModel,
   );
   Future<void> signUpWithEmailAndPassword(BuildContext context) async {
     try {

@@ -99,7 +99,7 @@ class AppFirebaseNotification {
       }
 
       // Handle incoming call
-      if (message.data['type'] == 'incoming_call') {
+      if (message.data['type'] == 'incoming_call' && AppRouteObserver.currentRouteName != AppRoutes.teacherCallScreen) {
         _showIncomingCall(message.data, context);
       }
     });
@@ -381,6 +381,9 @@ class AppFirebaseNotification {
             if(homeCubit.isDialogShowing && context.mounted){
               Navigator.pop(context);
               homeCubit.isDialogShowing = false;
+            }
+            if(AppRouteObserver.currentRouteName == AppRoutes.teacherCallScreen) {
+             _handleCallDecline(event.body);
             }
           }
           break;

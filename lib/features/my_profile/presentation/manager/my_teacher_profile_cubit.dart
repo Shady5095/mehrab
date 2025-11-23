@@ -132,6 +132,8 @@ class MyTeacherProfileCubit extends Cubit<MyTeacherProfileState> {
       minutesCount: teacherModel.minutesCount,
       isBusy: teacherModel.isBusy,
       rateCount: teacherModel.rateCount,
+      nationality: teacherModel.nationality,
+      deviceModel: teacherModel.deviceModel,
     );
   }
 

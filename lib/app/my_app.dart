@@ -77,6 +77,7 @@ class MyApp extends StatelessWidget {
               themeMode: ThemeMode.light,
               onGenerateRoute: RouteGenerator.generateRoute,
               initialRoute: cubit.checkNextRoute,
+              navigatorObservers: [AppRouteObserver()],
             ),
           );
         },

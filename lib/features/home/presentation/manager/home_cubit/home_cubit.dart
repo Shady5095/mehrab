@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
@@ -11,6 +14,7 @@ import 'package:mehrab/features/authentication/data/user_model.dart';
 import 'package:mehrab/features/sessions/presentation/screens/sessions_screen.dart';
 import 'package:mehrab/features/students/presentation/screens/students_screen.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
+import '../../../../../core/config/routes/app_routes.dart';
 import '../../../../../core/utilities/functions/toast.dart';
 import '../../../../../core/utilities/resources/constants.dart';
 import '../../../../teacher_call/data/models/call_model.dart';
@@ -87,7 +91,7 @@ class HomeCubit extends Cubit<HomeState> {
       await cacheRole(userModel?.userRole ?? '');
       myUid = uid;
       currentUserModel = userModel;
-
+      setDeviceModel(uid, userModel?.deviceModel);
       // ------------------- Roles ------------------------
       if (userModel?.userRole == "admin") {
         AppConstants.isAdmin = true;
@@ -108,6 +112,9 @@ class HomeCubit extends Cubit<HomeState> {
           listenToTeacherNewCalls(context);
         }
 
+        if(teacherModel?.isBusy == true){
+          setTeacherToUnBusy(teacherModel?.uid??'');
+        }
         getMissedCallsCount();
       } else {
         AppConstants.isStudent = true;
@@ -362,6 +369,9 @@ class HomeCubit extends Cubit<HomeState> {
             if ((event.docs.first.data()['status'] == 'ringing') &&
                 !isDialogShowing) {
               if (!context.mounted) return;
+              if(AppRouteObserver.currentRouteName == AppRoutes.teacherCallScreen){
+                return;
+              }
               isDialogShowing = true; // Set flag to prevent multiple dialogs
               showDialog(
                 barrierDismissible: false,
@@ -413,6 +423,58 @@ class HomeCubit extends Cubit<HomeState> {
         .catchError((error) {});
   }
 
+  Future<void> setTeacherToUnBusy(String uid) async {
+    await db.collection('users').doc(uid).update({
+      "isBusy": false,
+    });
+  }
+
+  Future<String> getDeviceModel() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    String deviceName = '';
+    String deviceModel = '';
+
+    if (Platform.isIOS) {
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      deviceName = iosInfo.name;
+      String readableModel = AppConstants.getReadableIOSModel(iosInfo.utsname.machine);
+      deviceModel = readableModel;
+    } else if (Platform.isAndroid) {
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      deviceName = androidInfo.model; // الموديل (مثلاً "SM-G973F")
+      String brand = androidInfo.brand; // البراند (مثلاً "samsung")
+      String fullDeviceName = '$brand $deviceName';
+      deviceModel = fullDeviceName;
+    }
+    return deviceModel;
+  }
+  Future<String> getDeviceVersion() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    String version = '';
+
+    if (Platform.isIOS) {
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      String iosVersion = iosInfo.systemVersion;
+      version = "IOS $iosVersion";
+    } else if (Platform.isAndroid) {
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      String androidVersion = androidInfo.version.release;
+      version = "Android $androidVersion";
+    }
+    return version;
+  }
+
+  Future<void> setDeviceModel(String userUid,String? deviceModel) async {
+    if(deviceModel != null && CacheService.getData(key: "deviceModel") == deviceModel){
+      return;
+    }
+    await db.collection("users").doc(userUid).update({
+      "deviceModel": await getDeviceModel(),
+      "deviceVersion": await getDeviceVersion(),
+    }).then((value) async {
+      CacheService.setData(key: "deviceModel", value: await getDeviceModel());
+    }).catchError((error) {});
+  }
   void onSignOut() {
     userModel = null;
     teacherModel = null;

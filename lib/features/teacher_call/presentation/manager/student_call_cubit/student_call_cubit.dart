@@ -208,6 +208,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     stopSound();
     await Future.delayed(Duration(milliseconds: 300));
     _callTimeoutTimer?.cancel();
+    _callSubscription?.cancel();
     joinAgoraChannel(data.callId);
   }
 

@@ -14,6 +14,7 @@ class UserModel {
   final String userRole;
   final String signInMethod;
   final String? favoriteIgaz;
+  final String? deviceModel;
   final Timestamp joinedAt;
   final bool isMale;
 
@@ -31,6 +32,7 @@ class UserModel {
     required this.userRole,
     required this.signInMethod,
     this.favoriteIgaz,
+    this.deviceModel,
     required this.joinedAt,
     required this.isMale,
   });
@@ -49,6 +51,7 @@ class UserModel {
       signInMethod: json['signInMethod'] as String? ?? '',
       joinedAt: json['joinedAt'] as Timestamp,
       favoriteIgaz: json['favoriteIgaz'] as String?,
+      deviceModel: json['deviceModel'] as String?,
       isMale: json['isMale'] as bool,
       countryCode: json['countryCode'] as String? ?? '',
       countryCodeNumber: json['countryCodeNumber'] as String? ?? '',
@@ -69,6 +72,7 @@ class UserModel {
       'signInMethod': signInMethod,
       'joinedAt': joinedAt,
       'favoriteIgaz': favoriteIgaz,
+      'deviceModel': deviceModel,
       'isMale': isMale,
       'countryCode': countryCode,
       'countryCodeNumber': countryCodeNumber,
