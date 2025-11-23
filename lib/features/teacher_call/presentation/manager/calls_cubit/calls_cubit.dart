@@ -13,11 +13,10 @@ class CallsCubit extends Cubit<CallsState> {
   static CallsCubit get(context) => BlocProvider.of(context);
 
   FirebaseFirestore db = FirebaseFirestore.instance;
-  List<CallModel> inCubitCalls = [];
   Future<void> notifyStudentToCallAgain(CallModel model) async {
     AppFirebaseNotification.pushNotification(
       title: "نأسف لعدم الرد من المعلم",
-      body: "المعلم ${model.teacherName.split(' ').take(2).join(' ')} متاح🟢, عاود الاتصال به الان",
+      body: "المُعلِّم ${model.teacherName.split(' ').take(2).join(' ')} متاح🟢, عاود الاتصال به الان",
       dataInNotification: {},
       topic: model.studentUid,
     );

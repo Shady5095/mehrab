@@ -94,12 +94,12 @@ class CallItem extends StatelessWidget {
                   // ثم إرسال الطلب للسيرفر
                   CallsCubit.get(context).notifyStudentToCallAgain(model);
                 },
-                height: 32,
+                height: 30,
                 width: 45.wR,
                 label: model.notifiedToCallAgain == true
                     ? "تم ابلاغ الطالب بأعادة الاتصال"
                     : "ابلغ الطالب بأعادة الاتصال",
-                labelFontSize: 12.sp,
+                labelFontSize: 11.sp,
                 color: model.notifiedToCallAgain == true
                     ? Colors.grey
                     : AppColors.accentColor,

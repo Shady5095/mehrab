@@ -342,7 +342,7 @@ class HomeCubit extends Cubit<HomeState> {
         topic: studentUid,
         // only take the first name and second if the name contains spaces
         title:
-            "المعلم ${teacherModel?.name.split(' ').take(2).join(' ')} متاح الآن🟢",
+            "المُعلِّم ${teacherModel?.name.split(' ').take(2).join(' ')} متاح الآن🟢",
         dataInNotification: {},
         body: "يمكنك الآن بدء جلسة معه.",
       );
