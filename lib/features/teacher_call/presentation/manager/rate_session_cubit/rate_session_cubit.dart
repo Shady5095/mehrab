@@ -341,7 +341,7 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   Future<void> notifyStudentToTryAgain() async {
     AppFirebaseNotification.pushNotification(
       title: "نأسف لقطع الاتصال يبدو ان هناك مشكله في الخادم",
-      body: "يرجي اعادة الاتصال بالمعلم ${callModel.teacherName.split(' ').take(2).join(' ')} مرة اخري",
+      body: "يرجي اعادة الاتصال بالمُعلِّم ${callModel.teacherName.split(' ').take(2).join(' ')} مرة اخري",
       dataInNotification: {'type': 'call_connection_error'},
       topic: callModel.studentUid,
     );
