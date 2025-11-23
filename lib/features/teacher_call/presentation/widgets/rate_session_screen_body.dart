@@ -13,6 +13,7 @@ import 'package:mehrab/core/widgets/buttons_widget.dart';
 import 'package:mehrab/core/widgets/my_text_field.dart';
 import 'package:mehrab/features/teacher_call/presentation/manager/rate_session_cubit/rate_session_cubit.dart';
 import 'package:mehrab/features/teacher_call/presentation/widgets/quran_surah_dialog.dart';
+import '../../../../core/widgets/app_cusstom_drop_down_menu.dart';
 import '../../../../core/widgets/my_appbar.dart';
 import '../../../../core/widgets/show_date_time_picker.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
@@ -181,15 +182,44 @@ class RateSessionScreenBody extends StatelessWidget {
                           ),
                         ],
                         const SizedBox(height: 10),
-                        MyTextField(
-                          controller: cubit.recordController,
-                          label: AppStrings.record.tr(context),
-                          keyboardType: TextInputType.text,
-                          validator: (value) => AppValidator.emptyFiled(
-                            value,
-                            context,
-                            AppStrings.record.tr(context),
-                          ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: CustomDropDownMenu(
+                                dropdownItems: cubit.records,
+                                value: cubit.record,
+                                onChanged: (value) {
+                                  cubit.changeRecord(value);
+                                },
+                                label: AppStrings.record.tr(context),
+                                validator:
+                                    (value) => AppValidator.emptyFiled(
+                                      value,
+                                      context,
+                                      AppStrings.record.tr(context),
+                                    ),
+                              ),
+                            ),
+                            if (cubit.record == "إقراء وإجازة") ...[
+                              const SizedBox(width: 7),
+                              Expanded(
+                                child: CustomDropDownMenu(
+                                  dropdownItems: cubit.qiraatList,
+                                  value: cubit.qiraat,
+                                  onChanged: (value) {
+                                    cubit.qiraat = value;
+                                  },
+                                  label: "الإجازة",
+                                  validator:
+                                      (value) => AppValidator.emptyFiled(
+                                        value,
+                                        context,
+                                        "الإجازة",
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 10),
                         Row(
@@ -401,32 +431,30 @@ class RateSessionScreenBody extends StatelessWidget {
                     isLoading: state is RateSessionLoading,
                   ),
                 ),
-                if(cubit.isSessionHasConnectionError)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 5, 20, 0),
-                  child: ButtonWidget(
-                    color: Colors.red,
-                    labelFontSize: 13.sp,
-                    onPressed: () {
-                      Navigator.pop(context);
-                      cubit.deleteSession();
-                      cubit.notifyStudentToTryAgain();
-                      myToast(
-                        msg:
-                            "تم ابلاغ الطالب بأعادة الاتصال مره اخري, ابقي متاح ومنتظر مكالمته",
-                        state: ToastStates.normal,
-                        toastLength: Toast.LENGTH_LONG,
-                      );
-                    },
-                    label: "حدث خطأ في الاتصال, ابلغ الطالب بأعادة المحاولة",
+                if (cubit.isSessionHasConnectionError)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 5, 20, 0),
+                    child: ButtonWidget(
+                      color: Colors.red,
+                      labelFontSize: 13.sp,
+                      onPressed: () {
+                        Navigator.pop(context);
+                        cubit.deleteSession();
+                        cubit.notifyStudentToTryAgain();
+                        myToast(
+                          msg:
+                              "تم ابلاغ الطالب بأعادة الاتصال مره اخري, ابقي متاح ومنتظر مكالمته",
+                          state: ToastStates.normal,
+                          toastLength: Toast.LENGTH_LONG,
+                        );
+                      },
+                      label: "حدث خطأ في الاتصال, ابلغ الطالب بأعادة المحاولة",
 
-                    height: 38,
-                    isLoading: state is RateSessionLoading,
+                      height: 38,
+                      isLoading: state is RateSessionLoading,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
+                SizedBox(height: 20),
               ],
             ),
           );
