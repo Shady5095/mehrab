@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/format_date_and_time.dart';
@@ -27,6 +28,7 @@ class TeacherItem extends StatelessWidget {
     List<dynamic> args =
         ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [];
     final bool isFav = args.isNotEmpty ? args[0] as bool : false;
+    final bool isFromTeacherAcc = args.isNotEmpty ? args[1] as bool : false;
     final cubit = TeachersCubit.get(context);
     return Padding(
       padding: EdgeInsets.only(
@@ -123,7 +125,7 @@ class TeacherItem extends StatelessWidget {
                               ? AppStrings.busy.tr(context)
                               : (teacher.isOnline
                                   ? AppStrings.availableNow.tr(context)
-                                  : "${AppStrings.lastActive.tr(context)} : ${formatDate(context, teacher.lastActive)}  : ${formatTime(context, teacher.lastActive)}"),
+                                  : "${AppStrings.lastActive.tr(context)} : ${getDateKey(teacher.lastActive?.toDate(), DateTime.now(), DateTime.now().subtract(Duration(days: 1)), context)} ${formatTime(context, teacher.lastActive)}"),
                           style: TextStyle(
                             fontSize: 11.sp,
                             color:
@@ -137,6 +139,7 @@ class TeacherItem extends StatelessWidget {
                     ],
                   ),
                 ),
+                if(!isFromTeacherAcc)
                 IconButton(
                   onPressed: () async {
                     if (!teacher.isOnline) {
@@ -162,6 +165,7 @@ class TeacherItem extends StatelessWidget {
                                 : Colors.grey),
                   ),
                 ),
+                if(!isFromTeacherAcc)
                 IconButton(
                   onPressed: () async {
                     await cubit.toggleTeacherFav(teacher.uid);
@@ -200,5 +204,23 @@ class TeacherItem extends StatelessWidget {
       return teacher.favoriteStudentsUid.contains(myUid);
     }
     return false; // Placeholder return value
+  }
+  String getDateKey(DateTime? callDate, DateTime now, DateTime yesterday, BuildContext context) {
+    if(callDate == null) {
+      return "--------";
+    }
+    if (isSameDay(callDate, now)) {
+      return "${AppStrings.today.tr(context)} ${AppStrings.atTime.tr(context)}";
+    } else if (isSameDay(callDate, yesterday)) {
+      return "${AppStrings.yesterday.tr(context)} ${AppStrings.atTime.tr(context)}";
+    } else {
+      return "${formatDate(context, Timestamp.fromDate(callDate))} :";
+    }
+  }
+
+  bool isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 }

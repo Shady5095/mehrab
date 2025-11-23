@@ -13,6 +13,7 @@ class TeachersScreenBody extends StatelessWidget {
   Widget build(BuildContext context) {
     List<dynamic> args = ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [];
     final bool isFav = args.isNotEmpty ? args[0] as bool : false;
+    final bool isFromTeacherAcc = args.isNotEmpty ? args[1] as bool : false;
     return BlocProvider(
       create: (context) => TeachersCubit(),
       child: SafeArea(
@@ -22,7 +23,7 @@ class TeachersScreenBody extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: MyAppBar(title: isFav ? AppStrings.favoriteTeachers: AppStrings.teachers, isShowBackButton: isFav,),
+                child: MyAppBar(title: isFav ? AppStrings.favoriteTeachers: AppStrings.teachers, isShowBackButton: isFav || isFromTeacherAcc,),
               ),
               const SizedBox(height: 10,),
                if (!isFav)

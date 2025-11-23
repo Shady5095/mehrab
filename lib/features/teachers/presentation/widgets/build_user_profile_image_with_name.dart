@@ -57,6 +57,7 @@ class UserProfileImageWithName extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
+                        if(!AppConstants.isTeacher)
                         IconButton(
                           onPressed: () {
                             cubit.toggleTeacherFav(teacher.uid);

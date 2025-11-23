@@ -76,6 +76,7 @@ class TeacherCommentItem extends StatelessWidget {
             ),
             if(model.comment != null)
               SizedBox(height: 7),
+            if(model.comment != null && model.comment?.trim() != '')
             Text(
               model.comment ?? '',
               style: TextStyle(

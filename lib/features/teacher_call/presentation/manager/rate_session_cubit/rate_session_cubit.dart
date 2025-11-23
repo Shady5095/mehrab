@@ -119,7 +119,7 @@ class RateSessionCubit extends Cubit<RateSessionState> {
           'tajweedErrors': tajweedErrorsController.text,
         if (commentController.text.isNotEmpty)
           'comment': commentController.text,
-        if (startTime != null) 'timestamp': startTime,
+        if (startTime != null) 'answeredTime': startTime,
         if (endTime != null) 'endedTime': endTime,
       });
       emit(RateSessionSuccess());
@@ -145,9 +145,9 @@ class RateSessionCubit extends Cubit<RateSessionState> {
     commentController.text = callModel.comment ?? '';
     startTimeController.text = formatDateTimePicker(
       context,
-      callModel.timestamp.toDate(),
+      callModel.acceptedTime?.toDate()??DateTime.now(),
     );
-    startTime = callModel.timestamp;
+    startTime = callModel.acceptedTime;
     if (callModel.endedTime == null) {
       endTimeController.text = '';
       endTime = null;

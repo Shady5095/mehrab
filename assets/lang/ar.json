@@ -1231,5 +1231,6 @@
   "favoriteIgaz": "الإجازة المفضلة",
   "rateTeacherNow": "قيم المعلم الآن",
   "yourAccountWasDeleted": "تم حذف حسابك",
-  "yourAccountWasDeletedDescription": "تم حذف حسابك من قبل الإدارة. إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع الدعم الفني."
+  "yourAccountWasDeletedDescription": "تم حذف حسابك من قبل الإدارة. إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع الدعم الفني.",
+  "atTime": "في"
 }

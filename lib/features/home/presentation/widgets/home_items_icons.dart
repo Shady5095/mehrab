@@ -95,7 +95,7 @@ class HomeItemsIcons extends StatelessWidget {
     List<Function()> adminOnTapFunctions = [
           () {
         context
-            .navigateTo(pageName: AppRoutes.teachersScreen, arguments: [true])
+            .navigateTo(pageName: AppRoutes.teachersScreen, arguments: [true,false])
             .then((value) => cubit.getFavoriteTeachersCount());
       },
           () {
@@ -113,7 +113,7 @@ class HomeItemsIcons extends StatelessWidget {
     List<Function()> studentOnTapFunctions = [
           () {
         context
-            .navigateTo(pageName: AppRoutes.teachersScreen, arguments: [true])
+            .navigateTo(pageName: AppRoutes.teachersScreen, arguments: [true,false])
             .then((value) => cubit.getFavoriteTeachersCount());
       },
           () {

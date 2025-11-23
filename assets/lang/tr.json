@@ -1231,5 +1231,6 @@
   "favoriteIgaz": "Favori İcazetler",
   "rateTeacherNow": "Öğretmeni Şimdi Değerlendir",
   "yourAccountWasDeleted": "Hesabınız Silindi",
-  "yourAccountWasDeletedDescription": "Hesabınız yönetim tarafından silindi. Bunun bir hata olduğunu düşünüyorsanız, lütfen teknik destekle iletişime geçin."
+  "yourAccountWasDeletedDescription": "Hesabınız yönetim tarafından silindi. Bunun bir hata olduğunu düşünüyorsanız, lütfen teknik destekle iletişime geçin.",
+  "atTime": "en"
 }

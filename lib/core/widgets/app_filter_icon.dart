@@ -5,15 +5,16 @@ import '../utilities/resources/colors.dart';
 import '../utilities/resources/styles.dart';
 
 class AppFilterIcon extends StatelessWidget {
-  const AppFilterIcon({super.key, required this.onTap, this.iconColor});
+  const AppFilterIcon({super.key, required this.onTap, this.iconColor, this.icon = Icons.notifications_active_outlined});
 final Color ? iconColor;
   final VoidCallback? onTap;
+  final IconData icon ;
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: onTap,
-      icon:  Icon(Icons.notifications_active_outlined,color:iconColor ,),
+      icon:  Icon(icon,color:iconColor ,),
       iconSize: 31.sp,
       color: context.invertedColor,
     );
@@ -53,16 +54,17 @@ class AppFilterIconWithCounter extends StatelessWidget {
     super.key,
     required this.filterCounter,
      this.onTap, this.iconColor,
+    this.icon = Icons.notifications_active_outlined
   });
   final Color ? iconColor;
   final int filterCounter;
   final VoidCallback? onTap;
-
+  final IconData icon ;
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        AppFilterIcon(onTap: onTap,iconColor: iconColor,),
+        AppFilterIcon(onTap: onTap,iconColor: iconColor,icon : icon),
         if (filterCounter > 0) StackCircularDot(counter: filterCounter),
       ],
     );

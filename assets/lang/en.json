@@ -1230,5 +1230,6 @@
   "favoriteIgaz": "Favorite Igaz",
   "rateTeacherNow": "Rate Teacher Now",
   "yourAccountWasDeleted": "Your Account Was Deleted",
-  "yourAccountWasDeletedDescription": "Your account has been deleted by the system administrator. For more information, please contact the administration."
+  "yourAccountWasDeletedDescription": "Your account has been deleted by the system administrator. For more information, please contact the administration.",
+  "atTime": "at"
 }

@@ -1,4 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
@@ -53,7 +54,10 @@ class HomeViewBody extends StatelessWidget {
                     width: double.infinity,
                     height: 10.5.hR,
                     decoration: BoxDecoration(
-                      image: DecorationImage(image: AssetImage('assets/images/topHome.png'), fit: BoxFit.cover),
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/topHome.png'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                     alignment: Alignment.bottomCenter,
                     padding: EdgeInsets.symmetric(horizontal: 15),
@@ -61,11 +65,17 @@ class HomeViewBody extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Opacity(
-                          opacity: 0,
+                          opacity: AppConstants.isTeacher ? 1 : 0,
                           child: AppFilterIconWithCounter(
                             iconColor: AppColors.white,
-                            filterCounter: 2,
-                            onTap: () {},
+                            filterCounter: 0,
+                            onTap: () {
+                              context.navigateTo(
+                                pageName: AppRoutes.teachersScreen,
+                                arguments: [false,true]
+                              );
+                            },
+                            icon: CupertinoIcons.person_2,
                           ),
                         ),
                         Text(
@@ -78,15 +88,21 @@ class HomeViewBody extends StatelessWidget {
                         ),
                         AppFilterIconWithCounter(
                           iconColor: AppColors.white,
-                          filterCounter: ((cubit.notificationsCount ?? 0) -
-                              (CacheService.getData(key: "notificationCount") ?? 0))
-                              .toInt(),
+                          filterCounter:
+                              ((cubit.notificationsCount ?? 0) -
+                                      (CacheService.getData(
+                                            key: "notificationCount",
+                                          ) ??
+                                          0))
+                                  .toInt(),
                           onTap: () {
                             context
-                                .navigateTo(pageName: AppRoutes.notificationsScreen)
+                                .navigateTo(
+                                  pageName: AppRoutes.notificationsScreen,
+                                )
                                 .then((_) {
-                              cubit.refreshNotifications();
-                            });
+                                  cubit.refreshNotifications();
+                                });
                           },
                         ),
                       ],
@@ -107,7 +123,9 @@ class HomeViewBody extends StatelessWidget {
                                       bottomRight: Radius.circular(0),
                                     ),
                                     child: Image(
-                                      image: const AssetImage(AppAssets.welcome2),
+                                      image: const AssetImage(
+                                        AppAssets.welcome2,
+                                      ),
                                       width: double.infinity,
                                       height: 200,
                                       fit: BoxFit.cover,
@@ -119,14 +137,16 @@ class HomeViewBody extends StatelessWidget {
                                       bottomRight: Radius.circular(0),
                                     ),
                                     child: Image(
-                                      image: const AssetImage(AppAssets.welcome3),
+                                      image: const AssetImage(
+                                        AppAssets.welcome3,
+                                      ),
                                       width: double.infinity,
                                       height: 200,
                                       fit: BoxFit.cover,
                                     ),
                                   ),
                                   InkWell(
-                                    onTap: (){
+                                    onTap: () {
                                       AppReviewService.openStoreReviewPage();
                                     },
                                     child: ClipRRect(
@@ -135,7 +155,9 @@ class HomeViewBody extends StatelessWidget {
                                         bottomRight: Radius.circular(0),
                                       ),
                                       child: Image(
-                                        image: const AssetImage(AppAssets.welcome4),
+                                        image: const AssetImage(
+                                          AppAssets.welcome4,
+                                        ),
                                         width: double.infinity,
                                         height: 200,
                                         fit: BoxFit.cover,
@@ -148,7 +170,9 @@ class HomeViewBody extends StatelessWidget {
                                       bottomRight: Radius.circular(0),
                                     ),
                                     child: Image(
-                                      image: const AssetImage(AppAssets.unlimitedTime),
+                                      image: const AssetImage(
+                                        AppAssets.unlimitedTime,
+                                      ),
                                       width: double.infinity,
                                       height: 200,
                                       fit: BoxFit.cover,
@@ -160,11 +184,14 @@ class HomeViewBody extends StatelessWidget {
                                   autoPlay: true,
                                   height: 22.hR,
                                   autoPlayInterval: const Duration(seconds: 15),
-                                  autoPlayAnimationDuration:
-                                  const Duration(milliseconds: 800),
+                                  autoPlayAnimationDuration: const Duration(
+                                    milliseconds: 800,
+                                  ),
                                   autoPlayCurve: Curves.fastOutSlowIn,
                                   onPageChanged: (index, reason) {
-                                    HomeCubit.instance(context).changeSliderIndex(index);
+                                    HomeCubit.instance(
+                                      context,
+                                    ).changeSliderIndex(index);
                                   },
                                 ),
                               ),
@@ -175,14 +202,21 @@ class HomeViewBody extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: List.generate(4, (index) {
-                              final isActive = index == context.watch<HomeCubit>().sliderIndex;
+                              final isActive =
+                                  index ==
+                                  context.watch<HomeCubit>().sliderIndex;
                               return AnimatedContainer(
                                 duration: const Duration(milliseconds: 300),
-                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                                 width: isActive ? 12 : 8,
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: isActive ? AppColors.myAppColor : Colors.grey.shade400,
+                                  color:
+                                      isActive
+                                          ? AppColors.myAppColor
+                                          : Colors.grey.shade400,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               );
@@ -190,19 +224,28 @@ class HomeViewBody extends StatelessWidget {
                           ),
                           SizedBox(height: 10),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0,
+                            ),
                             child: Container(
-                              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                              padding: EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 15,
+                              ),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    AppColors.myAppColor.withValues(alpha: 0.08),
+                                    AppColors.myAppColor.withValues(
+                                      alpha: 0.08,
+                                    ),
                                     AppColors.coolGreen.withValues(alpha: 0.05),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: AppColors.myAppColor.withValues(alpha: 0.15),
+                                  color: AppColors.myAppColor.withValues(
+                                    alpha: 0.15,
+                                  ),
                                   width: 1,
                                 ),
                               ),
@@ -210,7 +253,8 @@ class HomeViewBody extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
@@ -232,21 +276,23 @@ class HomeViewBody extends StatelessWidget {
                                         SizedBox(height: 2),
                                         cubit.userModel == null
                                             ? Container(
-                                          width: 120,
-                                          height: 20,
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey[300],
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                        )
+                                              width: 120,
+                                              height: 20,
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[300],
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                            )
                                             : Text(
-                                          cubit.userModel?.name.firstName ?? '',
-                                          style: TextStyle(
-                                            fontSize: 20.sp,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppColors.myAppColor,
-                                          ),
-                                        ),
+                                              cubit.userModel?.name.firstName ??
+                                                  '',
+                                              style: TextStyle(
+                                                fontSize: 20.sp,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.myAppColor,
+                                              ),
+                                            ),
                                       ],
                                     ),
                                   ),
@@ -255,10 +301,13 @@ class HomeViewBody extends StatelessWidget {
                               ),
                             ),
                           ),
-                          if (cubit.userModel != null &&
-                              AppConstants.isTeacher)
+                          if (cubit.userModel != null && AppConstants.isTeacher)
                             Padding(
-                              padding: const EdgeInsets.only(top: 10.0, left: 20, right: 20),
+                              padding: const EdgeInsets.only(
+                                top: 10.0,
+                                left: 20,
+                                right: 20,
+                              ),
                               child: Container(
                                 padding: EdgeInsets.all(16),
                                 decoration: BoxDecoration(
@@ -266,7 +315,9 @@ class HomeViewBody extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(15),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.05),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.05,
+                                      ),
                                       blurRadius: 10,
                                       offset: Offset(0, 3),
                                     ),
@@ -277,25 +328,31 @@ class HomeViewBody extends StatelessWidget {
                                     Container(
                                       padding: EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: cubit.teacherAvailability
-                                            ? AppColors.coolGreen.withValues(alpha: 0.1)
-                                            : Colors.grey.withValues(alpha: 0.1),
+                                        color:
+                                            cubit.teacherAvailability
+                                                ? AppColors.coolGreen
+                                                    .withValues(alpha: 0.1)
+                                                : Colors.grey.withValues(
+                                                  alpha: 0.1,
+                                                ),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Icon(
                                         cubit.teacherAvailability
                                             ? Icons.check_circle_outline
                                             : Icons.schedule,
-                                        color: cubit.teacherAvailability
-                                            ? AppColors.coolGreen
-                                            : Colors.grey,
+                                        color:
+                                            cubit.teacherAvailability
+                                                ? AppColors.coolGreen
+                                                : Colors.grey,
                                         size: 24,
                                       ),
                                     ),
                                     SizedBox(width: 15),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             AppStrings.iAmAvailable.tr(context),
@@ -323,7 +380,9 @@ class HomeViewBody extends StatelessWidget {
                                         activeThumbColor: AppColors.coolGreen,
                                         onChanged: (value) {
                                           cubit.changeTeacherAvailability(
-                                              value, context);
+                                            value,
+                                            context,
+                                          );
                                         },
                                       ),
                                     ),

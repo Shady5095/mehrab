@@ -54,6 +54,7 @@ class TeacherProfileTabs extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 5),
+              if(!AppConstants.isTeacher)
               Expanded(
                 child: InkWell(
                   onTap: () {
