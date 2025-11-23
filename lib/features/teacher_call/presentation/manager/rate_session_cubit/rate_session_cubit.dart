@@ -37,6 +37,18 @@ class RateSessionCubit extends Cubit<RateSessionState> {
     emit(RateSessionUpdated());
   }
 
+  void selectPreFilledComment(String comment, double ratingValue) {
+      commentController.text = comment;
+    // Set cursor to end of text
+    commentController.selection = TextSelection.fromPosition(
+      TextPosition(offset: commentController.text.length),
+    );
+    // Update rating
+    updateRating(ratingValue);
+    // Emit state to refresh UI
+    emit(RateSessionUpdated());
+  }
+
   String? record;
 
   String? qiraat;

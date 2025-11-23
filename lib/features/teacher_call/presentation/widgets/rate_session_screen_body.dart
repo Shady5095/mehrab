@@ -5,6 +5,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/toast.dart';
+import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/utilities/services/app_review_service.dart';
@@ -402,6 +403,44 @@ class RateSessionScreenBody extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 10),
+                        // Pre-filled comment options
+                        Wrap(
+                          spacing: 8.0,
+                          runSpacing: 8.0,
+                          children: [
+                            _buildCommentChip(
+                              context,
+                              'سئ',
+                              1.0,
+                              cubit,
+                            ),
+                            _buildCommentChip(
+                              context,
+                              'جيد',
+                              2.0,
+                              cubit,
+                            ),
+                            _buildCommentChip(
+                              context,
+                              'جيد جدا',
+                              3.0,
+                              cubit,
+                            ),
+                            _buildCommentChip(
+                              context,
+                              'احسنت',
+                              4.0,
+                              cubit,
+                            ),
+                            _buildCommentChip(
+                              context,
+                              'ممتاز',
+                              5.0,
+                              cubit,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
                         MyTextField(
                           controller: cubit.commentController,
                           label:
@@ -459,6 +498,36 @@ class RateSessionScreenBody extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildCommentChip(
+    BuildContext context,
+    String text,
+    double rating,
+    RateSessionCubit cubit,
+  ) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () {
+        cubit.selectPreFilledComment(text, rating);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.accentColor.withValues(alpha: 0.1),
+          border: Border.all(color: AppColors.accentColor.withValues(alpha: 0.3)),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: AppColors.accentColor,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
