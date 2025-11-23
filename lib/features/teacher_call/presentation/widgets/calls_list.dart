@@ -5,7 +5,6 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/format_date_and_time.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/list_empty_widget.dart';
-
 import '../../../../core/utilities/resources/constants.dart';
 import '../../../../core/utilities/services/cache_service.dart';
 import '../../data/models/call_model.dart';
@@ -19,7 +18,7 @@ class CallsList extends StatefulWidget {
 }
 
 class _CallsListState extends State<CallsList> {
-  final int _pageSize = 15; // عدد العناصر في كل صفحة
+  final int _pageSize = 15;
   final ScrollController _scrollController = ScrollController();
 
   final List<CallModel> _calls = [];
@@ -31,9 +30,8 @@ class _CallsListState extends State<CallsList> {
   void initState() {
     super.initState();
     _fetchCalls();
-    _updateMissedCallsCount(); // ✅ استدعاء حساب المكالمات الفائتة مرة واحدة
+    _updateMissedCallsCount();
 
-    // تحميل الصفحة التالية عند الاقتراب من نهاية القائمة
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
@@ -42,7 +40,6 @@ class _CallsListState extends State<CallsList> {
     });
   }
 
-  /// 🔹 تحميل بيانات المكالمات بصفحات (Pagination)
   Future<void> _fetchCalls() async {
     if (_isLoading || !_hasMore) return;
     setState(() => _isLoading = true);
@@ -95,6 +92,16 @@ class _CallsListState extends State<CallsList> {
     } catch (e) {
       debugPrint("Error updating missed call count: $e");
     }
+  }
+
+  // ✅ دالة لتحديث المكالمة محلياً
+  void _updateCallLocally(CallModel updatedCall) {
+    setState(() {
+      final index = _calls.indexWhere((c) => c.callId == updatedCall.callId);
+      if (index != -1) {
+        _calls[index] = updatedCall;
+      }
+    });
   }
 
   @override
@@ -157,7 +164,10 @@ class _CallsListState extends State<CallsList> {
               ),
               sliver: SliverList.separated(
                 itemBuilder: (context, index) {
-                  return CallItem(model: dailyCalls[index]);
+                  return CallItem(
+                    model: dailyCalls[index],
+                    onLocalUpdate: _updateCallLocally, // ✅ تمرير callback
+                  );
                 },
                 separatorBuilder: (context, index) => const Divider(),
                 itemCount: dailyCalls.length,
@@ -178,7 +188,6 @@ class _CallsListState extends State<CallsList> {
     );
   }
 
-  /// 🔹 تحديد عنوان القسم (اليوم / أمس / تاريخ آخر)
   String _getDateKey(
       DateTime callDate,
       DateTime now,

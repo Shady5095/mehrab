@@ -1,8 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mehrab/core/utilities/services/firebase_notification.dart';
+import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
 import 'package:meta/meta.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 part 'calls_state.dart';
 
@@ -12,19 +13,19 @@ class CallsCubit extends Cubit<CallsState> {
   static CallsCubit get(context) => BlocProvider.of(context);
 
   FirebaseFirestore db = FirebaseFirestore.instance;
-
-  Future<void> endCall(String callId,String studentUid, String teacherName) async {
-    try {
-      await db.collection('calls').doc(callId).update({'status': 'ended'});
-      emit(EndCallSuccess());
-    } catch (e) {
-      emit(EndCallError(e.toString()));
-    }
+  List<CallModel> inCubitCalls = [];
+  Future<void> notifyStudentToCallAgain(CallModel model) async {
+    AppFirebaseNotification.pushNotification(
+      title: "نأسف لعدم الرد من المعلم",
+      body: "المعلم ${model.teacherName.split(' ').take(2).join(' ')} متاح🟢, عاود الاتصال به الان",
+      dataInNotification: {},
+      topic: model.studentUid,
+    );
+    markAsNotified(model.callId);
   }
-  Future<void> openMeet(String url) async {
-    final Uri meetUrl = Uri.parse(url);
-    if (await canLaunchUrl(meetUrl)) {
-      await launchUrl(meetUrl, mode: LaunchMode.externalApplication);
-    }
+  Future<void> markAsNotified(String callId) async {
+    await db.collection('calls').doc(callId).update({
+      'notifiedToCallAgain': true,
+    });
   }
 }

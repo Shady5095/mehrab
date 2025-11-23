@@ -25,6 +25,7 @@ class CallModel {
   final String? tajweedErrors;
   final String? comment;
   final String? qiraat;
+  final bool? notifiedToCallAgain;
 
 
   CallModel({
@@ -52,6 +53,7 @@ class CallModel {
     this.tajweedErrors,
     this.comment,
     this.qiraat,
+    this.notifiedToCallAgain,
   });
 
   factory CallModel.fromJson(Map<String, dynamic> map) {
@@ -80,6 +82,7 @@ class CallModel {
       tajweedErrors: map['tajweedErrors'],
       comment: map['comment'],
       qiraat: map['qiraat'],
+      notifiedToCallAgain: map['notifiedToCallAgain']
     );
   }
 
@@ -122,6 +125,7 @@ class CallModel {
     String? tajweedErrors,
     String? comment,
     String? qiraat,
+    bool ? notifiedToCallAgain,
   }) {
     return CallModel(
       callId: callId ?? this.callId,
@@ -148,6 +152,7 @@ class CallModel {
       tajweedErrors: tajweedErrors ?? this.tajweedErrors,
       comment: comment ?? this.comment,
       qiraat: qiraat ?? this.qiraat,
+      notifiedToCallAgain: notifiedToCallAgain ?? this.notifiedToCallAgain,
     );
   }
 }
