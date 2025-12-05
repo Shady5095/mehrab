@@ -210,6 +210,7 @@
   "submit": "Submit",
   "cancel": "Cancel",
   "teachers": "Teachers",
+  "femaleTeachers": "Teachers",
   "teacher": "Teacher",
   "onGoing": "On going",
   "all": "All",
@@ -1231,5 +1232,6 @@
   "rateTeacherNow": "Rate Teacher Now",
   "yourAccountWasDeleted": "Your Account Was Deleted",
   "yourAccountWasDeletedDescription": "Your account has been deleted by the system administrator. For more information, please contact the administration.",
-  "atTime": "at"
+  "atTime": "at",
+  "chooseYourTeacherNow": "Choose Your Teacher Now"
 }

@@ -34,7 +34,8 @@ class _SessionsListState extends State<SessionsList> {
 
     // تحميل الصفحة التالية عند الوصول لآخر القائمة
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
         _fetchCalls();
       }
     });
@@ -54,11 +55,13 @@ class _SessionsListState extends State<SessionsList> {
     if (AppConstants.isTeacher) {
       query = query
           .where('teacherUid', isEqualTo: myUid)
-          .where('status', isEqualTo: 'ended');
+          .where('status', whereIn: ['ended', 'declined'])
+          .where('answeredTime', isNotEqualTo: null);
     } else {
       query = query
           .where('studentUid', isEqualTo: myUid)
-          .where('status', isEqualTo: 'ended');
+          .where('status', whereIn: ['ended', 'declined'])
+          .where('answeredTime', isNotEqualTo: null);
     }
 
     if (_lastDoc != null) {
@@ -69,9 +72,10 @@ class _SessionsListState extends State<SessionsList> {
 
     if (snapshot.docs.isNotEmpty) {
       _lastDoc = snapshot.docs.last;
-      final newCalls = snapshot.docs.map((doc) {
-        return CallModel.fromJson(doc.data() as Map<String, dynamic>);
-      }).toList();
+      final newCalls =
+          snapshot.docs.map((doc) {
+            return CallModel.fromJson(doc.data() as Map<String, dynamic>);
+          }).toList();
 
       setState(() {
         _calls.addAll(newCalls);
@@ -115,31 +119,35 @@ class _SessionsListState extends State<SessionsList> {
             String dateKey = entry.key;
             List<CallModel> dailyCalls = entry.value;
             return SliverStickyHeader.builder(
-              builder: (context, state) => Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(child: Container()),
-                  Container(
-                    margin: EdgeInsets.symmetric(vertical: 5),
-                    width: 40.wR,
-                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color.fromRGBO(230, 230, 230, 1.0),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      dateKey,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
+              builder:
+                  (context, state) => Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(child: Container()),
+                      Container(
+                        margin: EdgeInsets.symmetric(vertical: 5),
+                        width: 40.wR,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 4,
+                        ),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: const Color.fromRGBO(230, 230, 230, 1.0),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          dateKey,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                    ),
+                      Expanded(child: Container()),
+                    ],
                   ),
-                  Expanded(child: Container()),
-                ],
-              ),
               sliver: SliverList.separated(
                 itemBuilder: (context, index) {
                   final call = dailyCalls[index];
@@ -179,7 +187,12 @@ class _SessionsListState extends State<SessionsList> {
   }
 
   /// 🔹 تحديد عنوان القسم (اليوم / أمس / تاريخ)
-  String _getDateKey(DateTime callDate, DateTime now, DateTime yesterday, BuildContext context) {
+  String _getDateKey(
+    DateTime callDate,
+    DateTime now,
+    DateTime yesterday,
+    BuildContext context,
+  ) {
     if (isSameDay(callDate, now)) {
       return AppStrings.today.tr(context);
     } else if (isSameDay(callDate, yesterday)) {

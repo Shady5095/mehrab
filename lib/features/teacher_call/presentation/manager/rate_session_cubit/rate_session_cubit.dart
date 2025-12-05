@@ -136,6 +136,7 @@ class RateSessionCubit extends Cubit<RateSessionState> {
           'comment': commentController.text,
         if (startTime != null) 'answeredTime': startTime,
         if (endTime != null) 'endedTime': endTime,
+        'status': 'ended',
       });
       emit(RateSessionSuccess());
     } catch (e) {

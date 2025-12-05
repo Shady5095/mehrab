@@ -1510,6 +1510,8 @@ class AppStrings {
   static const String yourAccountWasDeleted = 'yourAccountWasDeleted';
   static const String yourAccountWasDeletedDescription = 'yourAccountWasDeletedDescription';
   static const String atTime = 'atTime';
+  static const String femaleTeachers = 'femaleTeachers';
+  static const String chooseYourTeacherNow = 'chooseYourTeacherNow';
 
 
 

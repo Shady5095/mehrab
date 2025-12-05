@@ -265,11 +265,6 @@ class RateSessionScreenBody extends StatelessWidget {
                                         cubit.fromAyahController.text,
                                       ) ??
                                       0;
-                                  final toAyah =
-                                      int.tryParse(
-                                        cubit.toAyahController.text,
-                                      ) ??
-                                      0;
                                   if (value == null || value.isEmpty) {
                                     return AppValidator.emptyFiled(
                                       value,
@@ -283,9 +278,9 @@ class RateSessionScreenBody extends StatelessWidget {
                                       fromAyah) {
                                     return "سورة ${cubit.fromSurahController.text} ${cubit.getVerseCountBySurahName(cubit.fromSurahController.text)} أية فقط ";
                                   }
-                                  if (toAyah != 0 && fromAyah > toAyah) {
+                                  /*if (toAyah != 0 && fromAyah > toAyah) {
                                     return "يجب ان تكون الاية من اقل من او تساوي الاية الي";
-                                  }
+                                  }*/
                                   return null;
                                 },
                               ),

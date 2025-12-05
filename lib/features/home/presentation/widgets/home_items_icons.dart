@@ -42,6 +42,12 @@ class HomeItemsIcons extends StatelessWidget {
     ];
     final List<Map<String, dynamic>> studentItems = [
       {
+        'name': (cubit.userModel?.isMale??true) ? AppStrings.teachers : AppStrings.femaleTeachers,
+        'icon': 'assets/images/teacher.png',
+        'details': AppStrings.chooseYourTeacherNow,
+        'color': AppColors.accentColor,
+      },
+      {
         'name': AppStrings.favoriteTeachers,
         'icon': 'assets/images/teacher_fav.png',
         'details': cubit.favoriteTeachersCount.toString(),
@@ -111,6 +117,11 @@ class HomeItemsIcons extends StatelessWidget {
       },
     ];
     List<Function()> studentOnTapFunctions = [
+          () {
+        context
+            .navigateTo(pageName: AppRoutes.teachersScreen, arguments: [false,false,true])
+            .then((value) => null);
+      },
           () {
         context
             .navigateTo(pageName: AppRoutes.teachersScreen, arguments: [true,false])
@@ -308,11 +319,11 @@ class HomeItemsIcons extends StatelessWidget {
                                       ? "اقرأ وتعلّم مع التفسير"
                                       : details == "prayerTimes"
                                       ? "إن الصلاة كانت على المؤمنين كتابًا موقوتًا"
-                                      : details,
+                                      :details ==  AppStrings.chooseYourTeacherNow? AppStrings.chooseYourTeacherNow.tr(context) : details,
                                   style: TextStyle(
                                     fontSize: details == "prayerTimes"
                                         ? 8.5
-                                        : details == "quran"
+                                        : details == "quran" ||details ==  AppStrings.chooseYourTeacherNow
                                         ? 11
                                         : 14,
                                     fontWeight: FontWeight.w600,

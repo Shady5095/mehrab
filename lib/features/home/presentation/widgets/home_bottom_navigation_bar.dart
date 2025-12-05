@@ -45,7 +45,7 @@ class HomeBottomNavigationBar extends StatelessWidget {
                 label:
                     AppConstants.isTeacher
                         ? AppStrings.students.tr(context)
-                        : AppStrings.teachers.tr(context),
+                        : (cubit.userModel?.isMale??true) ? AppStrings.teachers.tr(context) : AppStrings.femaleTeachers.tr(context),
               ),
             if(cubit.userModel != null && AppConstants.isTeacher)
             Stack(

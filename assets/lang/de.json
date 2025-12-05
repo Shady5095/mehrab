@@ -231,6 +231,7 @@
   "submit": "Bestätigen",
   "cancel": "Abbrechen",
   "teachers": "Lehrer",
+  "femaleTeachers": "Lehrer",
   "onGoing": "Laufend",
   "all": "Alle",
   "future": "Zukünftig",
@@ -1232,5 +1233,6 @@
   "rateTeacherNow": "Bewerten Sie den Lehrer jetzt",
   "yourAccountWasDeleted": "Ihr Konto wurde gelöscht",
   "yourAccountWasDeletedDescription": "Ihr Konto wurde von der Administration gelöscht. Sollten Sie der Meinung sein, dass dies ein Fehler ist, kontaktieren Sie bitte den technischen Support.",
-  "atTime": "bei"
+  "atTime": "bei",
+  "chooseYourTeacherNow": "Wählen Sie jetzt Ihren Lehrer"
 }

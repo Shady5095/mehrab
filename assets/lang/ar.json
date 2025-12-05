@@ -231,6 +231,7 @@
   "submit": "تأكيد",
   "cancel": "الغاء",
   "teachers": "المعلمين",
+  "femaleTeachers": "المعلمات",
   "onGoing": "قيد العمل",
   "all": "الكل",
   "future": "مستقبل",
@@ -1232,5 +1233,6 @@
   "rateTeacherNow": "قيم المعلم الآن",
   "yourAccountWasDeleted": "تم حذف حسابك",
   "yourAccountWasDeletedDescription": "تم حذف حسابك من قبل الإدارة. إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع الدعم الفني.",
-  "atTime": "في"
+  "atTime": "في",
+  "chooseYourTeacherNow": "اختر معلمك الآن"
 }

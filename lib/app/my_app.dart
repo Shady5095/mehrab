@@ -1,4 +1,3 @@
-import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -72,7 +71,16 @@ class MyApp extends StatelessWidget {
               locale: cubit.setAppLanguage(),
               debugShowCheckedModeBanner: false,
               theme: AppLightThemes.appLightTheme(context),
-              builder: DevicePreview.appBuilder,
+              builder: (context, child) {
+                final mq = MediaQuery.of(context);
+                final limitedScale = mq.textScaler.clamp(minScaleFactor: 1.0,maxScaleFactor: 1.2);
+                return MediaQuery(
+                  data: mq.copyWith(
+                    textScaler: limitedScale,
+                  ),
+                  child: child!,
+                );
+              },
               darkTheme: AppDarkThemes.appDarkTheme(context),
               themeMode: ThemeMode.light,
               onGenerateRoute: RouteGenerator.generateRoute,
