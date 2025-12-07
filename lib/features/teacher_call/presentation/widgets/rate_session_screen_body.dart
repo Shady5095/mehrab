@@ -423,7 +423,7 @@ class RateSessionScreenBody extends StatelessWidget {
                             ),
                             _buildCommentChip(
                               context,
-                              'احسنت',
+                              currentTeacherModel?.isMale == true ?  'احسنت' : 'أحسنتِ',
                               4.0,
                               cubit,
                             ),

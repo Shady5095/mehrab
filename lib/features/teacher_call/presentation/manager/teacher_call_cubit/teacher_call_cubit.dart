@@ -37,6 +37,12 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     }
   }
 
+  Future<void> makeTeacherBusy() async {
+    final userRef = db.collection('users').doc(callModel.teacherUid);
+    await userRef.update({
+      'isBusy': true,
+    });
+  }
   Future<bool> requestCameraPermission() async {
     var cameraStatus = await Permission.camera.status;
 
@@ -73,6 +79,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       await CallForegroundService.init(silentMode: true);
       await Future.delayed(Duration(milliseconds: 300));
     }
+    makeTeacherBusy();
     await setupAgoraCallService();
     joinAgoraChannel(callModel.callId);
   }

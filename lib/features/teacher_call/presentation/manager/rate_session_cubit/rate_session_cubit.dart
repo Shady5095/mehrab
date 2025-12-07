@@ -331,6 +331,17 @@ class RateSessionCubit extends Cubit<RateSessionState> {
     }
   }
 
+  Future<void> decrementTeacherCalls() async {
+    try {
+      final teacherRef = db.collection('users').doc(callModel.teacherUid);
+      await teacherRef.update({
+        'totalSessions': FieldValue.increment(-1),
+      });
+    } catch (e) {
+      printWithColor(e.toString());
+    }
+  }
+
   Future<void> deleteSession() async {
     try {
       await db.collection('calls').doc(callModel.callId).delete();
@@ -346,6 +357,7 @@ class RateSessionCubit extends Cubit<RateSessionState> {
       dataInNotification: {'type': 'call_connection_error'},
       topic: callModel.studentUid,
     );
+    decrementTeacherCalls();
   }
 
   @override

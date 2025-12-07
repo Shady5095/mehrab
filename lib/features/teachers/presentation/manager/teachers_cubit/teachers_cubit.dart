@@ -71,7 +71,10 @@ class TeachersCubit extends Cubit<TeachersState> {
           if (value.exists) {
             teacherRef.delete();
           } else {
-            teacherRef.set(currentUserModel!.toJson());
+            teacherRef.set({
+              ...currentUserModel!.toJson(),
+              'addedAt': FieldValue.serverTimestamp(),
+            });
           }
         })
         .catchError((error) {
@@ -95,7 +98,10 @@ class TeachersCubit extends Cubit<TeachersState> {
           if (value.exists) {
             studentRef.delete();
           } else {
-            studentRef.set(model.toJson());
+            studentRef.set({
+              ...model.toJson(),
+              'addedAt': FieldValue.serverTimestamp(),
+            });
           }
         })
         .catchError((error) {
