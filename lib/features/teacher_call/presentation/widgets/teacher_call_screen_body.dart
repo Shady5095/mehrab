@@ -1,5 +1,6 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,7 +10,9 @@ import 'package:mehrab/core/utilities/functions/toast.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/buttons_widget.dart';
+import 'package:mehrab/core/widgets/teacher_bottom_sheet_design.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:custom_clippers/custom_clippers.dart';
 import '../../../../core/config/routes/app_routes.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 import '../manager/teacher_call_cubit/teacher_call_cubit.dart';
@@ -174,17 +177,6 @@ class TeacherCallScreenBody extends StatelessWidget {
                                 ),
                               ),
                             if (cubit.isCallConnected)
-                              /*StreamBuilder<CallQuality>(
-                                stream: cubit.networkQualityStream,
-                                initialData: cubit.currentNetworkQuality,
-                                builder: (context, snapshot) {
-                                  final quality = snapshot.data ?? CallQuality.excellent;
-                                  return AnimatedNetworkQualityIndicator(
-                                    quality: quality,
-                                    size: 30.sp,
-                                  );
-                                },
-                              ),*/
                               Container(
                                 width: 15,
                                 height: 15,
@@ -214,9 +206,9 @@ class TeacherCallScreenBody extends StatelessWidget {
                           ],
                         ),
                         if(!cubit.isRemoteVideoEnabled)
-                        SizedBox(height: 15.hR)
+                          SizedBox(height: 15.hR)
                         else
-                        SizedBox(height: 1.hR),
+                          SizedBox(height: 1.hR),
 
                         // Profile section (hide when remote video is on)
                         if (!cubit.isRemoteVideoEnabled) ...[
@@ -232,6 +224,89 @@ class TeacherCallScreenBody extends StatelessWidget {
                                 radius: 70.sp,
                                 imageColor: Colors.white,
                               ),
+                              // Pre-comment bubble above student photo
+                              if (cubit.currentPreComment != null)
+                                Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 10,
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: TweenAnimationBuilder<double>(
+                                      tween: Tween<double>(begin: 0.0, end: 1.0),
+                                      duration: Duration(milliseconds: 400),
+                                      curve: Curves.elasticOut,
+                                      builder: (context, value, child) {
+                                        return Transform.scale(
+                                          scale: value,
+                                          child: Transform.translate(
+                                            offset: Offset(0, (1 - value) * -20),
+                                            child: Opacity(
+                                              opacity: value.clamp(0.0, 1.0),
+                                              child: child,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        constraints: BoxConstraints(
+                                          maxWidth: MediaQuery.of(context).size.width * 0.90,
+                                        ),
+                                        child: ClipPath(
+                                          clipper: LowerNipMessageClipper(
+                                            MessageType.send,
+                                            bubbleRadius: 20,
+                                            sizeOfNip: 2,
+                                          ),
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  AppColors.white,
+                                                  AppColors.white.withValues(alpha: 0.95),
+                                                ],
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black.withValues(alpha: 0.2),
+                                                  blurRadius: 12,
+                                                  spreadRadius: 2,
+                                                  offset: Offset(0, 4),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.done_all,
+                                                  color: AppColors.accentColor,
+                                                  size: 22.sp,
+                                                ),
+                                                SizedBox(width: 8),
+                                                Flexible(
+                                                  child: Text(
+                                                    cubit.currentPreComment!,
+                                                    maxLines: 5,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 15.sp,
+                                                      fontWeight: FontWeight.w700,
+                                                      color: Colors.black87,
+                                                      height: 1.3,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                           SizedBox(height: 10.sp),
@@ -317,6 +392,18 @@ class TeacherCallScreenBody extends StatelessWidget {
 
                             if (cubit.isCallConnected) SizedBox(width: 2.5.wR),
 
+                            // Pre-comments button
+                            if (cubit.isCallConnected)
+                              _buildControlButton(
+                                icon: Icons.message,
+                                isActive: false,
+                                onPressed: () {
+                                  _showPreCommentsMenu(context, cubit);
+                                },
+                              ),
+
+                            if (cubit.isCallConnected) SizedBox(width: 2.5.wR),
+
                             // End call button
                             Container(
                               decoration: BoxDecoration(
@@ -331,11 +418,11 @@ class TeacherCallScreenBody extends StatelessWidget {
                                 ],
                               ),
                               child: IconButton(
-                                padding: EdgeInsets.all(17),
+                                padding: EdgeInsets.all(14),
                                 icon: Icon(
                                   Icons.call_end,
                                   color: Colors.white,
-                                  size: 7.wR,
+                                  size: 6.7.wR,
                                 ),
                                 onPressed: () {
                                   cubit.endCall();
@@ -369,13 +456,193 @@ class TeacherCallScreenBody extends StatelessWidget {
         border: Border.all(color: Colors.white, width: 1.5),
       ),
       child: IconButton(
-        padding: EdgeInsets.all(15),
+        padding: EdgeInsets.all(14),
         icon: Icon(
           icon,
           color: isActive ? Colors.black : Colors.white,
-          size: 7.wR,
+          size: 6.7.wR,
         ),
         onPressed: onPressed,
+      ),
+    );
+  }
+
+  void _showPreCommentsMenu(BuildContext context, TeacherCallCubit cubit) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FirstBottomSheetItem(),
+            Padding(
+              padding: EdgeInsets.all(10),
+              child: Text(
+                'ارسال تعليق',
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  ...cubit.preComments.map((comment) => GestureDetector(
+                    onTap: () {
+                      cubit.sendPreComment(comment);
+                      context.pop();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.myAppColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: AppColors.myAppColor.withValues(alpha: 0.5),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Text(
+                        comment,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.myAppColor,
+                        ),
+                      ),
+                    ),
+                  )),
+                  GestureDetector(
+                    onTap: () {
+                      context.pop();
+                      _showCustomCommentDialog(context, cubit);
+                    },
+                    child: DottedBorder(
+                      borderType: BorderType.RRect,
+                      radius: Radius.circular(25),
+                      color: AppColors.myAppColor,
+                      strokeWidth: 1.5,
+                      dashPattern: [6, 3],
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          //color: AppColors.myAppColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.edit,
+                              size: 16.sp,
+                              color: AppColors.myAppColor,
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              'اكتب تعليق اخر',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.myAppColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 30),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCustomCommentDialog(BuildContext context, TeacherCallCubit cubit) {
+    final TextEditingController commentController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          'اكتب تعليق',
+          style: TextStyle(
+            fontSize: 20.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: TextField(
+          controller: commentController,
+          maxLines: 3,
+          decoration: InputDecoration(
+            hintText: 'اكتب تعليقك هنا...',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: AppColors.myAppColor,
+                width: 2,
+              ),
+            ),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text(
+              'إلغاء',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 16.sp,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              final comment = commentController.text.trim();
+              if (comment.isNotEmpty) {
+                cubit.sendPreComment(comment);
+                context.pop();
+              }
+            },
+            child: Text(
+              'إرسال',
+              style: TextStyle(
+                color: AppColors.myAppColor,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

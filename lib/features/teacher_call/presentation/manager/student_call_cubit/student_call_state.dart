@@ -49,6 +49,13 @@ final class MicrophoneAllowed extends StudentCallState {}
 
 final class RemoteVideoStateChanged extends StudentCallState {}
 
+final class PreCommentReceived extends StudentCallState {
+  final String comment;
+  PreCommentReceived({required this.comment});
+}
+
+final class PreCommentCleared extends StudentCallState {}
+
 final class VideoStateChanged extends StudentCallState {}
 
 final class CameraPermissionPermanentlyDenied extends StudentCallState {}

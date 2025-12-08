@@ -76,7 +76,7 @@ class CallItem extends StatelessWidget {
           ),
           if (model.status == 'missed')
             Padding(
-              padding: const EdgeInsets.only(top: 5.0),
+              padding: const EdgeInsets.only(top: 5.0,bottom: 4),
               child: ButtonWidget(
                 onPressed: () {
                   if (model.notifiedToCallAgain == true) {

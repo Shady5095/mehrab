@@ -44,3 +44,10 @@ final class CameraPermissionPermanentlyDenied extends TeacherCallState {}
 final class VideoStateChanged extends TeacherCallState {}
 
 final class RemoteVideoStateChanged extends TeacherCallState {}
+
+final class PreCommentReceived extends TeacherCallState {
+  final String comment;
+  PreCommentReceived({required this.comment});
+}
+
+final class PreCommentCleared extends TeacherCallState {}

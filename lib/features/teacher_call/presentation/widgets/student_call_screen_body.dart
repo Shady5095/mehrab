@@ -11,6 +11,7 @@ import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/buttons_widget.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:custom_clippers/custom_clippers.dart';
 import '../../../../core/utilities/services/app_review_service.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 import '../manager/student_call_cubit/student_call_cubit.dart';
@@ -208,6 +209,7 @@ class StudentCallScreenBody extends StatelessWidget {
       },
       builder: (context, state) {
         final cubit = StudentCallCubit.get(context);
+
         return Stack(
           children: [
             // Remote video (full screen when enabled)
@@ -306,17 +308,6 @@ class StudentCallScreenBody extends StatelessWidget {
                                 ),
                               ),
                             if (cubit.isAnotherUserJoined)
-                              /*StreamBuilder<CallQuality>(
-                                stream: cubit.networkQualityStream,
-                                initialData: cubit.currentNetworkQuality,
-                                builder: (context, snapshot) {
-                                  final quality = snapshot.data ?? CallQuality.excellent;
-                                  return AnimatedNetworkQualityIndicator(
-                                    quality: quality,
-                                    size: 30.sp,
-                                  );
-                                },
-                              ),*/
                               Container(
                                 width: 15,
                                 height: 15,
@@ -350,7 +341,7 @@ class StudentCallScreenBody extends StatelessWidget {
                           SizedBox(height: 15.hR)
                         else
                           SizedBox(height: 1.hR),
-                
+
                         // Profile section (hide when remote video is on)
                         if (!cubit.isRemoteVideoEnabled) ...[
                           Stack(
@@ -373,6 +364,90 @@ class StudentCallScreenBody extends StatelessWidget {
                                 radius: 70.sp,
                                 imageColor: Colors.white,
                               ),
+                              // Pre-comment bubble above teacher photo
+                              if (cubit.currentPreComment != null)
+                                Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 10,
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: TweenAnimationBuilder<double>(
+                                      tween: Tween<double>(begin: 0.0, end: 1.0),
+                                      duration: Duration(milliseconds: 400),
+                                      curve: Curves.elasticOut,
+                                      builder: (context, value, child) {
+                                        return Transform.scale(
+                                          scale: value,
+                                          child: Transform.translate(
+                                            offset: Offset(0, (1 - value) * -20),
+                                            child: Opacity(
+                                              opacity: value.clamp(0.0, 1.0),
+                                              child: child,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        constraints: BoxConstraints(
+                                          maxWidth: MediaQuery.of(context).size.width * 0.90,
+                                        ),
+                                        child: ClipPath(
+                                          clipper: LowerNipMessageClipper(
+                                            MessageType.receive,
+                                            bubbleRadius: 20,
+                                            sizeOfNip: 2,
+                                          ),
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  AppColors.white,
+                                                  AppColors.white.withValues(alpha: 0.95),
+                                                ],
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black.withValues(alpha: 0.2),
+                                                  blurRadius: 12,
+                                                  spreadRadius: 2,
+                                                  offset: Offset(0, 4),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.notifications_active_outlined,
+                                                  color: AppColors.myAppColor,
+                                                  size: 22.sp,
+                                                ),
+                                                SizedBox(width: 8),
+                                                Flexible(
+                                                  child: Text(
+                                                    cubit.currentPreComment!,
+                                                    maxLines: 5,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 15.sp,
+                                                      fontWeight: FontWeight.w700,
+                                                      color: Colors.black87,
+                                                      height: 1.3,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
                             ],
                           ),
                           SizedBox(height: 10.sp),
@@ -387,7 +462,7 @@ class StudentCallScreenBody extends StatelessWidget {
                           ),
                           SizedBox(height: 15),
                         ],
-                
+
                         // Timer
                         if (cubit.isCallAnswered)
                           StreamBuilder<String>(
@@ -405,9 +480,9 @@ class StudentCallScreenBody extends StatelessWidget {
                               );
                             },
                           ),
-                
+
                         Spacer(),
-                
+
                         // Control buttons
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -425,7 +500,7 @@ class StudentCallScreenBody extends StatelessWidget {
                                 },
                               ),
                             if (cubit.isCallAnswered) SizedBox(width: 2.5.wR),
-                
+
                             // Speaker/Camera switch button
                             if (cubit.isCallAnswered)
                               _buildControlButton(
@@ -455,9 +530,9 @@ class StudentCallScreenBody extends StatelessWidget {
                                   cubit.toggleMicMute();
                                 },
                               ),
-                
+
                             if (cubit.isCallAnswered) SizedBox(width: 2.5.wR),
-                
+
                             // End call button
                             Container(
                               decoration: BoxDecoration(

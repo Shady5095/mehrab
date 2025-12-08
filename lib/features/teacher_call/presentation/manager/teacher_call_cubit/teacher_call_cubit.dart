@@ -86,6 +86,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
 
   Future<void> endCall() async {
     try {
+      _clearPreComment();
       if (Platform.isAndroid) {
         await CallForegroundService.stopCallService();
       }
@@ -114,6 +115,53 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   }
 
   StreamSubscription<DocumentSnapshot>? _callSubscription;
+  String? currentPreComment;
+  Timer? _preCommentTimer;
+
+  void _clearPreComment() {
+    _preCommentTimer?.cancel();
+    _preCommentTimer = null;
+    currentPreComment = null;
+    emit(PreCommentCleared());
+  }
+
+  void initCallListener() {
+    _callSubscription?.cancel();
+    _callSubscription = db
+        .collection('calls')
+        .doc(callModel.callId)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        CallModel data = CallModel.fromJson(snapshot.data() ?? {});
+        
+        // Listen for pre-comments (only if call is connected and not ended)
+        if (isCallConnected && 
+            data.status != 'ended' && 
+            data.status != 'missed') {
+          final preComment = snapshot.data()?['preComment'] as String?;
+          
+          if (preComment != null && preComment != currentPreComment) {
+            currentPreComment = preComment;
+            HapticFeedback.mediumImpact();
+            emit(PreCommentReceived(comment: preComment));
+            
+            // Clear comment after 7 seconds
+            _preCommentTimer?.cancel();
+            _preCommentTimer = Timer(const Duration(seconds: 7), () {
+              if (currentPreComment == preComment) {
+                currentPreComment = null;
+                emit(PreCommentCleared());
+              }
+            });
+          }
+        } else if (data.status == 'ended' || data.status == 'missed') {
+          // Clear comment if call ended
+          _clearPreComment();
+        }
+      }
+    });
+  }
 
   bool isCallConnected = false;
   bool isMicMuted = false;
@@ -142,6 +190,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       if (Platform.isIOS) {
         callService.switchSpeaker(true);
       }
+      initCallListener(); // Start listening for pre-comments
       emit(TeacherCallInitial());
     };
     callService.onRemoteVideoStateChanged = (uid, enabled) {
@@ -281,12 +330,39 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     _proximitySubscription = null;
   }
 
+  Future<void> sendPreComment(String comment) async {
+    try {
+      await db.collection('calls').doc(callModel.callId).update({
+        'preComment': comment,
+        'preCommentTimestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (error) {
+      emit(AgoraConnectionError(error: 'فشل إرسال التعليق: $error'));
+    }
+  }
+  final List<String> preComments = [
+    'ما شاء الله 🌿',
+    'ممتاز جدًا 👏',
+    'أحسنت التلاوة 📖',
+    'رائع، استمر 🌟',
+    'أداء طيب 👍',
+    'قراءة جميلة ✨',
+    'حفظ ممتاز 🎯',
+    'تقدم رائع 📈',
+    'بارك الله فيك 🤍',
+    'أحسنت، واصل 💪',
+    'تلاوة مباركة 🌙',
+    'جميل جدًا ⭐',
+    'صوت هادئ وجميل 💛',
+    'إتقان واضح 👌',
+  ];
   @override
   Future<void> close() {
     stopSound();
     _player.dispose();
     _callTimerController.close();
     stopCallTimer();
+    _clearPreComment();
     _callSubscription?.cancel();
     callService.dispose();
     if (Platform.isAndroid) {

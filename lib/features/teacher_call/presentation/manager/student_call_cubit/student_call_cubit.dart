@@ -139,6 +139,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   Future<void> endCallBeforeAnswer({bool isByUser = false}) async {
     if (callDocId == null) return;
     try {
+      _clearPreComment();
       final batch = db.batch();
       final callRef = db.collection('calls').doc(callDocId);
       final teacherRef = db.collection('users').doc(teacherModel.uid);
@@ -160,6 +161,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   Future<void> endCallAfterAnswer({bool isByUser = false}) async {
     if (callDocId == null) return;
     try {
+      _clearPreComment();
       if (Platform.isAndroid) {
         await CallForegroundService.stopCallService();
       }
@@ -180,6 +182,15 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   }
 
   StreamSubscription<DocumentSnapshot>? _callSubscription;
+  String? currentPreComment;
+  Timer? _preCommentTimer;
+
+  void _clearPreComment() {
+    _preCommentTimer?.cancel();
+    _preCommentTimer = null;
+    currentPreComment = null;
+    emit(PreCommentCleared());
+  }
 
   void callListener() {
     _callSubscription?.cancel();
@@ -198,6 +209,31 @@ class StudentCallCubit extends Cubit<StudentCallState> {
               onCallDecline();
               emit(TeacherInAnotherCall());
             }
+            
+            // Listen for pre-comments (only if call is answered and not ended)
+            if (isCallAnswered && 
+                data.status != 'ended' && 
+                data.status != 'missed') {
+              final preComment = snapshot.data()?['preComment'] as String?;
+              
+              if (preComment != null && preComment != currentPreComment) {
+                currentPreComment = preComment;
+                HapticFeedback.mediumImpact();
+                emit(PreCommentReceived(comment: preComment));
+                
+                // Clear comment after 7 seconds
+                _preCommentTimer?.cancel();
+                _preCommentTimer = Timer(const Duration(seconds: 7), () {
+                  if (currentPreComment == preComment) {
+                    currentPreComment = null;
+                    emit(PreCommentCleared());
+                  }
+                });
+              }
+            } else if (data.status == 'ended' || data.status == 'missed') {
+              // Clear comment if call ended
+              _clearPreComment();
+            }
           }
         });
   }
@@ -208,12 +244,13 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     stopSound();
     await Future.delayed(Duration(milliseconds: 300));
     _callTimeoutTimer?.cancel();
-    _callSubscription?.cancel();
+    // Keep listening for pre-comments, don't cancel subscription
     joinAgoraChannel(data.callId);
   }
 
   Future<void> onCallDecline() async {
     stopSound();
+    _clearPreComment();
     await db.collection('users').doc(teacherModel.uid).update({'isBusy': false});
   }
   void closeListener() {
@@ -445,6 +482,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     closeListener();
     _callTimeoutTimer?.cancel();
     maxCallDurationTimer?.cancel();
+    _clearPreComment();
     _callTimerController.close();
     stopCallTimer();
     _callSubscription?.cancel();
