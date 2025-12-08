@@ -218,7 +218,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
               
               if (preComment != null && preComment != currentPreComment) {
                 currentPreComment = preComment;
-                HapticFeedback.mediumImpact();
+                HapticFeedback.vibrate();
                 emit(PreCommentReceived(comment: preComment));
                 
                 // Clear comment after 7 seconds

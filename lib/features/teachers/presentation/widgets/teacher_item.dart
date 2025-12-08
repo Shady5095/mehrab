@@ -139,7 +139,7 @@ class TeacherItem extends StatelessWidget {
                     ],
                   ),
                 ),
-                if(!isFromTeacherAcc)
+                if(!isFromTeacherAcc && !isFav)
                 IconButton(
                   onPressed: () async {
                     if (!teacher.isOnline) {
