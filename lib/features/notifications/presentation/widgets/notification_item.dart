@@ -5,6 +5,7 @@ import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 
 import '../../../../core/utilities/functions/format_date_and_time.dart';
+import '../../../../core/widgets/shimmer_rectangle_widget.dart';
 import '../../data/models/notification_model.dart';
 import 'notifications_bottom_sheet_actions.dart';
 
@@ -96,6 +97,93 @@ class NotificationItem extends StatelessWidget {
               )
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class NotificationShimmerItem extends StatelessWidget {
+  const NotificationShimmerItem({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Colors.white,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: Colors.white,
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                ShimmerCircleWidget(radius: 15.sp),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ShimmerRectangleWidget(
+                        width: double.infinity,
+                        height: 14.sp,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      const SizedBox(height: 5),
+                      ShimmerRectangleWidget(
+                        width: 150.sp,
+                        height: 14.sp,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: ShimmerRectangleWidget(
+                height: 1,
+                borderRadius: BorderRadius.circular(0),
+              ),
+            ),
+            ShimmerRectangleWidget(
+              width: double.infinity,
+              height: 14.sp,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            const SizedBox(height: 5),
+            ShimmerRectangleWidget(
+              width: double.infinity,
+              height: 14.sp,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            const SizedBox(height: 5),
+            ShimmerRectangleWidget(
+              width: 200.sp,
+              height: 14.sp,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                ShimmerRectangleWidget(
+                  width: 100.sp,
+                  height: 12.sp,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                const Spacer(),
+                ShimmerRectangleWidget(
+                  width: 120.sp,
+                  height: 12.sp,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ],
+            )
+          ],
         ),
       ),
     );

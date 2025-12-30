@@ -137,8 +137,8 @@ class HomeViewBody extends StatelessWidget {
                                       bottomRight: Radius.circular(0),
                                     ),
                                     child: Image(
-                                      image: const AssetImage(
-                                        AppAssets.welcome3,
+                                      image:  AssetImage(
+                                        cubit.userModel?.isMale == false ? AppAssets.welcome3Female : AppAssets.welcome3,
                                       ),
                                       width: double.infinity,
                                       height: 200,
