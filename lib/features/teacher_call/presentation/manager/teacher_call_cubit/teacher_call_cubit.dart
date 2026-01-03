@@ -355,6 +355,8 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     'جميل جدًا ⭐',
     'صوت هادئ وجميل ❤️',
     'إتقان واضح 👌',
+    'إنتبه ⚠️',
+    'تجويد ممتاز 🎵',
   ];
   @override
   Future<void> close() {

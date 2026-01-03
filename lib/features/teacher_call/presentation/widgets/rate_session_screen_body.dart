@@ -75,6 +75,7 @@ class RateSessionScreenBody extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 5),
+                        if(cubit.record != "اخري")
                         RatingBar.builder(
                           minRating: 0,
                           unratedColor: Colors.black.withValues(alpha: 0.2),
@@ -90,7 +91,7 @@ class RateSessionScreenBody extends StatelessWidget {
                             cubit.updateRating(rating);
                           },
                         ),
-                        if (!cubit.isStudentRated)
+                        if (!cubit.isStudentRated && cubit.record != "اخري")
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 5),
                             child: Text(
@@ -222,7 +223,8 @@ class RateSessionScreenBody extends StatelessWidget {
                             ],
                           ],
                         ),
-                        const SizedBox(height: 10),
+                        if(cubit.record != "اخري")
+                        ...[const SizedBox(height: 10),
                         Row(
                           children: [
                             Expanded(
@@ -434,7 +436,7 @@ class RateSessionScreenBody extends StatelessWidget {
                               cubit,
                             ),
                           ],
-                        ),
+                        ),],
                         const SizedBox(height: 10),
                         MyTextField(
                           controller: cubit.commentController,

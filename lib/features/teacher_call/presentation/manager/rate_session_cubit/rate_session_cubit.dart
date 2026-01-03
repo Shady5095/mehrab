@@ -91,12 +91,26 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   void changeRecord(String? value) {
     record = value;
     qiraat = null;
+    if(record == "اخري"){
+      fromSurahController.clear();
+      toSurahController.clear();
+      fromAyahController.clear();
+      toAyahController.clear();
+      numberOfFacesController.clear();
+      wordErrorsController.clear();
+      theHesitationController.clear();
+      tajweedErrorsController.clear();
+    }
     emit(RateSessionInitial());
   }
 
   bool isStudentRated = true;
 
   bool checkIfStudentRated() {
+    if(record == "اخري"){
+      isStudentRated = true;
+      return true;
+    }
     if (rating == 0) {
       emit(RateSessionInitial());
       isStudentRated = false;

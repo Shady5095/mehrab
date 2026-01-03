@@ -137,6 +137,20 @@ class HomeViewBody extends StatelessWidget {
                                       bottomRight: Radius.circular(0),
                                     ),
                                     child: Image(
+                                      image: const AssetImage(
+                                        AppAssets.unlimitedTime,
+                                      ),
+                                      width: double.infinity,
+                                      height: 200,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(0),
+                                      bottomRight: Radius.circular(0),
+                                    ),
+                                    child: Image(
                                       image:  AssetImage(
                                         cubit.userModel?.isMale == false ? AppAssets.welcome3Female : AppAssets.welcome3,
                                       ),
@@ -164,26 +178,12 @@ class HomeViewBody extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.only(
-                                      bottomLeft: Radius.circular(0),
-                                      bottomRight: Radius.circular(0),
-                                    ),
-                                    child: Image(
-                                      image: const AssetImage(
-                                        AppAssets.unlimitedTime,
-                                      ),
-                                      width: double.infinity,
-                                      height: 200,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
                                 ],
                                 options: CarouselOptions(
                                   viewportFraction: 1.0,
                                   autoPlay: true,
                                   height: 22.hR,
-                                  autoPlayInterval: const Duration(seconds: 15),
+                                  autoPlayInterval: const Duration(seconds: 7),
                                   autoPlayAnimationDuration: const Duration(
                                     milliseconds: 800,
                                   ),
