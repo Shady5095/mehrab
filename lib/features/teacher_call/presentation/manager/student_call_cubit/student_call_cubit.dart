@@ -88,6 +88,11 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     await _player.play(AssetSource('audio/userJoinedSound.mp3'));
   }
 
+  Future<void> playMessageReceivedSound() async {
+    _player.setReleaseMode(ReleaseMode.stop);
+    await _player.play(AssetSource('audio/messageReceivedSound.mp3'));
+  }
+
   Future<void> stopSound() async {
     await _player.stop();
   }
@@ -219,6 +224,10 @@ class StudentCallCubit extends Cubit<StudentCallState> {
               if (preComment != null && preComment != currentPreComment) {
                 currentPreComment = preComment;
                 HapticFeedback.vibrate();
+                
+                // Play sound for every new message
+                playMessageReceivedSound();
+                
                 emit(PreCommentReceived(comment: preComment));
                 
                 // Clear comment after 7 seconds
