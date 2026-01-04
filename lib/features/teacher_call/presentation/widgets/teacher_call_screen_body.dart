@@ -79,10 +79,13 @@ class TeacherCallScreenBody extends StatelessWidget {
         } else if (state is CallFinished ||
             state is MaxDurationReached ||
             state is AnotherUserLeft) {
+          if(AppRouteObserver.currentRouteName == AppRoutes.quranWebView || AppRouteObserver.currentRouteName == AppRoutes.rateSessionScreen){
+            context.pop();
+          }
           context.pop();
           context.navigateTo(
             pageName: AppRoutes.rateSessionScreen,
-            arguments: [cubit.callModel.copyWith(endedTime: Timestamp.now()), false],
+            arguments: [cubit.latestCallData?.copyWith(endedTime: Timestamp.now()), false,false],
           );
         }
       },
@@ -165,6 +168,18 @@ class TeacherCallScreenBody extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            if(cubit.isCallConnected)
+                            ...[InkWell(
+                              onTap: () {
+                                context.navigateTo(pageName: AppRoutes.quranWebView);
+                              },
+                              child: ImageIcon(
+                                AssetImage('assets/images/book.png'),
+                                color: Colors.white,
+                                size: 30.sp,
+                              ),
+                            ),
+                            Spacer(),],
                             if (!cubit.isCallConnected)
                               SizedBox(
                                 width: 50.sp,
@@ -203,6 +218,18 @@ class TeacherCallScreenBody extends StatelessWidget {
                                 color: Colors.white,
                               ),
                             ),
+                            if(cubit.isCallConnected)
+                           ...[ Spacer(),
+                            InkWell(
+                              onTap: () {
+                                context.navigateTo(pageName: AppRoutes.rateSessionScreen,arguments: [cubit.latestCallData, true,true]);
+                              },
+                              child: Icon(
+                                Icons.edit,
+                                size: 27.sp,
+                                color: Colors.white,
+                              ),
+                            )],
                           ],
                         ),
                         if(!cubit.isRemoteVideoEnabled)

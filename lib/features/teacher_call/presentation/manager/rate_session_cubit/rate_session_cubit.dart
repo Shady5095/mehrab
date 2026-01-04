@@ -12,7 +12,7 @@ import '../../../../../core/widgets/show_date_time_picker.dart';
 part 'rate_session_state.dart';
 
 class RateSessionCubit extends Cubit<RateSessionState> {
-  RateSessionCubit({required this.callModel, this.isEditMode = false})
+  RateSessionCubit({required this.callModel, this.isEditMode = false, this.isFromCall = false})
     : super(RateSessionInitial());
 
   static RateSessionCubit instance(context) => BlocProvider.of(context);
@@ -20,6 +20,7 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   final CallModel callModel;
 
   final bool isEditMode;
+  final bool isFromCall;
 
   double rating = 0;
 
@@ -107,7 +108,7 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   bool isStudentRated = true;
 
   bool checkIfStudentRated() {
-    if(record == "اخري"){
+    if(record == "اخري" || isFromCall){
       isStudentRated = true;
       return true;
     }
@@ -150,7 +151,9 @@ class RateSessionCubit extends Cubit<RateSessionState> {
           'comment': commentController.text,
         if (startTime != null) 'answeredTime': startTime,
         if (endTime != null) 'endedTime': endTime,
-        'status': 'ended',
+        if(!isFromCall)'status': 'ended',
+        if(isFromCall)'preCommentTimestamp': null,
+        if(isFromCall)'preComment': null,
       });
       emit(RateSessionSuccess());
     } catch (e) {
@@ -160,7 +163,6 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   }
 
   void fillControllersWithExistingData(BuildContext context) {
-    if (!isEditMode) return;
     rating = callModel.rating?.toDouble() ?? 0;
     record = callModel.record?.trim();
     qiraat = callModel.qiraat;

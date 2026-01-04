@@ -125,6 +125,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     emit(PreCommentCleared());
   }
 
+  CallModel? latestCallData;
   void initCallListener() {
     _callSubscription?.cancel();
     _callSubscription = db
@@ -133,6 +134,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
         .snapshots()
         .listen((snapshot) {
       if (snapshot.exists) {
+        latestCallData = CallModel.fromJson(snapshot.data() ?? {});
         CallModel data = CallModel.fromJson(snapshot.data() ?? {});
         
         // Listen for pre-comments (only if call is connected and not ended)
@@ -143,7 +145,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
           
           if (preComment != null && preComment != currentPreComment) {
             currentPreComment = preComment;
-            HapticFeedback.mediumImpact();
+            HapticFeedback.vibrate();
             emit(PreCommentReceived(comment: preComment));
             
             // Clear comment after 7 seconds

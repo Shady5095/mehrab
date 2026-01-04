@@ -31,6 +31,7 @@ class _NotificationListState extends State<NotificationList> {
     super.initState();
     _loadInitialData();
     _scrollController.addListener(_onScroll);
+    _updateNotificationCount(); // Update count from Firebase
   }
 
   @override
@@ -45,6 +46,16 @@ class _NotificationListState extends State<NotificationList> {
       if (!_isLoadingMore && _hasMore) {
         _loadMoreData();
       }
+    }
+  }
+
+  Future<void> _updateNotificationCount() async {
+    try {
+      final countSnapshot = await _getBaseQuery().count().get();
+      final count = countSnapshot.count ?? 0;
+      CacheService.setData(key: "notificationCount", value: count);
+    } catch (e) {
+      print('Error updating notification count: $e');
     }
   }
 
@@ -67,8 +78,6 @@ class _NotificationListState extends State<NotificationList> {
       } else {
         _hasMore = false;
       }
-
-      CacheService.setData(key: "notificationCount", value: _notifications.length);
     } catch (e) {
       print('Error loading initial data: $e');
     } finally {
@@ -100,7 +109,6 @@ class _NotificationListState extends State<NotificationList> {
               NotificationModel.fromJson(doc.data())),
         );
         _hasMore = snapshot.docs.length == _pageSize;
-        CacheService.setData(key: "notificationCount", value: _notifications.length);
       } else {
         _hasMore = false;
       }

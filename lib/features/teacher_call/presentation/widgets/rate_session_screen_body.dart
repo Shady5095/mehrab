@@ -194,7 +194,7 @@ class RateSessionScreenBody extends StatelessWidget {
                                   cubit.changeRecord(value);
                                 },
                                 label: AppStrings.record.tr(context),
-                                validator:
+                                validator: cubit.isFromCall ? null :
                                     (value) => AppValidator.emptyFiled(
                                       value,
                                       context,
@@ -212,7 +212,7 @@ class RateSessionScreenBody extends StatelessWidget {
                                     cubit.qiraat = value;
                                   },
                                   label: "الإجازة",
-                                  validator:
+                                  validator: cubit.isFromCall ? null :
                                       (value) => AppValidator.emptyFiled(
                                         value,
                                         context,
@@ -247,7 +247,7 @@ class RateSessionScreenBody extends StatelessWidget {
                                         ),
                                   );
                                 },
-                                validator:
+                                validator: cubit.isFromCall ? null :
                                     (value) => AppValidator.emptyFiled(
                                       value,
                                       context,
@@ -261,7 +261,7 @@ class RateSessionScreenBody extends StatelessWidget {
                                 controller: cubit.fromAyahController,
                                 label: AppStrings.ayah.tr(context),
                                 keyboardType: TextInputType.number,
-                                validator: (value) {
+                                validator:cubit.isFromCall ? null : (value) {
                                   final fromAyah =
                                       int.tryParse(
                                         cubit.fromAyahController.text,
@@ -314,7 +314,7 @@ class RateSessionScreenBody extends StatelessWidget {
                                         ),
                                   );
                                 },
-                                validator:
+                                validator: cubit.isFromCall ? null :
                                     (value) => AppValidator.emptyFiled(
                                       value,
                                       context,
@@ -328,7 +328,7 @@ class RateSessionScreenBody extends StatelessWidget {
                                 controller: cubit.toAyahController,
                                 label: AppStrings.ayah.tr(context),
                                 keyboardType: TextInputType.number,
-                                validator: (value) {
+                                validator: cubit.isFromCall ? null : (value) {
                                   final toAyah =
                                       int.tryParse(
                                         cubit.toAyahController.text,

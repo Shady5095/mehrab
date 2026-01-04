@@ -105,7 +105,7 @@ class _SessionItemForTeachersState extends State<SessionItemForTeachers> {
                       onPressed: () {
                         context.navigateTo(
                             pageName: AppRoutes.rateSessionScreen,
-                            arguments: [widget.model, true]
+                            arguments: [widget.model, true,false]
                         ).then((value) {
                           if (value == true) {
                             widget.onRefresh?.call(); // استدعاء الـ callback
