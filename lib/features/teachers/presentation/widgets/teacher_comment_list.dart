@@ -233,6 +233,10 @@ class _TeacherCommentListState extends State<TeacherCommentList> {
             teacherUid: widget.model.uid,
             oldComment: _myComment?.comment,
             oldRating: _myComment?.rating.toDouble(),
+            onCommentAdded: () {
+              // Refresh the comments list
+              _loadInitialData();
+            },
           ),
         );
       },

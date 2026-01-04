@@ -18,7 +18,15 @@ class AddCommentDialog extends StatefulWidget {
   final String teacherUid;
   final String? oldComment;
   final double? oldRating;
-  const AddCommentDialog({super.key, required this.teacherUid, this.oldComment, this.oldRating});
+  final VoidCallback? onCommentAdded;
+
+  const AddCommentDialog({
+    super.key,
+    required this.teacherUid,
+    this.oldComment,
+    this.oldRating,
+    this.onCommentAdded,
+  });
 
   @override
   State<AddCommentDialog> createState() => _AddCommentDialogState();
@@ -27,6 +35,7 @@ class AddCommentDialog extends StatefulWidget {
 class _AddCommentDialogState extends State<AddCommentDialog> {
   double rating = 0.0;
   TextEditingController commentController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -38,6 +47,13 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
     }
     super.initState();
   }
+
+  @override
+  void dispose() {
+    commentController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MyAlertDialog(
@@ -78,11 +94,15 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
             minLines: 4,
             label: AppStrings.writeYourComment.tr(context),
           ),
+          if (_isLoading) ...[
+            const SizedBox(height: 15),
+            const CircularProgressIndicator(),
+          ],
         ],
       ),
       actions: <Widget>[
         TextButton(
-          onPressed: () {
+          onPressed: _isLoading ? null : () {
             Navigator.of(context).pop();
           },
           child: Text(
@@ -90,32 +110,50 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16.sp,
+              color: _isLoading ? Colors.grey : null,
             ),
           ),
         ),
         TextButton(
-          onPressed: () {
+          onPressed: _isLoading ? null : () async {
             if (rating != 0.0) {
-              rateTeacher(
+              setState(() {
+                _isLoading = true;
+              });
+
+              await rateTeacher(
                 widget.teacherUid,
                 rating,
                 comment: commentController.text,
               );
-              Navigator.of(context).pop();
-              myToast(
-                msg: AppStrings.commentAddedSuccessfully.tr(context),
-                state: ToastStates.success,
-              );
-              CacheService.setData(key: "isThisTeacherRated-${widget.teacherUid}", value: true);
+
+              if (mounted) {
+                Navigator.of(context).pop();
+                myToast(
+                  msg: AppStrings.commentAddedSuccessfully.tr(context),
+                  state: ToastStates.success,
+                );
+                CacheService.setData(
+                  key: "isThisTeacherRated-${widget.teacherUid}",
+                  value: true,
+                );
+
+                // Call the callback to refresh the list
+                widget.onCommentAdded?.call();
+              }
             } else {
-              myToast(msg: "برجاء اختيار تقييم من 1 ل 5",
-                  state: ToastStates.error);
+              myToast(
+                msg: "برجاء اختيار تقييم من 1 ل 5",
+                state: ToastStates.error,
+              );
             }
           },
           child: Text(
             AppStrings.send.tr(context),
             style: TextStyle(
-              color: rating == 0.0 ? Colors.grey : AppColors.myAppColor,
+              color: _isLoading
+                  ? Colors.grey
+                  : (rating == 0.0 ? Colors.grey : AppColors.myAppColor),
               fontWeight: FontWeight.bold,
               fontSize: 16.sp,
             ),
@@ -124,8 +162,9 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
       ],
     );
   }
+
   Future<void> rateTeacher(String teacherUid, num newRating, {String? comment}) async {
-    final userUid = currentUserModel?.uid??'';
+    final userUid = currentUserModel?.uid ?? '';
     try {
       // Find existing comment by the user
       final commentsSnapshot =
@@ -154,7 +193,11 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
       } else {
         // Add new comment with commentId
         final commentRef =
-        FirebaseFirestore.instance.collection("users").doc(teacherUid).collection("comments").doc();
+        FirebaseFirestore.instance
+            .collection("users")
+            .doc(teacherUid)
+            .collection("comments")
+            .doc();
         final newComment = TeacherCommentsModel(
           userUid: userUid,
           teacherUid: teacherUid,
@@ -183,15 +226,19 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
         // Update teacher document with new average rating
         await FirebaseFirestore.instance.collection("users").doc(teacherUid).update({
           'averageRating': averageRating,
+          'rateCount': allCommentsSnapshot.docs.length,
         });
       }
-      rateTeacherPushNotification(teacherUid, newRating.toInt(),
-          comment: comment);
-      if(widget.oldRating == null){
-        increaseTeacherRateCount(teacherUid);
-      }
+
+      rateTeacherPushNotification(teacherUid, newRating.toInt(), comment: comment);
     } catch (error) {
       printWithColor(error);
+      if (mounted) {
+        myToast(
+          msg: "حدث خطأ أثناء إضافة التعليق",
+          state: ToastStates.error,
+        );
+      }
     }
   }
 
@@ -199,7 +246,7 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
       String teacherUid,
       int rating, {
         String? comment,
-      }) {
+      }) async {
     AppFirebaseNotification.pushNotification(
       title:
       "تقييم جديد من ${currentUserModel?.name ?? ''} (${rating.toString()} نجوم)",
@@ -207,15 +254,5 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
       dataInNotification: {"type": "studentRate"},
       topic: teacherUid,
     );
-  }
-
-  Future<void> increaseTeacherRateCount(String teacherUid) async {
-    try {
-      FirebaseFirestore.instance.collection("users").doc(teacherUid).update({
-        'rateCount': FieldValue.increment(1),
-      });
-    } catch (error) {
-      printWithColor(error);
-    }
   }
 }
