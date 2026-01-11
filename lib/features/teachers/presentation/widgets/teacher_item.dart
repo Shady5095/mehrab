@@ -119,8 +119,7 @@ class TeacherItem extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 5),
-                      if (!isFav)
-                        Text(
+                      Text(
                           teacher.isBusy
                               ? AppStrings.busy.tr(context)
                               : (teacher.isOnline
@@ -139,7 +138,7 @@ class TeacherItem extends StatelessWidget {
                     ],
                   ),
                 ),
-                if(!isFromTeacherAcc && !isFav)
+                if(!isFromTeacherAcc )
                 IconButton(
                   onPressed: () async {
                     if (!teacher.isOnline) {

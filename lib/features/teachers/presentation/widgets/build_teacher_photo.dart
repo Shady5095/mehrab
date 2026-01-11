@@ -34,12 +34,10 @@ class BuildTeacherPhoto extends StatelessWidget {
             decoration: BoxDecoration(shape: BoxShape.circle, color: imageColor),
             child: const Image(image: AssetImage(AppAssets.profilePlaceholder)),
           ),
-            if(!isFromFav)
             CircleAvatar(
               radius: 8.3,
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             ),
-            if(!isFromFav)
              CircleAvatar(
               radius: 7,
               backgroundColor: isBusy ? AppColors.redColor : (isOnline ? AppColors.coolGreen : Colors.grey[500]),
@@ -61,12 +59,11 @@ class BuildTeacherPhoto extends StatelessWidget {
             borderRadius: BorderRadius.circular(50),
           ),
         ),
-          if(!isFromFav)
+
           CircleAvatar(
             radius: 8.3,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           ),
-          if(!isFromFav)
            CircleAvatar(
             radius: 7,
             backgroundColor: isBusy ? AppColors.redColor : (isOnline ? AppColors.coolGreen : Colors.grey[500]),

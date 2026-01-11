@@ -1376,6 +1376,7 @@ class AppStrings {
   static const String curriculum = 'curriculum';
   static const String lastActive = 'lastActive';
   static const String editTeacher = 'editTeacher';
+  static const String allTeachers = 'allTeachers';
   static const String favoriteTeachers = 'favoriteTeachers';
   static const String compatibility = 'compatibility';
   static const String universityDegree = 'universityDegree';

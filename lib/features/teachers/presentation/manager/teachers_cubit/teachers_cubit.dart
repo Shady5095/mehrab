@@ -136,11 +136,31 @@ class TeachersCubit extends Cubit<TeachersState> {
   }) {
     Query queryRef =
         isFav
-            ? db
-                .collection('users')
-                .doc(myUid)
-                .collection('favoriteTeachers')
-                .where("userRole", isEqualTo: "teacher")
+            ? AppConstants.isAdmin
+                ? db
+                    .collection('users')
+                    .where("userRole", whereIn: ["teacher", "teacherTest"])
+                    .where(
+                      "favoriteStudentsUid",
+                      arrayContains: currentUserModel?.uid ?? "",
+                    )
+                    .orderBy("isOnline", descending: true)
+                    .orderBy("lastActive", descending: true)
+                    .orderBy("name", descending: false)
+                : db
+                    .collection('users')
+                    .where("userRole", isEqualTo: "teacher")
+                    .where(
+                      "isMale",
+                      isEqualTo: currentUserModel?.isMale ?? true,
+                    )
+                    .where(
+                      "favoriteStudentsUid",
+                      arrayContains: currentUserModel?.uid ?? "",
+                    )
+                    .orderBy("isOnline", descending: true)
+                    .orderBy("lastActive", descending: true)
+                    .orderBy("name", descending: false)
             : AppConstants.isAdmin
             ? db
                 .collection('users')
@@ -171,25 +191,22 @@ class TeachersCubit extends Cubit<TeachersState> {
         .doc(model.uid)
         .update({"isOnline": !model.isOnline, 'isBusy': false})
         .then((value) {
-      if (!model.isOnline) {
-        myToast(
-          msg: "تم تحويل حالة المعلم الي متاح",
-          state: ToastStates.success,
-        );
-      } else {
-        myToast(
-          msg: "تم تحويل حالة المعلم الي غير متاح",
-          state: ToastStates.normal,
-        );
-        setLastActive(model);
-      }
-    })
+          if (!model.isOnline) {
+            myToast(
+              msg: "تم تحويل حالة المعلم الي متاح",
+              state: ToastStates.success,
+            );
+          } else {
+            myToast(
+              msg: "تم تحويل حالة المعلم الي غير متاح",
+              state: ToastStates.normal,
+            );
+            setLastActive(model);
+          }
+        })
         .catchError((error) {
-      myToast(
-        msg: "حدث خطأ ما: $error",
-        state: ToastStates.error,
-      );
-    });
+          myToast(msg: "حدث خطأ ما: $error", state: ToastStates.error);
+        });
   }
 
   void setLastActive(TeacherModel model) {
@@ -197,6 +214,7 @@ class TeachersCubit extends Cubit<TeachersState> {
       "lastActive": FieldValue.serverTimestamp(),
     });
   }
+
   @override
   Future<void> close() {
     searchController.dispose();

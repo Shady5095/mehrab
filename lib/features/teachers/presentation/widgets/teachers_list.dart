@@ -12,12 +12,13 @@ import '../../../../core/widgets/list_empty_widget.dart';
 import '../../data/models/teachers_model.dart';
 
 class TeachersList extends StatelessWidget {
-  const TeachersList({super.key});
+  final bool? isFavOverride;
+  const TeachersList({super.key, this.isFavOverride});
 
   @override
   Widget build(BuildContext context) {
     List<dynamic> args = ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [];
-    final bool isFav = args.isNotEmpty ? args[0] as bool : false;
+    final bool isFav = isFavOverride ?? (args.isNotEmpty ? args[0] as bool : false);
 
     return BlocBuilder<TeachersCubit, TeachersState>(
       buildWhen: (previous, current) => current is TeachersSearchUpdatedState,
