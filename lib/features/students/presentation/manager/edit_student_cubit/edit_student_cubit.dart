@@ -39,6 +39,8 @@ class EditStudentCubit extends Cubit<EditStudentState> {
     final XFile? pickedFile = await ImagePicker().pickImage(
       source: ImageSource.gallery,
       imageQuality: 65,
+      maxHeight: 1000,
+      maxWidth: 1000,
     );
     if (pickedFile != null) {
       final croppedFile = await ImageCropper().cropImage(
