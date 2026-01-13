@@ -109,6 +109,7 @@ class TeacherItem extends StatelessWidget {
                           SizedBox(width: 2),
                           Icon(Icons.star, color: Colors.amber, size: 17.sp),
                           SizedBox(width: 2),
+                          if(AppConstants.isAdmin)
                           Text(
                             "(${teacher.rateCount})",
                             style: TextStyle(
