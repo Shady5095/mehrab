@@ -8,11 +8,17 @@ import 'package:mehrab/features/teachers/data/models/teacher_comment_model.dart'
 import '../../../../core/utilities/functions/format_date_and_time.dart';
 import '../../../../core/utilities/resources/colors.dart';
 import '../../../../core/widgets/my_cached_image_widget.dart';
+import 'add_comment_dialog.dart';
 
 class TeacherCommentItem extends StatelessWidget {
   final TeacherCommentsModel model;
+  final VoidCallback? onCommentUpdated;
 
-  const TeacherCommentItem({super.key, required this.model});
+  const TeacherCommentItem({
+    super.key,
+    required this.model,
+    this.onCommentUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -55,49 +61,66 @@ class TeacherCommentItem extends StatelessWidget {
                         itemPadding: const EdgeInsets.symmetric(
                           horizontal: 0.0,
                         ),
-                        itemBuilder:
-                            (context, _) => Icon(Icons.star, color: Colors.amber,size: 17.sp,),
+                        itemBuilder: (context, _) => Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                          size: 17.sp,
+                        ),
                         onRatingUpdate: (rating) {},
                       ),
                     ],
                   ),
                 ),
-                SizedBox(
-                  width: 7,
-                ),
+                SizedBox(width: 7),
                 Text(
                   formatDate(context, model.timestamp),
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                 ),
+                if (AppConstants.isAdmin)
+                  IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (newContext) => AddCommentDialog(
+                          teacherUid: model.teacherUid,
+                          oldComment: model.comment,
+                          oldRating: model.rating.toDouble(),
+                          isAdminEdit: true,
+                          commentUserUid: model.userUid,
+                          onCommentAdded: () {
+                            // تحديث قائمة التعليقات
+                            onCommentUpdated?.call();
+                          },
+                        ),
+                      );
+                    },
+                    icon: Icon(
+                      Icons.edit,
+                      size: 18.sp,
+                      color: AppColors.myAppColor,
+                    ),
+                  ),
               ],
             ),
-            if(model.comment != null)
-              SizedBox(height: 7),
-            if(model.comment != null && model.comment?.trim() != '')
-            Text(
-              model.comment ?? '',
-              style: TextStyle(
-                fontSize: 14.sp,
-              ),
-            ),
+            if (model.comment != null) SizedBox(height: 7),
+            if (model.comment != null && model.comment?.trim() != '')
+              Text(model.comment ?? '', style: TextStyle(fontSize: 14.sp)),
           ],
         ),
       ),
     );
   }
 
-  Widget buildMyComment({
-    required Widget child,
-  }){
-    if(model.userUid == myUid){
+  Widget buildMyComment({required Widget child}) {
+    if (model.userUid == myUid) {
       return Container(
         padding: EdgeInsets.all(12.sp),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: AppColors.myAppColor.withValues(alpha: 0.5), width: 1.5),
+          border: Border.all(
+            color: AppColors.myAppColor.withValues(alpha: 0.5),
+            width: 1.5,
+          ),
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
@@ -109,11 +132,12 @@ class TeacherCommentItem extends StatelessWidget {
         ),
         child: child,
       );
-    }else{
+    } else {
       return child;
     }
   }
 }
+
 class BuildUserItemPhoto extends StatelessWidget {
   const BuildUserItemPhoto({
     super.key,
@@ -124,7 +148,6 @@ class BuildUserItemPhoto extends StatelessWidget {
 
   final String? imageUrl;
   final double radius;
-
   final Color? imageColor;
 
   @override
@@ -135,7 +158,10 @@ class BuildUserItemPhoto extends StatelessWidget {
         children: [
           Container(
             width: radius * 2,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: imageColor),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: imageColor,
+            ),
             child: const Image(image: AssetImage(AppAssets.profilePlaceholder)),
           ),
         ],

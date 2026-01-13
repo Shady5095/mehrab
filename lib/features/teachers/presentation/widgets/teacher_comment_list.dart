@@ -214,7 +214,13 @@ class _TeacherCommentListState extends State<TeacherCommentList> {
                 final comment = orderedComments[index];
                 return ListItemAnimation(
                   index: index,
-                  child: TeacherCommentItem(model: comment),
+                  child: TeacherCommentItem(
+                    model: comment,
+                    onCommentUpdated: () {
+                      // تحديث قائمة التعليقات بعد التعديل
+                      _loadInitialData();
+                    },
+                  ),
                 );
               },
             ),

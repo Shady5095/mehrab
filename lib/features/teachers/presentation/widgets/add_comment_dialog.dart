@@ -20,12 +20,18 @@ class AddCommentDialog extends StatefulWidget {
   final double? oldRating;
   final VoidCallback? onCommentAdded;
 
+  // معلومات إضافية للأدمن
+  final bool isAdminEdit;
+  final String? commentUserUid; // uid المستخدم صاحب التعليق
+
   const AddCommentDialog({
     super.key,
     required this.teacherUid,
     this.oldComment,
     this.oldRating,
     this.onCommentAdded,
+    this.isAdminEdit = false,
+    this.commentUserUid,
   });
 
   @override
@@ -59,12 +65,15 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
     return MyAlertDialog(
       makeIosAndAndroidSameDialog: true,
       width: 75.wR,
-      title: AppStrings.addComment.tr(context),
+      title: widget.isAdminEdit
+          ? "تعديل التعليق"
+          : AppStrings.addComment.tr(context),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            AppStrings.howDoYouRateThisTeacher.tr(context),
+            widget.isAdminEdit
+                ? "تعديل التعليق" : AppStrings.howDoYouRateThisTeacher.tr(context),
             style: TextStyle(
               fontSize: 15.sp,
               fontWeight: FontWeight.bold,
@@ -102,7 +111,9 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
       ),
       actions: <Widget>[
         TextButton(
-          onPressed: _isLoading ? null : () {
+          onPressed: _isLoading
+              ? null
+              : () {
             Navigator.of(context).pop();
           },
           child: Text(
@@ -115,17 +126,30 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
           ),
         ),
         TextButton(
-          onPressed: _isLoading ? null : () async {
+          onPressed: _isLoading
+              ? null
+              : () async {
             if (rating != 0.0) {
               setState(() {
                 _isLoading = true;
               });
 
-              await rateTeacher(
-                widget.teacherUid,
-                rating,
-                comment: commentController.text,
-              );
+              if (widget.isAdminEdit) {
+                // الأدمن يعدل تعليق مستخدم آخر
+                await updateCommentAsAdmin(
+                  widget.teacherUid,
+                  widget.commentUserUid!,
+                  rating,
+                  comment: commentController.text,
+                );
+              } else {
+                // المستخدم العادي يضيف أو يعدل تعليقه
+                await rateTeacher(
+                  widget.teacherUid,
+                  rating,
+                  comment: commentController.text,
+                );
+              }
 
               if (mounted) {
                 Navigator.of(context).pop();
@@ -133,10 +157,13 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
                   msg: AppStrings.commentAddedSuccessfully.tr(context),
                   state: ToastStates.success,
                 );
-                CacheService.setData(
-                  key: "isThisTeacherRated-${widget.teacherUid}",
-                  value: true,
-                );
+
+                if (!widget.isAdminEdit) {
+                  CacheService.setData(
+                    key: "isThisTeacherRated-${widget.teacherUid}",
+                    value: true,
+                  );
+                }
 
                 // Call the callback to refresh the list
                 widget.onCommentAdded?.call();
@@ -149,7 +176,8 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
             }
           },
           child: Text(
-            AppStrings.send.tr(context),
+            widget.isAdminEdit
+                ? "تم" :AppStrings.send.tr(context),
             style: TextStyle(
               color: _isLoading
                   ? Colors.grey
@@ -163,12 +191,66 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
     );
   }
 
-  Future<void> rateTeacher(String teacherUid, num newRating, {String? comment}) async {
+  // دالة تعديل التعليق من قبل الأدمن - بدون commentId
+  Future<void> updateCommentAsAdmin(
+      String teacherUid,
+      String originalUserUid,
+      num newRating, {
+        String? comment,
+      }) async {
+    try {
+      // البحث عن التعليق باستخدام userUid
+      final commentsSnapshot = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(teacherUid)
+          .collection("comments")
+          .where('userUid', isEqualTo: originalUserUid)
+          .limit(1)
+          .get();
+
+      if (commentsSnapshot.docs.isEmpty) {
+        throw Exception("التعليق غير موجود");
+      }
+
+      // الحصول على مرجع التعليق
+      final commentDoc = commentsSnapshot.docs.first;
+      final currentData = commentDoc.data();
+
+      // تحديث التعليق مع الحفاظ على معلومات المستخدم الأصلي
+      await commentDoc.reference.update({
+        'comment': comment ?? currentData['comment'],
+        'rating': newRating,
+        'timestamp': currentData['timestamp'],
+        // الحفاظ على معلومات المستخدم الأصلي
+        'userUid': originalUserUid,
+        'userName': currentData['userName'],
+        'userImage': currentData['userImage'],
+        'teacherUid': teacherUid,
+      });
+
+      // إعادة حساب متوسط التقييم
+      await _recalculateAverageRating(teacherUid);
+
+      printWithColor("تم تعديل التعليق بنجاح من قبل المسؤول");
+    } catch (error) {
+      printWithColor(error);
+      if (mounted) {
+        myToast(
+          msg: "حدث خطأ أثناء تعديل التعليق",
+          state: ToastStates.error,
+        );
+      }
+      rethrow;
+    }
+  }
+
+  // الدالة الأصلية للمستخدم العادي
+  Future<void> rateTeacher(String teacherUid, num newRating,
+      {String? comment}) async {
     final userUid = currentUserModel?.uid ?? '';
     try {
       // Find existing comment by the user
-      final commentsSnapshot =
-      await FirebaseFirestore.instance
+      final commentsSnapshot = await FirebaseFirestore.instance
           .collection("users")
           .doc(teacherUid)
           .collection("comments")
@@ -192,8 +274,7 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
         await commentDoc.reference.update(updatedComment.toJson());
       } else {
         // Add new comment with commentId
-        final commentRef =
-        FirebaseFirestore.instance
+        final commentRef = FirebaseFirestore.instance
             .collection("users")
             .doc(teacherUid)
             .collection("comments")
@@ -211,26 +292,11 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
         await commentRef.set(newComment.toJson());
       }
 
-      // Recalculate average rating after comment is set/updated
-      final allCommentsSnapshot =
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(teacherUid)
-          .collection("comments")
-          .get();
-      if (allCommentsSnapshot.docs.isNotEmpty) {
-        final totalRating = allCommentsSnapshot.docs
-            .map((doc) => (doc.data()['rating'] as num))
-            .reduce((a, b) => a + b);
-        final averageRating = totalRating / allCommentsSnapshot.docs.length;
-        // Update teacher document with new average rating
-        await FirebaseFirestore.instance.collection("users").doc(teacherUid).update({
-          'averageRating': averageRating,
-          'rateCount': allCommentsSnapshot.docs.length,
-        });
-      }
+      // إعادة حساب متوسط التقييم
+      await _recalculateAverageRating(teacherUid);
 
-      rateTeacherPushNotification(teacherUid, newRating.toInt(), comment: comment);
+      rateTeacherPushNotification(teacherUid, newRating.toInt(),
+          comment: comment);
     } catch (error) {
       printWithColor(error);
       if (mounted) {
@@ -239,6 +305,31 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
           state: ToastStates.error,
         );
       }
+    }
+  }
+
+  // دالة مشتركة لإعادة حساب متوسط التقييم
+  Future<void> _recalculateAverageRating(String teacherUid) async {
+    final allCommentsSnapshot = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(teacherUid)
+        .collection("comments")
+        .get();
+
+    if (allCommentsSnapshot.docs.isNotEmpty) {
+      final totalRating = allCommentsSnapshot.docs
+          .map((doc) => (doc.data()['rating'] as num))
+          .reduce((a, b) => a + b);
+      final averageRating = totalRating / allCommentsSnapshot.docs.length;
+
+      // Update teacher document with new average rating
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(teacherUid)
+          .update({
+        'averageRating': averageRating,
+        'rateCount': allCommentsSnapshot.docs.length,
+      });
     }
   }
 

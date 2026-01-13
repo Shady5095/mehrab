@@ -12,6 +12,7 @@ import 'package:mehrab/core/widgets/buttons_widget.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:custom_clippers/custom_clippers.dart';
+import '../../../../core/config/routes/app_routes.dart';
 import '../../../../core/utilities/services/app_review_service.dart';
 import '../../../students/presentation/widgets/build_user_item_photo.dart';
 import '../manager/student_call_cubit/student_call_cubit.dart';
@@ -288,6 +289,18 @@ class StudentCallScreenBody extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            if(cubit.isAnotherUserJoined&& !cubit.isVideoEnabled)
+                              ...[InkWell(
+                                onTap: () {
+                                  context.navigateTo(pageName: AppRoutes.quranWebView);
+                                },
+                                child: ImageIcon(
+                                  AssetImage('assets/images/book.png'),
+                                  color: Colors.white,
+                                  size: 30.sp,
+                                ),
+                              ),
+                                Spacer(),],
                             if (!cubit.isCallAnswered)
                               Lottie.asset(
                                 "assets/json/ringing2.json",
@@ -334,7 +347,17 @@ class StudentCallScreenBody extends StatelessWidget {
                                 color: Colors.white,
                               ),
                             ),
-
+                            if(cubit.isAnotherUserJoined && !cubit.isVideoEnabled)
+                              ...[Spacer(),
+                                Opacity(
+                                  opacity: 0,
+                                  child: ImageIcon(
+                                    AssetImage('assets/images/book.png'),
+                                    color: Colors.white,
+                                    size: 30.sp,
+                                  ),
+                                ),
+                                ],
                           ],
                         ),
                         if(!cubit.isRemoteVideoEnabled)
