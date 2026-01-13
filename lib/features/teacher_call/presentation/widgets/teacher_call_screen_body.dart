@@ -224,10 +224,10 @@ class TeacherCallScreenBody extends StatelessWidget {
                               onTap: () {
                                 context.navigateTo(pageName: AppRoutes.rateSessionScreen,arguments: [cubit.latestCallData, true,true]);
                               },
-                              child: Icon(
-                                Icons.edit,
-                                size: 27.sp,
+                              child: ImageIcon(
+                                AssetImage('assets/images/editSession.png'),
                                 color: Colors.white,
+                                size: 30.sp,
                               ),
                             )],
                           ],

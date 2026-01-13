@@ -12,7 +12,6 @@ import 'package:mehrab/core/utilities/services/cache_service.dart';
 import 'package:mehrab/core/utilities/services/firebase_notification.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
 import 'package:mehrab/features/sessions/presentation/screens/sessions_screen.dart';
-import 'package:mehrab/features/students/presentation/screens/students_screen.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
 import '../../../../../core/config/routes/app_routes.dart';
 import '../../../../../core/utilities/functions/toast.dart';
@@ -39,7 +38,7 @@ class HomeCubit extends Cubit<HomeState> {
   ];
   List<Widget> homeLayoutScreensForTeachers = [
     HomeView(),
-    StudentsScreen(isShowBackButton: false),
+    //StudentsScreen(isShowBackButton: false),
     CallsScreen(),
     SessionsScreen(),
     MoreScreen(),

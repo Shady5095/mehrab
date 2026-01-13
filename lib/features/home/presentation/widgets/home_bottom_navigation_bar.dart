@@ -32,7 +32,7 @@ class HomeBottomNavigationBar extends StatelessWidget {
               icon: const Icon(CupertinoIcons.home),
               label: AppStrings.home.tr(context),
             ),
-            if (cubit.userModel != null)
+            if (cubit.userModel != null && !AppConstants.isTeacher)
               NavigationDestination(
                 icon: ImageIcon(
                   size: 30.sp,

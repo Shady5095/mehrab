@@ -27,6 +27,7 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
     AppStrings.password,
     if(AppConstants.isAdmin)
     AppStrings.phone,
+    if(AppConstants.isAdmin)
     AppStrings.nationality,
     AppStrings.educationLevel,
     AppStrings.favoriteIgaz,
@@ -55,6 +56,7 @@ class _StudentProfileDataWidgetState extends State<StudentProfileDataWidget> {
       widget.model.password,
       if(AppConstants.isAdmin)
         widget.model.phoneNumber.isEmpty  ? null : "${widget.model.countryCodeNumber.replaceAll('+', '')}${widget.model.phoneNumber}",
+      if(AppConstants.isAdmin)
       widget.model.nationality,
       widget.model.educationalLevel,
       widget.model.favoriteIgaz,
