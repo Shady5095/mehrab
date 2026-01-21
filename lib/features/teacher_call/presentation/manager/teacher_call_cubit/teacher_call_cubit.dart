@@ -5,16 +5,24 @@ import 'package:meta/meta.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:screen_off/screen_off.dart';
 
 import '../../../../../core/utilities/services/call_foreground_service.dart';
-import '../../../../../core/utilities/services/call_service.dart';
+import '../../../../../core/utilities/services/webrtc_call_service.dart';
+import '../../../../../core/utilities/services/socket_service.dart';
+import '../../../../../core/utilities/services/turn_credential_service.dart';
+import '../../../../../core/utilities/services/audio_session_service.dart';
+import '../../../../../core/utilities/services/webrtc_constants.dart';
 import '../../../../../core/utilities/services/firebase_notification.dart';
+import '../../../../../core/utilities/functions/dependency_injection.dart';
 part 'teacher_call_state.dart';
 
 class TeacherCallCubit extends Cubit<TeacherCallState> {
@@ -25,9 +33,16 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
 
   static TeacherCallCubit get(context) => BlocProvider.of(context);
 
-  late AgoraCallService callService;
+  late WebRTCCallService callService;
+  late SocketService socketService;
+  late AudioSessionService audioSessionService;
+  final TurnCredentialService _turnService = getIt<TurnCredentialService>();
+
   final db = FirebaseFirestore.instance;
   final AudioPlayer _player = AudioPlayer();
+
+  String? _remoteSocketId;
+  final List<RTCIceCandidate> _pendingCandidates = [];
 
   Future<void> requestPermissions() async {
     // check and request microphone permission
@@ -43,6 +58,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       'isBusy': true,
     });
   }
+
   Future<bool> requestCameraPermission() async {
     var cameraStatus = await Permission.camera.status;
 
@@ -80,8 +96,8 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       await Future.delayed(Duration(milliseconds: 300));
     }
     makeTeacherBusy();
-    await setupAgoraCallService();
-    joinAgoraChannel(callModel.callId);
+    await setupWebRTCCallService();
+    await connectToSignalingServer();
   }
 
   Future<void> endCall() async {
@@ -105,7 +121,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       });
       await Future.wait([
         batch.commit(),
-        endAgoraCall(),
+        endWebRTCCall(),
         AppFirebaseNotification.endCall(callModel.callId),
       ]);
       emit(CallFinished());
@@ -138,8 +154,8 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
         CallModel data = CallModel.fromJson(snapshot.data() ?? {});
         
         // Listen for pre-comments (only if call is connected and not ended)
-        if (isCallConnected && 
-            data.status != 'ended' && 
+        if (isCallConnected &&
+            data.status != 'ended' &&
             data.status != 'missed') {
           final preComment = snapshot.data()?['preComment'] as String?;
           
@@ -170,20 +186,38 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   bool isSpeakerOn = true;
   bool isVideoEnabled = false;
   bool isRemoteVideoEnabled = false;
-  int? remoteUid;
+  String? remoteUid;
 
-  Future<void> setupAgoraCallService() async {
-    callService = AgoraCallService();
-    callService.onUserJoined = (uid) {
-      remoteUid = uid;
+  Future<void> setupWebRTCCallService() async {
+    callService = WebRTCCallService();
+    audioSessionService = AudioSessionService();
+
+    // Configure audio session
+    await audioSessionService.configureForCall();
+
+    // Fetch TURN credentials
+    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if (authToken != null) {
+      final iceConfig = await _turnService.fetchCredentials(authToken);
+      if (iceConfig != null) {
+        callService.setIceServers(iceConfig);
+      }
+    }
+
+    callService.onUserJoined = (peerId) {
+      remoteUid = peerId;
     };
-    callService.onUserLeft = (uid) async {
+
+    callService.onUserLeft = (peerId) async {
       await endCall();
     };
+
     callService.onError = (error) {
       emit(AgoraConnectionError(error: error));
     };
+
     callService.onCallEnded = () {};
+
     callService.onConnectionSuccess = () {
       startCallTimer();
       isCallConnected = true;
@@ -195,18 +229,82 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       initCallListener(); // Start listening for pre-comments
       emit(TeacherCallInitial());
     };
-    callService.onRemoteVideoStateChanged = (uid, enabled) {
+
+    callService.onRemoteVideoStateChanged = (peerId, enabled) {
       isRemoteVideoEnabled = enabled;
       emit(RemoteVideoStateChanged());
     };
+
+    callService.onIceCandidate = (candidate) {
+      if (_remoteSocketId != null) {
+        socketService.sendIceCandidate(candidate, _remoteSocketId!);
+      } else {
+        _pendingCandidates.add(candidate);
+      }
+    };
+
     await callService.initialize();
   }
 
-  Future<void> joinAgoraChannel(String channelId) async {
-    await callService.joinChannel(channelId);
+  Future<void> connectToSignalingServer() async {
+    socketService = SocketService();
+
+    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if (authToken == null) {
+      emit(AgoraConnectionError(error: 'Authentication failed'));
+      return;
+    }
+
+    socketService.onConnected = () {
+      debugPrint('Teacher: Connected to signaling server');
+      // Join the room immediately when connected
+      socketService.joinRoom(callModel.callId);
+    };
+
+    socketService.onError = (error) {
+      debugPrint('Teacher: Socket error: $error');
+      emit(AgoraConnectionError(error: error));
+    };
+
+    // Handle offer from student
+    socketService.onOfferReceived = (offer, fromSocketId, fromUid) async {
+      debugPrint('Teacher: Received offer from student');
+      _remoteSocketId = fromSocketId;
+
+      // Send any pending ICE candidates
+      for (var candidate in _pendingCandidates) {
+        socketService.sendIceCandidate(candidate, fromSocketId);
+      }
+      _pendingCandidates.clear();
+
+      // Create and send answer
+      try {
+        final answer = await callService.createAnswer(offer);
+        socketService.sendAnswer(answer, fromSocketId);
+      } catch (e) {
+        emit(AgoraConnectionError(error: 'Failed to create answer: $e'));
+      }
+    };
+
+    // Handle ICE candidates from student
+    socketService.onIceCandidateReceived = (candidate, fromSocketId) {
+      callService.addIceCandidate(candidate);
+    };
+
+    socketService.onUserLeft = (odId, socketId) async {
+      debugPrint('Teacher: Student left');
+      await endCall();
+    };
+
+    await socketService.connect(
+      WebRTCConstants.signalingServerUrl,
+      authToken,
+    );
   }
 
-  Future<void> endAgoraCall() async {
+  Future<void> endWebRTCCall() async {
+    socketService.leaveRoom(callModel.callId);
+    await socketService.disconnect();
     await callService.endCall();
   }
 
@@ -342,6 +440,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       emit(AgoraConnectionError(error: 'فشل إرسال التعليق: $error'));
     }
   }
+
   final List<String> preComments = [
     'ما شاء الله 🌿',
     'ممتاز جدًا 👏',
@@ -360,6 +459,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     'إنتبه ⚠️',
     'تجويد ممتاز 🎵',
   ];
+
   @override
   Future<void> close() {
     stopSound();
@@ -368,7 +468,9 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     stopCallTimer();
     _clearPreComment();
     _callSubscription?.cancel();
+    socketService.dispose();
     callService.dispose();
+    audioSessionService.dispose();
     if (Platform.isAndroid) {
       disableProximitySensor();
       CallForegroundService.stopCallService();

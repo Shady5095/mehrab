@@ -16,8 +16,10 @@ import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Initialize Firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Initialize Firebase for background isolate
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  }
 
   debugPrint('🔔 Background message received: ${message.messageId}');
 
@@ -67,8 +69,10 @@ void main() async {
   await Future.wait([
     LocalNotificationsService.init(),
     CacheService.init(),
-    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
   ]);
+
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Register FCM background message handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

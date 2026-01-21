@@ -18,8 +18,7 @@ import Intents
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
 
-        // Initialize Firebase
-        FirebaseApp.configure()
+        // Firebase is initialized in Dart via Firebase.initializeApp()
 
         // Register Flutter plugins
         GeneratedPluginRegistrant.register(with: self)

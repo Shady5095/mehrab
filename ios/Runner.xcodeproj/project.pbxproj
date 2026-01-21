@@ -57,7 +57,7 @@
 		C95CE9A32E93000F007EBDD8 /* GoogleSignIn.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = GoogleSignIn.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		C95CE9A42E93000F007EBDD8 /* GoogleSignIn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GoogleSignIn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C95CE9A92E930100007EBDD8 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		C97DE0512E94508700BA05FE /* Flutter.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:S8QB4VV633:FLUTTER.IO LLC"; lastKnownFileType = wrapper.xcframework; name = Flutter.xcframework; path = ../../../Development/flutter/bin/cache/artifacts/engine/ios/Flutter.xcframework; sourceTree = "<group>"; };
+		C97DE0512E94508700BA05FE /* Flutter.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:S8QB4VV633:FLUTTER.IO LLC"; lastKnownFileType = wrapper.xcframework; name = Flutter.xcframework; path = "$(FLUTTER_ROOT)/bin/cache/artifacts/engine/ios/Flutter.xcframework"; sourceTree = "<group>"; };
 		C9BA19F12E93C9C300D70CA9 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		CA07B874FB8238715D92F7BF /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */

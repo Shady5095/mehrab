@@ -1,7 +1,7 @@
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart' hide MessageType;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
@@ -216,14 +216,10 @@ class StudentCallScreenBody extends StatelessWidget {
             // Remote video (full screen when enabled)
             if (cubit.isRemoteVideoEnabled && cubit.remoteUid != null)
               Positioned.fill(
-                child: AgoraVideoView(
-                  controller: VideoViewController.remote(
-                    rtcEngine: cubit.callService.engine!,
-                    canvas: VideoCanvas(uid: cubit.remoteUid),
-                    connection: RtcConnection(
-                      channelId: cubit.callDocId ?? '',
-                    ),
-                  ),
+                child: RTCVideoView(
+                  cubit.callService.remoteRenderer,
+                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                  mirror: false,
                 ),
               ),
 
@@ -266,11 +262,10 @@ class StudentCallScreenBody extends StatelessWidget {
                       ],
                     ),
                     clipBehavior: Clip.hardEdge,
-                    child: AgoraVideoView(
-                      controller: VideoViewController(
-                        rtcEngine: cubit.callService.engine!,
-                        canvas: const VideoCanvas(uid: 0),
-                      ),
+                    child: RTCVideoView(
+                      cubit.callService.localRenderer,
+                      objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      mirror: true,
                     ),
                   ),
                 ),
