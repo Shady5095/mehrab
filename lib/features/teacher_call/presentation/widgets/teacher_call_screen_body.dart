@@ -556,11 +556,12 @@ class TeacherCallScreenBody extends StatelessWidget {
                       _showCustomCommentDialog(context, cubit);
                     },
                     child: DottedBorder(
-                      borderType: BorderType.RRect,
-                      radius: Radius.circular(25),
-                      color: AppColors.myAppColor,
-                      strokeWidth: 1.5,
-                      dashPattern: [6, 3],
+                      options: RoundedRectDottedBorderOptions(
+                        radius: const Radius.circular(25),
+                        color: AppColors.myAppColor,
+                        strokeWidth: 1.5,
+                        dashPattern: const [6, 3],
+                      ),
                       child: Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 9,

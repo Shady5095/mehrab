@@ -287,7 +287,7 @@ class _QuranSurahDialogState extends State<QuranSurahDialog> {
                       : ListView.separated(
                     shrinkWrap: true,
                     itemCount: _filteredSurahs.length,
-                    separatorBuilder: (_, __) => Divider(
+                    separatorBuilder: (context, index) => Divider(
                       color: Colors.green[200],
                       height: 1,
                     ),

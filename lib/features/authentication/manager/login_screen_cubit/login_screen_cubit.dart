@@ -36,27 +36,38 @@ class LoginCubit extends Cubit<LoginStates> {
     }
   }
 
+  bool _googleSignInInitialized = false;
+
+  Future<void> _initGoogleSignIn() async {
+    if (!_googleSignInInitialized) {
+      await GoogleSignIn.instance.initialize();
+      _googleSignInInitialized = true;
+    }
+  }
+
   Future<void> signInWithGoogle() async {
     emit(GoogleSignInWaitingState());
     try {
-      await GoogleSignIn().signOut();
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      await _initGoogleSignIn();
+      await GoogleSignIn.instance.signOut();
 
-      if (googleUser == null) {
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate(
+        scopeHint: ['email', 'profile'],
+      );
+
+      if(await isEmailAlreadyRegistered(googleUser.email)){
+        await GoogleSignIn.instance.signOut();
+        emit(ThisEmailSignedWithEmailAndPasswordMethod());
         return;
-      }else{
-        if(await isEmailAlreadyRegistered(googleUser.email)){
-          await GoogleSignIn().signOut();
-          emit(ThisEmailSignedWithEmailAndPasswordMethod());
-          return;
-        }
       }
 
-      final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
+      final googleAuth = googleUser.authentication;
+
+      // Get access token via authorization client
+      final clientAuth = await googleUser.authorizationClient.authorizeScopes(['email', 'profile']);
 
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
+        accessToken: clientAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 

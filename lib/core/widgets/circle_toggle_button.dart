@@ -155,7 +155,7 @@ class CircleToggleButtonGridView extends StatefulWidget {
   });
 
   @override
-  _CircleToggleButtonGridViewState createState() =>
+  State<CircleToggleButtonGridView> createState() =>
       _CircleToggleButtonGridViewState();
 }
 
@@ -276,7 +276,7 @@ class CircleToggleButtonGridViewWithMultiSelection extends StatefulWidget {
   });
 
   @override
-  _CircleToggleButtonGridViewWithMultiSelectionState createState() =>
+  State<CircleToggleButtonGridViewWithMultiSelection> createState() =>
       _CircleToggleButtonGridViewWithMultiSelectionState();
 }
 

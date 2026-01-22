@@ -9,6 +9,6 @@ void appLaunchUrl(String link) async {
   });
 }
 
-void launchHtmlUrl(String? url, Map<String, String> _, dynamic __) {
+void launchHtmlUrl(String? url, Map<String, String> attributes, dynamic element) {
   appLaunchUrl(url ?? '');
 }

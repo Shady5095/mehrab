@@ -22,10 +22,8 @@ class BiometricService {
 
     final didAuthenticate = await _auth.authenticate(
       localizedReason: reason,
-      options: const AuthenticationOptions(
-        biometricOnly: true,
-        stickyAuth: true, // يفضل في Android عشان يفضل شغال لو رجع من الخلفية
-      ),
+      biometricOnly: true,
+      persistAcrossBackgrounding: true, // يفضل في Android عشان يفضل شغال لو رجع من الخلفية
     );
 
     return didAuthenticate;

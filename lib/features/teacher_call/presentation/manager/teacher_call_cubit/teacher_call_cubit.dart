@@ -1,7 +1,4 @@
 import 'dart:io';
-
-import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

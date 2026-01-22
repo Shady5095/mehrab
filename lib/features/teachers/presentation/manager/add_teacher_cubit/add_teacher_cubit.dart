@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -13,7 +12,6 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/features/teachers/data/models/teachers_model.dart';
-import 'package:meta/meta.dart';
 import 'package:file_picker/file_picker.dart';
 
 import '../../../../../core/utilities/functions/print_with_color.dart';

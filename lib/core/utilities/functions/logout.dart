@@ -1,7 +1,3 @@
-import '../resources/constants.dart';
-import '../services/cache_service.dart';
-import '../services/firebase_notification.dart';
-
 /*Future<void> deleteAppCache() async {
   await Future.wait([
     CacheService.removeData(key: AppConstants.token),

@@ -283,8 +283,8 @@ class AppConstants {
   /// Courses Filters
 
   // assignment
-  static const String assignment_id = 'assignment_id';
-  static const String lesson_id = 'lesson_id';
+  static const String assignmentId = 'assignment_id';
+  static const String lessonId = 'lesson_id';
 
   // static final htmlImageStyle = {
   //   'img': Style(

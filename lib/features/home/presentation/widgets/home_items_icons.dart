@@ -151,7 +151,7 @@ class HomeItemsIcons extends StatelessWidget {
     ];
 
     // حساب الـ text scale factor لتكبير الارتفاع بناءً عليه
-    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
+    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
     // حساب childAspectRatio بناءً على text scale
     // كلما كبر الخط، نقلل الـ aspect ratio (يعني البطاقة تبقى أطول)
     final baseAspectRatio = 1.35;
@@ -210,7 +210,7 @@ class HomeItemsIcons extends StatelessWidget {
         required Function() onTap,
       }) {
     // الحصول على text scale factor
-    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
+    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
     // حساب أحجام responsive
     final responsivePadding = 10.0 * textScaleFactor.clamp(1.0, 1.3);
     final responsiveIconPadding = 8.0 * textScaleFactor.clamp(1.0, 1.3);

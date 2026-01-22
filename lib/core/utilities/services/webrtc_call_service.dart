@@ -252,7 +252,7 @@ class WebRTCCallService {
           final senders = await _peerConnection?.getSenders();
           final videoSender = senders?.firstWhere(
             (s) => s.track?.kind == 'video',
-            orElse: () => senders!.first,
+            orElse: () => senders.first,
           );
           if (videoSender != null) {
             await videoSender.replaceTrack(track);
@@ -271,7 +271,7 @@ class WebRTCCallService {
             final senders = await _peerConnection?.getSenders();
             final videoSender = senders?.firstWhere(
               (s) => s.track?.kind == 'video',
-              orElse: () => senders!.first,
+              orElse: () => senders.first,
             );
             if (videoSender != null) {
               await videoSender.replaceTrack(null);
