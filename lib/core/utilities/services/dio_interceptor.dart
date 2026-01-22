@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../resources/constants.dart';
 import 'cache_service.dart';
+import 'secure_cache_service.dart';
 
 class DioInterceptor extends Interceptor {
   static bool isDialogShowing = false;
@@ -8,16 +9,22 @@ class DioInterceptor extends Interceptor {
   const DioInterceptor();
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    CacheService.token = CacheService.getData(key: AppConstants.token);
-    CacheService.baseUrl = CacheService.getData(key: AppConstants.baseUrl);
+  Future<void> onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    // SECURITY FIX: Load token from secure storage instead of SharedPreferences
+    // Addresses CWE-311 (Missing Encryption of Sensitive Data)
+    final token = await SecureCacheService.getToken();
+    final baseUrl = await SecureCacheService.getBaseUrl();
 
-    if (CacheService.token != null) {
-      options.headers['Authorization'] = 'Bearer ${CacheService.token}';
+    if (token != null) {
+      options.headers['Authorization'] = 'Bearer $token';
     }
-    if (CacheService.baseUrl != null) {
-      options.baseUrl = CacheService.baseUrl!;
+    if (baseUrl != null) {
+      options.baseUrl = baseUrl;
     }
+
     super.onRequest(options, handler);
   }
 
