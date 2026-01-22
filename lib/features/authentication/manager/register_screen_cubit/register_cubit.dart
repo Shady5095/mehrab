@@ -17,7 +17,6 @@ import 'package:http/http.dart' as http;
 import '../../../../core/utilities/functions/toast.dart';
 import '../../../../core/utilities/resources/constants.dart';
 import '../../../../core/utilities/resources/strings.dart';
-import '../../../../core/utilities/services/account_storage_service.dart';
 import '../../../../core/utilities/services/cache_service.dart';
 
 part 'register_state.dart';

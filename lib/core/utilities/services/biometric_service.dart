@@ -1,7 +1,5 @@
 import 'dart:io';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth_android/local_auth_android.dart';
-import 'package:local_auth_ios/local_auth_ios.dart';
 import '../functions/secure_logger.dart';
 
 /// Biometric authentication service with fallback support
@@ -81,37 +79,7 @@ class BiometricService {
       // Attempt biometric authentication
       final didAuthenticate = await _auth.authenticate(
         localizedReason: reason,
-        options: AuthenticationOptions(
-          biometricOnly: !allowFallback, // Allow fallback if enabled
-          stickyAuth: true, // Keep dialog open across backgrounding
-        ),
-        authMessages: <AuthMessages>[
-          // Android-specific messages
-          AndroidAuthMessages(
-            signInTitle: isArabic ? 'تسجيل الدخول' : 'Sign In',
-            cancelButton: isArabic ? 'إلغاء' : 'Cancel',
-            biometricHint: isArabic ? 'تأكيد الهوية' : 'Verify identity',
-            biometricNotRecognized: isArabic ? 'لم يتم التعرف' : 'Not recognized',
-            biometricSuccess: isArabic ? 'تم التأكيد' : 'Success',
-            deviceCredentialsRequiredTitle: isArabic
-                ? 'يجب تسجيل الدخول'
-                : 'Device credentials required',
-            deviceCredentialsSetupDescription: isArabic
-                ? 'يرجى إعداد قفل الشاشة'
-                : 'Please setup screen lock',
-          ),
-          // iOS-specific messages
-          IOSAuthMessages(
-            cancelButton: isArabic ? 'إلغاء' : 'Cancel',
-            lockOut: isArabic
-                ? 'تم تعطيل البصمة مؤقتاً'
-                : 'Biometric authentication is temporarily disabled',
-            goToSettingsButton: isArabic ? 'الإعدادات' : 'Settings',
-            goToSettingsDescription: isArabic
-                ? 'يرجى إعداد البصمة في الإعدادات'
-                : 'Please setup biometric in settings',
-          ),
-        ],
+        biometricOnly: !allowFallback, // Allow fallback if enabled
       );
 
       if (didAuthenticate) {
@@ -147,10 +115,7 @@ class BiometricService {
 
       final didAuthenticate = await _auth.authenticate(
         localizedReason: reason,
-        options: const AuthenticationOptions(
-          biometricOnly: false, // Allow device credentials
-          stickyAuth: true,
-        ),
+        biometricOnly: false, // Allow device credentials
       );
 
       if (didAuthenticate) {

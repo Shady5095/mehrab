@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../resources/constants.dart';
-import 'cache_service.dart';
 import 'secure_cache_service.dart';
 import '../functions/secure_logger.dart';
 

@@ -9,7 +9,6 @@ import 'app/my_app.dart';
 import 'core/utilities/functions/bloc_observer.dart';
 import 'core/utilities/functions/dependency_injection.dart';
 import 'core/utilities/functions/secure_logger.dart';
-import 'core/utilities/services/api_service.dart';
 import 'core/utilities/services/cache_service.dart';
 import 'core/utilities/services/call_kit_service.dart';
 import 'core/utilities/services/local_notifications_service.dart';
@@ -77,10 +76,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Initialize Firebase App Check with Play Integrity (replaces deprecated SafetyNet)
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: AndroidProvider.playIntegrity,
-    appleProvider: AppleProvider.deviceCheck,
-  );
+  await FirebaseAppCheck.instance.activate();
 
   // Register FCM background message handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

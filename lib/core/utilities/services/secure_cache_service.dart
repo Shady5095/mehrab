@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'cache_service.dart';
 import '../resources/constants.dart';
+import '../functions/secure_logger.dart';
 
 /// Secure cache service for sensitive data
 /// Migrates sensitive data from SharedPreferences to FlutterSecureStorage
@@ -15,9 +16,7 @@ import '../resources/constants.dart';
 /// - API base URLs (may contain sensitive info)
 class SecureCacheService {
   static const _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
+    aOptions: AndroidOptions(),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock,
     ),
@@ -76,7 +75,7 @@ class SecureCacheService {
       // Migration errors should not crash the app
       // Log in development only
       assert(() {
-        print('[SecureCacheService] Migration error: $e');
+        SecureLogger.error('Migration error', tag: 'SecureCacheService', error: e);
         return true;
       }());
     }
