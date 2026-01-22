@@ -77,7 +77,13 @@ android {
     }
     buildTypes {
         release {
+            // Signing configuration
             signingConfig signingConfigs.release
+
+            // Code obfuscation and optimization (Security Fix: CWE-656)
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
