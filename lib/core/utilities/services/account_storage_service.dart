@@ -76,7 +76,7 @@ class AccountStorage {
 
   /// ✅ Check if legacy passwords exist (for migration prompt)
   static Future<bool> hasLegacyPasswords() async {
-    final accounts = await getAccounts();
-    return accounts.isNotEmpty;
+    final data = await _storage.read(key: _key);
+    return data != null && data.isNotEmpty;
   }
 }

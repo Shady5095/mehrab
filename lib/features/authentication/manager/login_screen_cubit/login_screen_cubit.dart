@@ -280,54 +280,15 @@ class LoginCubit extends Cubit<LoginStates> {
       }
     });
   }
+  /// ⚠️ REMOVED: Biometric login with password storage
+  /// Password storage has been deprecated for security reasons (CWE-256)
+  /// Use Firebase Auth session persistence instead - it handles re-authentication automatically
+  @Deprecated('Password storage removed. Firebase Auth handles session persistence.')
   Future<void> loginWithBiometrics(BuildContext context) async {
-    if (!kDebugMode) {
-      final authenticated = await BiometricService.authenticate(isArabic(context)); // أو false
-      if (!authenticated) return;
-    }
-
-    if (!context.mounted) return;
-
-    Map<String, String> accounts = await AccountStorage.getAccounts();
-
-    if (accounts.isEmpty) {
-      myToast(msg: "مفيش حسابات محفوظة", state: ToastStates.error);
-      return;
-    }
-
-    if (!context.mounted) return;
-
-    final selectedEmail = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return AccountSelectionBottomSheet(
-          accounts: accounts,
-          onSelect: (email) => Navigator.pop(context, email),
-          onDelete: (email) {
-            // لو عايز تعرض Toast أو تعمل أي رد فعل إضافي بعد الحذف
-          },
-        );
-      },
+    myToast(
+      msg: "تسجيل الدخول بالبصمة متاح فقط للجلسات النشطة",
+      state: ToastStates.info,
     );
-
-    if (selectedEmail != null) {
-      final password = accounts[selectedEmail]!;
-      try {
-        emit(BiometricsLoginLoadingState());
-        final user = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: selectedEmail,
-          password: password,
-        );
-        await cacheUid(user.user?.uid ?? '');
-        emit(LoginSuccessState());
-      } catch (e) {
-        emit(LoginErrorState("فشل تسجيل الدخول: $e"));
-      }
-    }
   }
   Future<bool> isEmailAlreadyRegistered(String email) async {
     try {
