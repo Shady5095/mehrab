@@ -142,7 +142,7 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
         maxHeight: 30.hR,
       ),
     ).then((value) {
-      if (value != null) {
+      if (value != null && mounted) {
         widget.isTextTranslated
             ? _controller.text = value.tr(context)
             : _controller.text = value;
@@ -336,7 +336,7 @@ class _CustomDropDownMenuState2 extends State<CustomDropDownMenu2> {
         maxHeight: 30.hR,
       ),
     ).then((value) {
-      if (value != null) {
+      if (value != null && mounted) {
         widget.isTextTranslated
             ? _controller.text = value.tr(context)
             : _controller.text = value;
@@ -757,7 +757,7 @@ class _CustomDropDownMenuWithSearchState extends State<CustomDropDownMenuWithSea
         ),
       ],
     ).then((value) {
-      if (value != null) {
+      if (value != null && mounted) {
         _controller.text = widget.isTextTranslated ? value.tr(context) : value;
         widget.onChanged(value);
         if (widget.onChangedIndex != null) {

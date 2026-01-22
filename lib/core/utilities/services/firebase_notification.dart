@@ -317,7 +317,9 @@ class AppFirebaseNotification {
           }
           break;
         case Event.actionCallAccept:
-          _handleCallAccept(event.body, context);
+          if (context.mounted) {
+            _handleCallAccept(event.body, context);
+          }
           break;
 
         case Event.actionCallDecline:

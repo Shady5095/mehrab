@@ -151,14 +151,18 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
                 );
               }
 
-              if (mounted) {
-                Navigator.of(context).pop();
-                myToast(
-                  msg: AppStrings.commentAddedSuccessfully.tr(context),
-                  state: ToastStates.success,
-                );
+              if (!mounted) return;
 
-                if (!widget.isAdminEdit) {
+              Navigator.of(context).pop();
+
+              if (!mounted) return;
+
+              myToast(
+                msg: AppStrings.commentAddedSuccessfully.tr(context),
+                state: ToastStates.success,
+              );
+
+              if (!widget.isAdminEdit) {
                   CacheService.setData(
                     key: "isThisTeacherRated-${widget.teacherUid}",
                     value: true,
