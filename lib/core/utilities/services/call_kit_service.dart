@@ -185,19 +185,19 @@ class CallKitPermissionHelper {
       // Check if we can use full screen intent
       final canUse = await FlutterCallkitIncoming.canUseFullScreenIntent();
 
-      debugPrint('📱 Can use full screen intent: $canUse');
+      SecureLogger.log('Full screen intent available: $canUse', tag: 'CallKit');
 
       if (canUse == false) {
         // Request permission
-        debugPrint('📱 Requesting full screen intent permission...');
+        SecureLogger.log('Requesting full screen intent permission', tag: 'CallKit');
         final result = await FlutterCallkitIncoming.requestFullIntentPermission();
-        debugPrint('📱 Full screen intent permission result: $result');
+        SecureLogger.log('Full screen intent permission granted: $result', tag: 'CallKit');
         return result ?? false;
       }
 
       return canUse ?? true;
     } catch (e) {
-      debugPrint('❌ Error checking full screen intent permission: $e');
+      SecureLogger.error('Error checking full screen intent permission', tag: 'CallKit', error: e);
       return false;
     }
   }
@@ -212,7 +212,7 @@ class CallKitPermissionHelper {
       final canUse = await FlutterCallkitIncoming.canUseFullScreenIntent();
       return canUse ?? false;
     } catch (e) {
-      debugPrint('❌ Error checking full screen intent: $e');
+      SecureLogger.error('Error checking full screen intent', tag: 'CallKit', error: e);
       return false;
     }
   }
