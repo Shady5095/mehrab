@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 
 import 'dio_interceptor.dart';
@@ -109,14 +107,5 @@ class ApiService {
       _dio.options.sendTimeout = Duration(seconds: timeOutSeconds);
     }
     return _dio.get('https://$baseUrl', queryParameters: data);
-  }
-}
-
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
   }
 }

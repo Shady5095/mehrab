@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -62,9 +61,6 @@ void main() async {
 
   // Dependency injection
   setup();
-
-  // Handle Android below 8 HTTP connections
-  HttpOverrides.global = MyHttpOverrides();
 
   // Initialize services
   await Future.wait([
