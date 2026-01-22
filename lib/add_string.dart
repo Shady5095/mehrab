@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 void main() async {
   // Ask for key name
@@ -7,13 +8,13 @@ void main() async {
   final key = stdin.readLineSync()?.trim();
 
   if (key == null || key.isEmpty) {
-    print('❌ You must enter a key name.');
+    debugPrint('❌ You must enter a key name.');
     exit(1);
   }
 
   // Validate key format (camelCase)
   if (!RegExp(r'^[a-z][a-zA-Z0-9]*$').hasMatch(key)) {
-    print('⚠️  Warning: The key should be in camelCase format.');
+    debugPrint('⚠️  Warning: The key should be in camelCase format.');
   }
 
   // List of language files
@@ -26,7 +27,7 @@ void main() async {
 
   final stringsFile = 'lib/core/utilities/resources/strings.dart';
 
-  print('\n📝 The key "$key" will be added to the following files:');
+  debugPrint('\n📝 The key "$key" will be added to the following files:');
 
   // Add to JSON files
   for (final filePath in langFiles) {
@@ -34,7 +35,7 @@ void main() async {
       final file = File(filePath);
 
       if (!await file.exists()) {
-        print('❌ File not found: $filePath');
+        debugPrint('❌ File not found: $filePath');
         continue;
       }
 
@@ -44,7 +45,7 @@ void main() async {
 
       // Check if key already exists
       if (jsonData.containsKey(key)) {
-        print('⚠️  "$key" already exists in $filePath');
+        debugPrint('⚠️  "$key" already exists in $filePath');
         continue;
       }
 
@@ -58,9 +59,9 @@ void main() async {
       // Write updated file
       await file.writeAsString(newContent);
 
-      print('✅ Added "$key" to $filePath');
+      debugPrint('✅ Added "$key" to $filePath');
     } catch (e) {
-      print('❌ Error processing $filePath: $e');
+      debugPrint('❌ Error processing $filePath: $e');
     }
   }
 
@@ -69,13 +70,13 @@ void main() async {
     final file = File(stringsFile);
 
     if (!await file.exists()) {
-      print('❌ Strings file not found: $stringsFile');
+      debugPrint('❌ Strings file not found: $stringsFile');
     } else {
       final content = await file.readAsString();
 
       // Check if key already exists
       if (content.contains("static const String $key =")) {
-        print('⚠️  "$key" already exists in $stringsFile');
+        debugPrint('⚠️  "$key" already exists in $stringsFile');
       } else {
         // Find the last static const String line
         final lines = content.split('\n');
@@ -96,16 +97,16 @@ void main() async {
           );
 
           await file.writeAsString(lines.join('\n'));
-          print('✅ Added "$key" to $stringsFile');
+          debugPrint('✅ Added "$key" to $stringsFile');
         } else {
-          print('⚠️  Could not find a suitable place to add the key in $stringsFile');
+          debugPrint('⚠️  Could not find a suitable place to add the key in $stringsFile');
         }
       }
     }
   } catch (e) {
-    print('❌ Error processing $stringsFile: $e');
+    debugPrint('❌ Error processing $stringsFile: $e');
   }
 
-  print('\n✨ Done! You can now manually translate the values in the JSON files.');
-  print('📌 Note: All values are currently set to "$key" (temporarily).');
+  debugPrint('\n✨ Done! You can now manually translate the values in the JSON files.');
+  debugPrint('📌 Note: All values are currently set to "$key" (temporarily).');
 }

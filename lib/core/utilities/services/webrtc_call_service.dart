@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -21,6 +22,7 @@ class WebRTCCallService {
   final RTCVideoRenderer localRenderer = RTCVideoRenderer();
   final RTCVideoRenderer remoteRenderer = RTCVideoRenderer();
 
+  Timer? _statsTimer;
   // Callbacks matching AgoraCallService interface
   Function(String peerId)? onUserJoined;
   Function(String peerId)? onUserLeft;
@@ -33,24 +35,16 @@ class WebRTCCallService {
   // WebRTC-specific callbacks
   Function(RTCIceCandidate candidate)? onIceCandidate;
   Function(RTCIceConnectionState state)? onIceConnectionStateChanged;
+  Function(RTCSessionDescription offer)? onRenegotiationOffer;
 
   Map<String, dynamic>? _iceServers;
 
-  final Map<String, dynamic> _constraints = {
+  final Map<String, dynamic> _sdpConstraints = {
     'mandatory': {
       'OfferToReceiveAudio': true,
       'OfferToReceiveVideo': true,
     },
     'optional': [],
-  };
-
-  final Map<String, dynamic> _mediaConstraints = {
-    'audio': {
-      'echoCancellation': true,
-      'noiseSuppression': true,
-      'autoGainControl': true,
-    },
-    'video': false,
   };
 
   Future<void> initialize() async {
@@ -83,7 +77,7 @@ class WebRTCCallService {
       ],
     };
 
-    _peerConnection = await createPeerConnection(configuration, _constraints);
+    _peerConnection = await createPeerConnection(configuration);
 
     _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
       debugPrint('WebRTC: ICE candidate generated');
@@ -118,10 +112,20 @@ class WebRTCCallService {
       debugPrint('WebRTC: Remote track received: ${event.track.kind}');
       if (event.streams.isNotEmpty) {
         _remoteStream = event.streams[0];
-        remoteRenderer.srcObject = _remoteStream;
 
         if (event.track.kind == 'video') {
+          remoteRenderer.srcObject = event.track.enabled ? _remoteStream : null;
           onRemoteVideoStateChanged?.call('remote', event.track.enabled);
+          
+          event.track.onMute = () {
+            remoteRenderer.srcObject = null;
+            onRemoteVideoStateChanged?.call('remote', false);
+          };
+          
+          event.track.onUnMute = () {
+            remoteRenderer.srcObject = _remoteStream;
+            onRemoteVideoStateChanged?.call('remote', true);
+          };
         }
 
         onUserJoined?.call('remote');
@@ -140,17 +144,48 @@ class WebRTCCallService {
 
   Future<void> _createLocalStream() async {
     try {
-      _localStream = await navigator.mediaDevices.getUserMedia(_mediaConstraints);
-      localRenderer.srcObject = _localStream;
+      final audioConstraints = {
+        'echoCancellation': true,
+        'noiseSuppression': true,
+        'autoGainControl': true,
+      };
+
+      final videoConstraints = {
+        'facingMode': isFrontCamera ? 'user' : 'environment',
+        'width': {'ideal': 1280},
+        'height': {'ideal': 720},
+        'frameRate': {'ideal': 25},
+      };
+
+      try {
+        // Try to get both audio and video
+        _localStream = await navigator.mediaDevices.getUserMedia({
+          'audio': audioConstraints,
+          'video': videoConstraints,
+        });
+      } catch (e) {
+        debugPrint('WebRTC: Failed to get video, falling back to audio only: $e');
+        _localStream = await navigator.mediaDevices.getUserMedia({
+          'audio': audioConstraints,
+          'video': false,
+        });
+      }
+
+      // Mute video by default
+      for (var track in _localStream!.getVideoTracks()) {
+        track.enabled = false;
+      }
+      isVideoEnabled = false;
+      localRenderer.srcObject = null;
 
       for (var track in _localStream!.getTracks()) {
         await _peerConnection!.addTrack(track, _localStream!);
       }
 
-      debugPrint('WebRTC: Local stream created');
+      debugPrint('WebRTC: Local stream created with audio and video (video muted)');
     } catch (e) {
       debugPrint('WebRTC Error creating local stream: $e');
-      onError?.call('Failed to access microphone: $e');
+      onError?.call('Failed to access microphone/camera: $e');
       rethrow;
     }
   }
@@ -159,7 +194,7 @@ class WebRTCCallService {
     await _createPeerConnection();
     await _createLocalStream();
 
-    final offer = await _peerConnection!.createOffer();
+    final offer = await _peerConnection!.createOffer(_sdpConstraints);
     await _peerConnection!.setLocalDescription(offer);
 
     debugPrint('WebRTC: Offer created');
@@ -167,14 +202,31 @@ class WebRTCCallService {
   }
 
   Future<RTCSessionDescription> createAnswer(RTCSessionDescription offer) async {
-    await _createPeerConnection();
-    await _createLocalStream();
+    if (_peerConnection == null) {
+      await _createPeerConnection();
+      await _createLocalStream();
+    }
 
     await _peerConnection!.setRemoteDescription(offer);
-    final answer = await _peerConnection!.createAnswer();
+    await _flushPendingCandidates();
+    final answer = await _peerConnection!.createAnswer(_sdpConstraints);
     await _peerConnection!.setLocalDescription(answer);
 
     debugPrint('WebRTC: Answer created');
+    return answer;
+  }
+
+  Future<RTCSessionDescription> setRemoteOffer(RTCSessionDescription offer) async {
+    if (_peerConnection == null) {
+      throw Exception('Peer connection not initialized');
+    }
+
+    await _peerConnection!.setRemoteDescription(offer);
+    await _flushPendingCandidates();
+    final answer = await _peerConnection!.createAnswer(_sdpConstraints);
+    await _peerConnection!.setLocalDescription(answer);
+
+    debugPrint('WebRTC: Remote offer set, answer created');
     return answer;
   }
 
@@ -184,12 +236,23 @@ class WebRTCCallService {
     }
 
     await _peerConnection!.setRemoteDescription(answer);
+    await _flushPendingCandidates();
     debugPrint('WebRTC: Remote answer set');
   }
+
+  final List<RTCIceCandidate> _pendingCandidates = [];
 
   Future<void> addIceCandidate(RTCIceCandidate candidate) async {
     if (_peerConnection == null) {
       debugPrint('WebRTC: Peer connection not ready, queuing ICE candidate');
+      _pendingCandidates.add(candidate);
+      return;
+    }
+
+    final remoteDesc = await _peerConnection!.getRemoteDescription();
+    if (remoteDesc == null) {
+      debugPrint('WebRTC: Remote description not set, queuing ICE candidate');
+      _pendingCandidates.add(candidate);
       return;
     }
 
@@ -199,6 +262,23 @@ class WebRTCCallService {
     } catch (e) {
       debugPrint('WebRTC Error adding ICE candidate: $e');
     }
+  }
+
+  Future<void> _flushPendingCandidates() async {
+    final remoteDesc = await _peerConnection?.getRemoteDescription();
+    if (_peerConnection == null || remoteDesc == null) {
+      return;
+    }
+
+    for (final candidate in _pendingCandidates) {
+      try {
+        await _peerConnection!.addCandidate(candidate);
+        debugPrint('WebRTC: Queued ICE candidate added');
+      } catch (e) {
+        debugPrint('WebRTC Error adding queued ICE candidate: $e');
+      }
+    }
+    _pendingCandidates.clear();
   }
 
   Future<void> toggleMute() async {
@@ -217,76 +297,18 @@ class WebRTCCallService {
   }
 
   Future<void> toggleVideo() async {
+    if (_localStream == null) return;
+
     try {
       isVideoEnabled = !isVideoEnabled;
-
-      if (isVideoEnabled) {
-        final videoConstraints = {
-          'audio': {
-            'echoCancellation': true,
-            'noiseSuppression': true,
-            'autoGainControl': true,
-          },
-          'video': {
-            'facingMode': isFrontCamera ? 'user' : 'environment',
-            'width': {'ideal': 1280},
-            'height': {'ideal': 720},
-            'frameRate': {'ideal': 25},
-          },
-        };
-
-        if (_localStream != null) {
-          for (var track in _localStream!.getVideoTracks()) {
-            track.stop();
-            _localStream!.removeTrack(track);
-          }
-        }
-
-        final newStream = await navigator.mediaDevices.getUserMedia(videoConstraints);
-
-        for (var track in newStream.getVideoTracks()) {
-          if (_localStream != null) {
-            _localStream!.addTrack(track);
-          }
-
-          final senders = await _peerConnection?.getSenders();
-          final videoSender = senders?.firstWhere(
-            (s) => s.track?.kind == 'video',
-            orElse: () => senders.first,
-          );
-          if (videoSender != null) {
-            await videoSender.replaceTrack(track);
-          } else {
-            await _peerConnection?.addTrack(track, _localStream!);
-          }
-        }
-
-        localRenderer.srcObject = _localStream;
-      } else {
-        if (_localStream != null) {
-          for (var track in _localStream!.getVideoTracks()) {
-            track.enabled = false;
-            track.stop();
-
-            final senders = await _peerConnection?.getSenders();
-            final videoSender = senders?.firstWhere(
-              (s) => s.track?.kind == 'video',
-              orElse: () => senders.first,
-            );
-            if (videoSender != null) {
-              await videoSender.replaceTrack(null);
-            }
-
-            _localStream!.removeTrack(track);
-          }
-        }
+      for (var track in _localStream!.getVideoTracks()) {
+        track.enabled = isVideoEnabled;
       }
-
+      localRenderer.srcObject = isVideoEnabled ? _localStream : null;
       debugPrint('WebRTC: Video ${isVideoEnabled ? "enabled" : "disabled"}');
     } catch (e) {
       debugPrint('WebRTC Error toggling video: $e');
-      isVideoEnabled = !isVideoEnabled;
-      rethrow;
+      isVideoEnabled = !isVideoEnabled; // Revert on error
     }
   }
 
@@ -321,8 +343,12 @@ class WebRTCCallService {
   bool get isSpeakerOn => _isSpeakerOn;
 
   void _monitorConnectionQuality() {
-    Future.delayed(const Duration(seconds: 2), () async {
-      if (_peerConnection == null) return;
+    _statsTimer?.cancel();
+    _statsTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
+      if (_peerConnection == null) {
+        timer.cancel();
+        return;
+      }
 
       try {
         final stats = await _peerConnection!.getStats();
@@ -367,8 +393,6 @@ class WebRTCCallService {
 
           onNetworkQualityChanged?.call(quality);
         }
-
-        _monitorConnectionQuality();
       } catch (e) {
         debugPrint('WebRTC Error monitoring quality: $e');
       }
@@ -419,6 +443,7 @@ class WebRTCCallService {
 
   Future<void> dispose() async {
     try {
+      _statsTimer?.cancel();
       await _closePeerConnection();
 
       await localRenderer.dispose();

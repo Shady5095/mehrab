@@ -51,9 +51,16 @@ class LoginCubit extends Cubit<LoginStates> {
       await _initGoogleSignIn();
       await GoogleSignIn.instance.signOut();
 
-      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate(
-        scopeHint: ['email', 'profile'],
-      );
+      final GoogleSignInAccount googleUser;
+      try {
+        googleUser = await GoogleSignIn.instance.authenticate();
+      } on GoogleSignInException catch (e) {
+        if (e.code == GoogleSignInExceptionCode.canceled) {
+          emit(GoogleSignInErrorState('Google Sign-In cancelled'));
+          return;
+        }
+        rethrow;
+      }
 
       if(await isEmailAlreadyRegistered(googleUser.email)){
         await GoogleSignIn.instance.signOut();
@@ -62,12 +69,7 @@ class LoginCubit extends Cubit<LoginStates> {
       }
 
       final googleAuth = googleUser.authentication;
-
-      // Get access token via authorization client
-      final clientAuth = await googleUser.authorizationClient.authorizeScopes(['email', 'profile']);
-
       final credential = GoogleAuthProvider.credential(
-        accessToken: clientAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -285,12 +287,16 @@ class LoginCubit extends Cubit<LoginStates> {
       if (!authenticated) return;
     }
 
+    if (!context.mounted) return;
+
     Map<String, String> accounts = await AccountStorage.getAccounts();
 
     if (accounts.isEmpty) {
       myToast(msg: "مفيش حسابات محفوظة", state: ToastStates.error);
       return;
     }
+
+    if (!context.mounted) return;
 
     final selectedEmail = await showModalBottomSheet<String>(
       context: context,

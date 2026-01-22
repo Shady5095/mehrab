@@ -35,7 +35,7 @@ class TeachersCubit extends Cubit<TeachersState> {
             throw Exception("Teacher does not exist!");
           }
 
-          List<dynamic> favStudents = snapshot.get('favoriteStudentsUid') ?? [];
+          List<dynamic> favStudents = (snapshot.data()?['favoriteStudentsUid'] as List<dynamic>?) ?? [];
           if (favStudents.contains(userUid)) {
             favStudents.remove(userUid);
           } else {

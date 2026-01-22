@@ -240,6 +240,13 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       }
     };
 
+    callService.onRenegotiationOffer = (offer) {
+      if (_remoteSocketId != null) {
+        socketService.sendOffer(offer, _remoteSocketId!);
+        debugPrint('Teacher: Sent renegotiation offer');
+      }
+    };
+
     await callService.initialize();
   }
 

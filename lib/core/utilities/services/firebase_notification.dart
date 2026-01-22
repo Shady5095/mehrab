@@ -24,7 +24,7 @@ class AppFirebaseNotification {
   static final _instance = FirebaseMessaging.instance;
   static final _analyticsInstance = FirebaseAnalytics.instance;
   static final _db = FirebaseFirestore.instance;
-  static late String accessToken;
+  static String accessToken = '';
 
   static final Dio _dio = Dio(
     BaseOptions(
@@ -43,7 +43,7 @@ class AppFirebaseNotification {
     return FirebaseAnalyticsObserver(analytics: _analyticsInstance);
   }
 
-  static logEvent(String eventName, Map<String, Object> eventParams) {
+  static void logEvent(String eventName, Map<String, Object> eventParams) {
     _analyticsInstance.logEvent(name: eventName, parameters: eventParams);
   }
 
@@ -66,7 +66,7 @@ class AppFirebaseNotification {
       initCallKitListeners(context,homeCubit);
 
       // Get access token for FCM
-      getAccessToken();
+      await getAccessToken();
 
       // Enable analytics
       _analyticsInstance.setAnalyticsCollectionEnabled(true);
@@ -100,7 +100,9 @@ class AppFirebaseNotification {
 
       // Handle incoming call
       if (message.data['type'] == 'incoming_call' && AppRouteObserver.currentRouteName != AppRoutes.teacherCallScreen) {
-        _showIncomingCall(message.data, context);
+        if (context.mounted) {
+          _showIncomingCall(message.data, context);
+        }
       }
     });
   }
@@ -181,11 +183,21 @@ class AppFirebaseNotification {
 
   // ==================== FCM Access Token ====================
   static Future<String> getAccessToken() async {
+    String privateKey = SensitiveAppConstants.privateKeyNotifications;
+    if (privateKey.contains("YOUR_PRIVATE_KEY_HERE")) {
+      printWithColor('❌ Error: Private Key is not set in SensitiveAppConstants');
+      return '';
+    }
+    // Fix formatting if the key is provided as a single line
+    if (!privateKey.contains('\n')) {
+      privateKey = privateKey.replaceAll('\\n', '\n');
+    }
+
     final serviceAccountJson = {
       "type": "service_account",
       "project_id": "mehrab-a8e60",
       "private_key_id": "7d0bafe44af019f11fa73ec5b870befb1b5987c5",
-      "private_key": SensitiveAppConstants.privateKeyNotifications,
+      "private_key": privateKey,
       "client_email":
       "firebase-adminsdk-fbsvc@mehrab-a8e60.iam.gserviceaccount.com",
       "client_id": "117743556891008027326",
@@ -273,14 +285,16 @@ class AppFirebaseNotification {
       printWithColor('❌ Push notification error: ${e.response?.data}');
 
       if (e.response?.statusCode == AppConstants.unauthenticated) {
-        await getAccessToken();
-        await pushNotification(
-          title: title,
-          body: body,
-          imageUrl: imageUrl,
-          dataInNotification: dataInNotification,
-          topic: topic,
-        );
+        final newToken = await getAccessToken();
+        if (newToken.isNotEmpty) {
+          await pushNotification(
+            title: title,
+            body: body,
+            imageUrl: imageUrl,
+            dataInNotification: dataInNotification,
+            topic: topic,
+          );
+        }
       }
     }
   }
@@ -335,14 +349,16 @@ class AppFirebaseNotification {
       printWithColor('❌ Call notification error: ${e.response?.data}');
 
       if (e.response?.statusCode == AppConstants.unauthenticated) {
-        await getAccessToken();
-        await pushIncomingCallNotification(
-          callId: callId,
-          callerName: callerName,
-          callerPhoto: callerPhoto,
-          teacherUid: teacherUid,
-          studentUid: studentUid,
-        );
+        final newToken = await getAccessToken();
+        if (newToken.isNotEmpty) {
+          await pushIncomingCallNotification(
+            callId: callId,
+            callerName: callerName,
+            callerPhoto: callerPhoto,
+            teacherUid: teacherUid,
+            studentUid: studentUid,
+          );
+        }
       }
     }
   }
@@ -521,7 +537,7 @@ class AppFirebaseNotification {
 
   // ==================== Topics Management ====================
 
-  static subscribeToTopic(String role) {
+  static void subscribeToTopic(String role) {
     _instance.subscribeToTopic('all');
     _instance.subscribeToTopic(role);
     _instance.subscribeToTopic(CacheService.uid ?? 'all');
