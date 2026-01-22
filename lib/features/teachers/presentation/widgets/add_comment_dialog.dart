@@ -163,15 +163,14 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
               );
 
               if (!widget.isAdminEdit) {
-                  CacheService.setData(
-                    key: "isThisTeacherRated-${widget.teacherUid}",
-                    value: true,
-                  );
-                }
-
-                // Call the callback to refresh the list
-                widget.onCommentAdded?.call();
+                CacheService.setData(
+                  key: "isThisTeacherRated-${widget.teacherUid}",
+                  value: true,
+                );
               }
+
+              // Call the callback to refresh the list
+              widget.onCommentAdded?.call();
             } else {
               myToast(
                 msg: "برجاء اختيار تقييم من 1 ل 5",

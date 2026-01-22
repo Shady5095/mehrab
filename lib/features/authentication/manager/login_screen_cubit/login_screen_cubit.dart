@@ -287,7 +287,7 @@ class LoginCubit extends Cubit<LoginStates> {
   Future<void> loginWithBiometrics(BuildContext context) async {
     myToast(
       msg: "تسجيل الدخول بالبصمة متاح فقط للجلسات النشطة",
-      state: ToastStates.info,
+      state: ToastStates.warning,
     );
   }
   Future<bool> isEmailAlreadyRegistered(String email) async {
