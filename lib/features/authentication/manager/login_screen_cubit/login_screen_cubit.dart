@@ -185,10 +185,9 @@ class LoginCubit extends Cubit<LoginStates> {
         password: passwordController.text.trim(),
       );
       await cacheUid(user.user?.uid ?? '');
-      AccountStorage.saveAccount(
-        emailController.text.trim(),
-        passwordController.text.trim(),
-      );
+      // SECURITY FIX: Removed password storage (CWE-256)
+      // AccountStorage.saveAccount() has been deprecated for security reasons
+      // Firebase Auth handles session management automatically
       emit(LoginSuccessState());
     } on FirebaseAuthException catch (e) {
       String errorMessage;

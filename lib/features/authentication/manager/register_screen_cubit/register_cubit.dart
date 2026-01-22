@@ -287,10 +287,9 @@ class RegisterCubit extends Cubit<RegisterState> {
     await uploadImageToImageKit();
     await addUserDataToFireStore();
     await cacheUid(uid??'');
-    AccountStorage.saveAccount(
-      emailController.text.trim(),
-      passwordController.text.trim(),
-    );
+    // SECURITY FIX: Removed password storage (CWE-256)
+    // AccountStorage.saveAccount() has been deprecated for security reasons
+    // Firebase Auth handles session management automatically
     emit(RegisterSuccessState());
   }
 
