@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import '../functions/secure_logger.dart';
 
 enum CallQuality {
   excellent,
@@ -56,11 +56,11 @@ class WebRTCCallService {
       await localRenderer.initialize();
       await remoteRenderer.initialize();
 
-      debugPrint('WebRTC: Renderers initialized');
+      SecureLogger.webrtc('Renderers initialized');
       isInitialized = true;
-      debugPrint('WebRTC: Service initialized');
+      SecureLogger.webrtc('Service initialized');
     } catch (e) {
-      debugPrint('WebRTC Error initializing: $e');
+      SecureLogger.webrtc('Error initializing: $e');
       onError?.call('Failed to initialize WebRTC: $e');
       rethrow;
     }
@@ -68,7 +68,7 @@ class WebRTCCallService {
 
   void setIceServers(Map<String, dynamic> config) {
     _iceServers = config;
-    debugPrint('WebRTC: ICE servers configured');
+    SecureLogger.webrtc('ICE servers configured');
   }
 
   Future<void> _createPeerConnection() async {
@@ -82,12 +82,12 @@ class WebRTCCallService {
     _peerConnection = await createPeerConnection(configuration);
 
     _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
-      debugPrint('WebRTC: ICE candidate generated');
+      SecureLogger.webrtc('ICE candidate generated');
       onIceCandidate?.call(candidate);
     };
 
     _peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
-      debugPrint('WebRTC: ICE connection state: $state');
+      SecureLogger.webrtc('ICE connection state: $state');
       onIceConnectionStateChanged?.call(state);
 
       switch (state) {
@@ -100,7 +100,7 @@ class WebRTCCallService {
           onError?.call('Connection failed');
           break;
         case RTCIceConnectionState.RTCIceConnectionStateDisconnected:
-          debugPrint('WebRTC: Connection disconnected, may reconnect...');
+          SecureLogger.webrtc('Connection disconnected, may reconnect...');
           break;
         case RTCIceConnectionState.RTCIceConnectionStateClosed:
           onCallEnded?.call();
@@ -111,7 +111,7 @@ class WebRTCCallService {
     };
 
     _peerConnection!.onTrack = (RTCTrackEvent event) {
-      debugPrint('WebRTC: Remote track received: ${event.track.kind}');
+      SecureLogger.webrtc('Remote track received: ${event.track.kind}');
       if (event.streams.isNotEmpty) {
         _remoteStream = event.streams[0];
 
@@ -122,13 +122,13 @@ class WebRTCCallService {
           onRemoteVideoStateChanged?.call('remote', false);
 
           event.track.onMute = () {
-            debugPrint('WebRTC: Remote video muted');
+            SecureLogger.webrtc('Remote video muted');
             remoteRenderer.srcObject = null;
             onRemoteVideoStateChanged?.call('remote', false);
           };
 
           event.track.onUnMute = () {
-            debugPrint('WebRTC: Remote video unmuted');
+            SecureLogger.webrtc('Remote video unmuted');
             remoteRenderer.srcObject = _remoteStream;
             onRemoteVideoStateChanged?.call('remote', true);
           };
@@ -142,13 +142,13 @@ class WebRTCCallService {
     };
 
     _peerConnection!.onRemoveStream = (MediaStream stream) {
-      debugPrint('WebRTC: Remote stream removed');
+      SecureLogger.webrtc('Remote stream removed');
       remoteRenderer.srcObject = null;
       _remoteStream = null;
       onUserLeft?.call('remote');
     };
 
-    debugPrint('WebRTC: Peer connection created');
+    SecureLogger.webrtc('Peer connection created');
   }
 
   Future<void> _createLocalStream() async {
@@ -173,7 +173,7 @@ class WebRTCCallService {
           'video': videoConstraints,
         });
       } catch (e) {
-        debugPrint('WebRTC: Failed to get video, falling back to audio only: $e');
+        SecureLogger.webrtc('Failed to get video, falling back to audio only: $e');
         _localStream = await navigator.mediaDevices.getUserMedia({
           'audio': audioConstraints,
           'video': false,
@@ -191,9 +191,9 @@ class WebRTCCallService {
         await _peerConnection!.addTrack(track, _localStream!);
       }
 
-      debugPrint('WebRTC: Local stream created with audio and video (video muted)');
+      SecureLogger.webrtc('Local stream created with audio and video (video muted)');
     } catch (e) {
-      debugPrint('WebRTC Error creating local stream: $e');
+      SecureLogger.webrtc('Error creating local stream: $e');
       onError?.call('Failed to access microphone/camera: $e');
       rethrow;
     }
@@ -206,7 +206,7 @@ class WebRTCCallService {
     final offer = await _peerConnection!.createOffer(_sdpConstraints);
     await _peerConnection!.setLocalDescription(offer);
 
-    debugPrint('WebRTC: Offer created');
+    SecureLogger.webrtc('Offer created');
     return offer;
   }
 
@@ -221,7 +221,7 @@ class WebRTCCallService {
     final answer = await _peerConnection!.createAnswer(_sdpConstraints);
     await _peerConnection!.setLocalDescription(answer);
 
-    debugPrint('WebRTC: Answer created');
+    SecureLogger.webrtc('Answer created');
     return answer;
   }
 
@@ -235,7 +235,7 @@ class WebRTCCallService {
     final answer = await _peerConnection!.createAnswer(_sdpConstraints);
     await _peerConnection!.setLocalDescription(answer);
 
-    debugPrint('WebRTC: Remote offer set, answer created');
+    SecureLogger.webrtc('Remote offer set, answer created');
     return answer;
   }
 
@@ -246,30 +246,30 @@ class WebRTCCallService {
 
     await _peerConnection!.setRemoteDescription(answer);
     await _flushPendingCandidates();
-    debugPrint('WebRTC: Remote answer set');
+    SecureLogger.webrtc('Remote answer set');
   }
 
   final List<RTCIceCandidate> _pendingCandidates = [];
 
   Future<void> addIceCandidate(RTCIceCandidate candidate) async {
     if (_peerConnection == null) {
-      debugPrint('WebRTC: Peer connection not ready, queuing ICE candidate');
+      SecureLogger.webrtc('Peer connection not ready, queuing ICE candidate');
       _pendingCandidates.add(candidate);
       return;
     }
 
     final remoteDesc = await _peerConnection!.getRemoteDescription();
     if (remoteDesc == null) {
-      debugPrint('WebRTC: Remote description not set, queuing ICE candidate');
+      SecureLogger.webrtc('Remote description not set, queuing ICE candidate');
       _pendingCandidates.add(candidate);
       return;
     }
 
     try {
       await _peerConnection!.addCandidate(candidate);
-      debugPrint('WebRTC: ICE candidate added');
+      SecureLogger.webrtc('ICE candidate added');
     } catch (e) {
-      debugPrint('WebRTC Error adding ICE candidate: $e');
+      SecureLogger.webrtc('Error adding ICE candidate: $e');
     }
   }
 
@@ -282,9 +282,9 @@ class WebRTCCallService {
     for (final candidate in _pendingCandidates) {
       try {
         await _peerConnection!.addCandidate(candidate);
-        debugPrint('WebRTC: Queued ICE candidate added');
+        SecureLogger.webrtc('Queued ICE candidate added');
       } catch (e) {
-        debugPrint('WebRTC Error adding queued ICE candidate: $e');
+        SecureLogger.webrtc('Error adding queued ICE candidate: $e');
       }
     }
     _pendingCandidates.clear();
@@ -298,9 +298,9 @@ class WebRTCCallService {
       for (var track in _localStream!.getAudioTracks()) {
         track.enabled = !isMicMuted;
       }
-      debugPrint('WebRTC: Audio ${isMicMuted ? "muted" : "enabled"}');
+      SecureLogger.webrtc('Audio ${isMicMuted ? "muted" : "enabled"}');
     } catch (e) {
-      debugPrint('WebRTC Error toggling mute: $e');
+      SecureLogger.webrtc('Error toggling mute: $e');
       isMicMuted = !isMicMuted;
     }
   }
@@ -314,9 +314,9 @@ class WebRTCCallService {
         track.enabled = isVideoEnabled;
       }
       localRenderer.srcObject = isVideoEnabled ? _localStream : null;
-      debugPrint('WebRTC: Video ${isVideoEnabled ? "enabled" : "disabled"}');
+      SecureLogger.webrtc('Video ${isVideoEnabled ? "enabled" : "disabled"}');
     } catch (e) {
-      debugPrint('WebRTC Error toggling video: $e');
+      SecureLogger.webrtc('Error toggling video: $e');
       isVideoEnabled = !isVideoEnabled; // Revert on error
     }
   }
@@ -331,9 +331,9 @@ class WebRTCCallService {
         await Helper.switchCamera(track);
       }
 
-      debugPrint('WebRTC: Camera switched to ${isFrontCamera ? "front" : "back"}');
+      SecureLogger.webrtc('Camera switched to ${isFrontCamera ? "front" : "back"}');
     } catch (e) {
-      debugPrint('WebRTC Error switching camera: $e');
+      SecureLogger.webrtc('Error switching camera: $e');
       isFrontCamera = !isFrontCamera;
     }
   }
@@ -342,9 +342,9 @@ class WebRTCCallService {
     try {
       _isSpeakerOn = useSpeaker;
       await Helper.setSpeakerphoneOn(useSpeaker);
-      debugPrint('WebRTC: Speaker ${useSpeaker ? "enabled" : "disabled"}');
+      SecureLogger.webrtc('Speaker ${useSpeaker ? "enabled" : "disabled"}');
     } catch (e) {
-      debugPrint('WebRTC Error switching speaker: $e');
+      SecureLogger.webrtc('Error switching speaker: $e');
       _isSpeakerOn = !useSpeaker;
     }
   }
@@ -403,7 +403,7 @@ class WebRTCCallService {
           onNetworkQualityChanged?.call(quality);
         }
       } catch (e) {
-        debugPrint('WebRTC Error monitoring quality: $e');
+        SecureLogger.webrtc('Error monitoring quality: $e');
       }
     });
   }
@@ -421,9 +421,9 @@ class WebRTCCallService {
 
       await _closePeerConnection();
       onCallEnded?.call();
-      debugPrint('WebRTC: Call ended');
+      SecureLogger.webrtc('Call ended');
     } catch (e) {
-      debugPrint('WebRTC Error ending call: $e');
+      SecureLogger.webrtc('Error ending call: $e');
     }
   }
 
@@ -459,9 +459,9 @@ class WebRTCCallService {
       await remoteRenderer.dispose();
 
       isInitialized = false;
-      debugPrint('WebRTC: Service disposed');
+      SecureLogger.webrtc('Service disposed');
     } catch (e) {
-      debugPrint('WebRTC Error disposing: $e');
+      SecureLogger.webrtc('Error disposing: $e');
     }
   }
 }
