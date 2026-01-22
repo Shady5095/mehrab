@@ -13,9 +13,9 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/services/cache_service.dart';
 import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.dart';
 import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
+import '../../config/app_config.dart';
 import '../functions/print_with_color.dart';
 import 'call_kit_service.dart';
-import 'webrtc_constants.dart';
 
 class AppFirebaseNotification {
   // ==================== Instances ====================
@@ -193,7 +193,7 @@ class AppFirebaseNotification {
       }
 
       final response = await _dio.post(
-        '${WebRTCConstants.signalingServerUrl}/api/send-notification',
+        '${AppConfig.signalingServerUrl}/api/send-notification',
         data: {
           'topic': topic,
           'title': title,
@@ -242,7 +242,7 @@ class AppFirebaseNotification {
       final validPhoto = ImageHelper.getValidImageUrl(callerPhoto);
 
       final response = await _dio.post(
-        '${WebRTCConstants.signalingServerUrl}/api/send-notification',
+        '${AppConfig.signalingServerUrl}/api/send-notification',
         data: {
           'topic': teacherUid,
           'title': 'Incoming Call',
