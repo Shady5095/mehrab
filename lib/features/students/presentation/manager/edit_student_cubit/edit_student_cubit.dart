@@ -23,7 +23,7 @@ class EditStudentCubit extends Cubit<EditStudentState> {
     required this.userModel,
 }) : super(EditStudentInitial());
 
-  static EditStudentCubit get(context) => BlocProvider.of(context);
+  static EditStudentCubit get(BuildContext context) => BlocProvider.of(context);
 
   final UserModel userModel ;
 

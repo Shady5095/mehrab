@@ -28,7 +28,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     required this.callModel,
   }) : super(TeacherCallInitial());
 
-  static TeacherCallCubit get(context) => BlocProvider.of(context);
+  static TeacherCallCubit get(BuildContext context) => BlocProvider.of(context);
 
   late WebRTCCallService callService;
   late SocketService socketService;

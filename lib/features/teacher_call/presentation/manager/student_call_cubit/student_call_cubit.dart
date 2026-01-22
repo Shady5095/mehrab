@@ -30,7 +30,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
 
   final TeacherModel teacherModel;
 
-  static StudentCallCubit get(context) => BlocProvider.of(context);
+  static StudentCallCubit get(BuildContext context) => BlocProvider.of(context);
 
   late WebRTCCallService callService;
   late SocketService socketService;

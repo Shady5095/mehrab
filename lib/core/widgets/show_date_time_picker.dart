@@ -23,6 +23,8 @@ Future<DateTime?> showMyDateTimePicker(
 
   if (dateValue == null) return null;
 
+  if (!context.mounted) return null;
+
   final timeValue = await showTimePicker(
     initialEntryMode: TimePickerEntryMode.dialOnly,
     builder: (context, child) {
@@ -65,6 +67,8 @@ Future<DateTime?> showTest(
   );
 
   if (dateValue == null) return null;
+
+  if (!context.mounted) return null;
 
   final timeValue = await showTimePicker(
     initialEntryMode: TimePickerEntryMode.dialOnly,

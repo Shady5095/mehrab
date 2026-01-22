@@ -13,7 +13,7 @@ part 'teacher_profile_state.dart';
 class TeacherProfileCubit extends Cubit<TeacherProfileState> {
   TeacherProfileCubit() : super(TeacherProfileInitial());
 
-  static TeacherProfileCubit get(context) => BlocProvider.of(context);
+  static TeacherProfileCubit get(BuildContext context) => BlocProvider.of(context);
   FirebaseFirestore db = FirebaseFirestore.instance;
 
   void toggleTeacherFav(String teacherUid) {

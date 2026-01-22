@@ -151,14 +151,14 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
                 );
               }
 
-              if (!mounted) return;
+              if (!context.mounted) return;
+
+              final successMsg = AppStrings.commentAddedSuccessfully.tr(context);
 
               Navigator.of(context).pop();
 
-              if (!mounted) return;
-
               myToast(
-                msg: AppStrings.commentAddedSuccessfully.tr(context),
+                msg: successMsg,
                 state: ToastStates.success,
               );
 

@@ -25,7 +25,7 @@ class RegisterCubit extends Cubit<RegisterState> {
   RegisterCubit({this.socialSignInModel}) : super(RegisterInitial());  // تغيير الاسم إلى socialSignInModel للعامية
   final GoogleSignInModel? socialSignInModel;  // نفس الموديل، لكن عام
 
-  static RegisterCubit instance(context) =>
+  static RegisterCubit instance(BuildContext context) =>
       BlocProvider.of<RegisterCubit>(context);
 
   File? imageFile;

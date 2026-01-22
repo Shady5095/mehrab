@@ -13,7 +13,7 @@ part 'teachers_state.dart';
 class TeachersCubit extends Cubit<TeachersState> {
   TeachersCubit() : super(TeachersInitial());
 
-  static TeachersCubit get(context) => BlocProvider.of(context);
+  static TeachersCubit get(BuildContext context) => BlocProvider.of(context);
   FirebaseFirestore db = FirebaseFirestore.instance;
   final TextEditingController searchController = TextEditingController();
   String searchQuery = '';
