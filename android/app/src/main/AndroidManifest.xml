@@ -116,8 +116,10 @@
         <!-- UCrop -->
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            tools:replace="android:screenOrientation"
+            android:screenOrientation="unspecified"/>
 
         <!-- CallKit Incoming -->
         <receiver

@@ -31,7 +31,9 @@ class _ZoomableWidgetState extends State<ZoomableWidget>
       // Zoom in around tapped point with animation
       final position = _doubleTapDetails!.localPosition;
       targetMatrix = Matrix4.identity()
+        // ignore: deprecated_member_use
         ..translate(-position.dx * 1.5, -position.dy * 1.5)
+        // ignore: deprecated_member_use
         ..scale(2.5);
     }
 

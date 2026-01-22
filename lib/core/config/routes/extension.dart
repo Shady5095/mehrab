@@ -11,11 +11,11 @@ extension NavigateToExtension on BuildContext {
 }
 
 extension NavigatorPopExtension on BuildContext {
-  pop({dynamic result = false}) => Navigator.of(this).pop(result);
+  void pop({dynamic result = false}) => Navigator.of(this).pop(result);
 }
 
 extension NavigateReplacementExtension on BuildContext {
-  navigateAndRemoveUntil({required String pageName, Object? arguments}) =>
+  Future<Object?> navigateAndRemoveUntil({required String pageName, Object? arguments}) =>
       Navigator.of(this).pushNamedAndRemoveUntil(
         pageName,
         (Route<dynamic> route) => false,
@@ -24,7 +24,7 @@ extension NavigateReplacementExtension on BuildContext {
 }
 
 extension PopUntilSpecificRouteExtension on BuildContext {
-  popUntilSpecificRoute({required String pageName}) =>
+  void popUntilSpecificRoute({required String pageName}) =>
       Navigator.of(this).popUntil(ModalRoute.withName(pageName));
 }
 

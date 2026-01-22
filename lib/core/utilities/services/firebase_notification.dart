@@ -2,29 +2,26 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_callkit_incoming/entities/call_event.dart';
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:googleapis_auth/auth_io.dart' as auth;
-import 'package:http/http.dart' as http;
 import 'package:mehrab/core/config/routes/app_routes.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/services/cache_service.dart';
-import 'package:mehrab/core/utilities/services/sensitive_app_constants.dart';
 import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.dart';
 import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
 import '../functions/print_with_color.dart';
-import '../resources/constants.dart';
 import 'call_kit_service.dart';
+import 'webrtc_constants.dart';
 
 class AppFirebaseNotification {
   // ==================== Instances ====================
   static final _instance = FirebaseMessaging.instance;
   static final _analyticsInstance = FirebaseAnalytics.instance;
   static final _db = FirebaseFirestore.instance;
-  static late String accessToken;
 
   static final Dio _dio = Dio(
     BaseOptions(
@@ -43,7 +40,7 @@ class AppFirebaseNotification {
     return FirebaseAnalyticsObserver(analytics: _analyticsInstance);
   }
 
-  static logEvent(String eventName, Map<String, Object> eventParams) {
+  static void logEvent(String eventName, Map<String, Object> eventParams) {
     _analyticsInstance.logEvent(name: eventName, parameters: eventParams);
   }
 
@@ -64,9 +61,6 @@ class AppFirebaseNotification {
       //deleteData();
       // Setup CallKit listeners
       initCallKitListeners(context,homeCubit);
-
-      // Get access token for FCM
-      getAccessToken();
 
       // Enable analytics
       _analyticsInstance.setAnalyticsCollectionEnabled(true);
@@ -100,7 +94,9 @@ class AppFirebaseNotification {
 
       // Handle incoming call
       if (message.data['type'] == 'incoming_call' && AppRouteObserver.currentRouteName != AppRoutes.teacherCallScreen) {
-        _showIncomingCall(message.data, context);
+        if (context.mounted) {
+          _showIncomingCall(message.data, context);
+        }
       }
     });
   }
@@ -179,54 +175,6 @@ class AppFirebaseNotification {
         ?.createNotificationChannel(channel);
   }
 
-  // ==================== FCM Access Token ====================
-  static Future<String> getAccessToken() async {
-    final serviceAccountJson = {
-      "type": "service_account",
-      "project_id": "mehrab-a8e60",
-      "private_key_id": "7d0bafe44af019f11fa73ec5b870befb1b5987c5",
-      "private_key": SensitiveAppConstants.privateKeyNotifications,
-      "client_email":
-      "firebase-adminsdk-fbsvc@mehrab-a8e60.iam.gserviceaccount.com",
-      "client_id": "117743556891008027326",
-      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-      "token_uri": "https://oauth2.googleapis.com/token",
-      "auth_provider_x509_cert_url":
-      "https://www.googleapis.com/oauth2/v1/certs",
-      "client_x509_cert_url":
-      "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40mehrab-a8e60.iam.gserviceaccount.com",
-      "universe_domain": "googleapis.com"
-    };
-
-    final List<String> scopes = [
-      'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/firebase.database',
-      'https://www.googleapis.com/auth/firebase.messaging',
-    ];
-
-    try {
-      final http.Client client = await auth.clientViaServiceAccount(
-        auth.ServiceAccountCredentials.fromJson(serviceAccountJson),
-        scopes,
-      );
-
-      final auth.AccessCredentials credentials =
-      await auth.obtainAccessCredentialsViaServiceAccount(
-        auth.ServiceAccountCredentials.fromJson(serviceAccountJson),
-        scopes,
-        client,
-      );
-
-      client.close();
-      accessToken = credentials.accessToken.data;
-      printWithColor('✅ FCM Access Token obtained');
-      return credentials.accessToken.data;
-    } on Exception catch (e) {
-      printWithColor('❌ Error getting access token: $e');
-      return '';
-    }
-  }
-
   // ==================== Push Notifications ====================
 
   /// Send regular push notification
@@ -237,51 +185,41 @@ class AppFirebaseNotification {
     required Map<String, dynamic> dataInNotification,
     required String topic,
   }) async {
-    _dio.options.headers['Authorization'] = 'Bearer $accessToken';
-    const String fcmUrl =
-        'https://fcm.googleapis.com/v1/projects/mehrab-a8e60/messages:send';
+    try {
+      final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (authToken == null) {
+        printWithColor('❌ Error: User not authenticated');
+        return;
+      }
 
-    final Map<String, dynamic> data = {
-      'message': {
-        'topic': topic,
-        'notification': {
+      final response = await _dio.post(
+        '${WebRTCConstants.signalingServerUrl}/api/send-notification',
+        data: {
+          'topic': topic,
           'title': title,
           'body': body,
-          'image': imageUrl ?? ''
-        },
-        'data': dataInNotification,
-        'android': {
-          'notification': {'click_action': 'FLUTTER_NOTIFICATION_CLICK'},
-          'priority': 'high',
-        },
-        'apns': {
-          'payload': {
-            'aps': {
-              'category': 'FLUTTER_NOTIFICATION_CLICK',
-              'content-available': 1,
-              'sound': 'default',
-            },
+          'data': {
+            ...dataInNotification,
+            if (imageUrl != null) 'image': imageUrl,
           },
         },
-      },
-    };
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
 
-    try {
-      await _dio.post(fcmUrl, data: data);
-      printWithColor('✅ Push notification sent successfully');
-    } on DioException catch (e) {
-      printWithColor('❌ Push notification error: ${e.response?.data}');
-
-      if (e.response?.statusCode == AppConstants.unauthenticated) {
-        await getAccessToken();
-        await pushNotification(
-          title: title,
-          body: body,
-          imageUrl: imageUrl,
-          dataInNotification: dataInNotification,
-          topic: topic,
-        );
+      if (response.statusCode == 200) {
+        printWithColor('✅ Push notification sent successfully');
+      } else {
+        printWithColor('❌ Push notification error: ${response.data}');
       }
+    } on DioException catch (e) {
+      printWithColor('❌ Push notification error: ${e.response?.data ?? e.message}');
+    } catch (e) {
+      printWithColor('❌ Push notification error: $e');
     }
   }
 
@@ -293,57 +231,48 @@ class AppFirebaseNotification {
     required String teacherUid,
     required String studentUid,
   }) async {
-    _dio.options.headers['Authorization'] = 'Bearer $accessToken';
-    const String fcmUrl =
-        'https://fcm.googleapis.com/v1/projects/mehrab-a8e60/messages:send';
+    try {
+      final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (authToken == null) {
+        printWithColor('❌ Error: User not authenticated');
+        return;
+      }
 
-    // Validate and get proper image URL
-    final validPhoto = ImageHelper.getValidImageUrl(callerPhoto);
+      // Validate and get proper image URL
+      final validPhoto = ImageHelper.getValidImageUrl(callerPhoto);
 
-    final Map<String, dynamic> data = {
-      'message': {
-        'topic': teacherUid,
-        'data': {
-          'type': 'incoming_call',
-          'callId': callId,
-          'callerName': callerName,
-          'callerPhoto': validPhoto,
-          'teacherUid': teacherUid,
-          'studentUid': studentUid,
-        },
-        'android': {
-          'priority': 'high',
-        },
-        'apns': {
-          'payload': {
-            'aps': {
-              'interruption-level': 'time-sensitive',
-              'content-available': 1,
-              'mutable-content': 1,
-              'sound': 'default',
-              //'badge': 1,
-            },
+      final response = await _dio.post(
+        '${WebRTCConstants.signalingServerUrl}/api/send-notification',
+        data: {
+          'topic': teacherUid,
+          'title': 'Incoming Call',
+          'body': '$callerName is calling you',
+          'data': {
+            'type': 'incoming_call',
+            'callId': callId,
+            'callerName': callerName,
+            'callerPhoto': validPhoto,
+            'teacherUid': teacherUid,
+            'studentUid': studentUid,
           },
         },
-      },
-    };
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
 
-    try {
-      await _dio.post(fcmUrl, data: data);
-      printWithColor('✅ Incoming call notification sent to: $teacherUid');
-    } on DioException catch (e) {
-      printWithColor('❌ Call notification error: ${e.response?.data}');
-
-      if (e.response?.statusCode == AppConstants.unauthenticated) {
-        await getAccessToken();
-        await pushIncomingCallNotification(
-          callId: callId,
-          callerName: callerName,
-          callerPhoto: callerPhoto,
-          teacherUid: teacherUid,
-          studentUid: studentUid,
-        );
+      if (response.statusCode == 200) {
+        printWithColor('✅ Incoming call notification sent to: $teacherUid');
+      } else {
+        printWithColor('❌ Call notification error: ${response.data}');
       }
+    } on DioException catch (e) {
+      printWithColor('❌ Call notification error: ${e.response?.data ?? e.message}');
+    } catch (e) {
+      printWithColor('❌ Call notification error: $e');
     }
   }
 
@@ -521,7 +450,7 @@ class AppFirebaseNotification {
 
   // ==================== Topics Management ====================
 
-  static subscribeToTopic(String role) {
+  static void subscribeToTopic(String role) {
     _instance.subscribeToTopic('all');
     _instance.subscribeToTopic(role);
     _instance.subscribeToTopic(CacheService.uid ?? 'all');

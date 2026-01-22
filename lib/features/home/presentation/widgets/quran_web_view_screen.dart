@@ -7,7 +7,7 @@ class QuranWebView extends StatefulWidget {
   const QuranWebView({super.key});
 
   @override
-  _QuranWebViewState createState() => _QuranWebViewState();
+  State<QuranWebView> createState() => _QuranWebViewState();
 }
 
 class _QuranWebViewState extends State<QuranWebView> {

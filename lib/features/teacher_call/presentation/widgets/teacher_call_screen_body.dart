@@ -1,9 +1,9 @@
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart' hide MessageType;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/toast.dart';
@@ -95,14 +95,10 @@ class TeacherCallScreenBody extends StatelessWidget {
             // Remote video (full screen when enabled)
             if (cubit.isRemoteVideoEnabled && cubit.remoteUid != null)
               Positioned.fill(
-                child: AgoraVideoView(
-                  controller: VideoViewController.remote(
-                    rtcEngine: cubit.callService.engine!,
-                    canvas: VideoCanvas(uid: cubit.remoteUid),
-                    connection: RtcConnection(
-                      channelId: cubit.callModel.callId,
-                    ),
-                  ),
+                child: RTCVideoView(
+                  cubit.callService.remoteRenderer,
+                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                  mirror: false,
                 ),
               ),
 
@@ -145,11 +141,10 @@ class TeacherCallScreenBody extends StatelessWidget {
                       ],
                     ),
                     clipBehavior: Clip.hardEdge,
-                    child: AgoraVideoView(
-                      controller: VideoViewController(
-                        rtcEngine: cubit.callService.engine!,
-                        canvas: const VideoCanvas(uid: 0),
-                      ),
+                    child: RTCVideoView(
+                      cubit.callService.localRenderer,
+                      objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      mirror: true,
                     ),
                   ),
                 ),
@@ -561,11 +556,12 @@ class TeacherCallScreenBody extends StatelessWidget {
                       _showCustomCommentDialog(context, cubit);
                     },
                     child: DottedBorder(
-                      borderType: BorderType.RRect,
-                      radius: Radius.circular(25),
-                      color: AppColors.myAppColor,
-                      strokeWidth: 1.5,
-                      dashPattern: [6, 3],
+                      options: RoundedRectDottedBorderOptions(
+                        radius: const Radius.circular(25),
+                        color: AppColors.myAppColor,
+                        strokeWidth: 1.5,
+                        dashPattern: const [6, 3],
+                      ),
                       child: Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 9,

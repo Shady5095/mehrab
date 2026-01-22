@@ -20,7 +20,6 @@ class BuildUpgradeAlert extends StatelessWidget {
           ? UpgradeDialogStyle.material
           : UpgradeDialogStyle.cupertino,
       upgrader: Upgrader(
-        upgraderDevice: UpgraderDevice(),
         languageCode: isArabic(context) ? 'ar' : 'en',
         durationUntilAlertAgain: const Duration(seconds: 1),
         countryCode: CacheService.currentCountryCode,

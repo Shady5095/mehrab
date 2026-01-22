@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:device_preview/device_preview.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -16,8 +17,10 @@ import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Initialize Firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Initialize Firebase for background isolate
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  }
 
   debugPrint('🔔 Background message received: ${message.messageId}');
 
@@ -67,8 +70,16 @@ void main() async {
   await Future.wait([
     LocalNotificationsService.init(),
     CacheService.init(),
-    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
   ]);
+
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize Firebase App Check with Play Integrity (replaces deprecated SafetyNet)
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.playIntegrity,
+    appleProvider: AppleProvider.deviceCheck,
+  );
 
   // Register FCM background message handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

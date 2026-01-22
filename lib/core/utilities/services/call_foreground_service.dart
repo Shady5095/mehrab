@@ -28,9 +28,8 @@ class CallForegroundService {
         showNotification: false,
         playSound: false,
       ),
-      foregroundTaskOptions: const ForegroundTaskOptions(
-        interval: 5000,
-        isOnceEvent: false,
+      foregroundTaskOptions: ForegroundTaskOptions(
+        eventAction: ForegroundTaskEventAction.repeat(5000),
         autoRunOnBoot: false,
         allowWakeLock: true,
         allowWifiLock: false,
@@ -69,7 +68,7 @@ class CallForegroundService {
       callback: startCallback,
     );
 
-    if (result == ServiceRequestResult.success()) {
+    if (result is ServiceRequestSuccess) {
       _isServiceRunning = true;
       debugPrint('✅ Foreground service started ${silentMode ? "(silent mode)" : ""}');
       return true;
@@ -114,7 +113,7 @@ void startCallback() {
 
 class CallTaskHandler extends TaskHandler {
   @override
-  void onStart(DateTime timestamp) {
+  Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
     debugPrint('🔄 Foreground task started');
   }
 
@@ -125,7 +124,7 @@ class CallTaskHandler extends TaskHandler {
   }
 
   @override
-  void onDestroy(DateTime timestamp) {
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
     debugPrint('🔄 Foreground task destroyed');
   }
 

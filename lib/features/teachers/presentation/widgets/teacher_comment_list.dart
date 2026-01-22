@@ -98,7 +98,7 @@ class _TeacherCommentListState extends State<TeacherCommentList> {
         _hasMore = false;
       }
     } catch (e) {
-      print('Error loading initial data: $e');
+      debugPrint('Error loading initial data: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -146,7 +146,7 @@ class _TeacherCommentListState extends State<TeacherCommentList> {
         _hasMore = false;
       }
     } catch (e) {
-      print('Error loading more data: $e');
+      debugPrint('Error loading more data: $e');
     } finally {
       if (mounted) {
         setState(() {

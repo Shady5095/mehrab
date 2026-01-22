@@ -36,27 +36,40 @@ class LoginCubit extends Cubit<LoginStates> {
     }
   }
 
+  bool _googleSignInInitialized = false;
+
+  Future<void> _initGoogleSignIn() async {
+    if (!_googleSignInInitialized) {
+      await GoogleSignIn.instance.initialize();
+      _googleSignInInitialized = true;
+    }
+  }
+
   Future<void> signInWithGoogle() async {
     emit(GoogleSignInWaitingState());
     try {
-      await GoogleSignIn().signOut();
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      await _initGoogleSignIn();
+      await GoogleSignIn.instance.signOut();
 
-      if (googleUser == null) {
-        return;
-      }else{
-        if(await isEmailAlreadyRegistered(googleUser.email)){
-          await GoogleSignIn().signOut();
-          emit(ThisEmailSignedWithEmailAndPasswordMethod());
+      final GoogleSignInAccount googleUser;
+      try {
+        googleUser = await GoogleSignIn.instance.authenticate();
+      } on GoogleSignInException catch (e) {
+        if (e.code == GoogleSignInExceptionCode.canceled) {
+          emit(GoogleSignInErrorState('Google Sign-In cancelled'));
           return;
         }
+        rethrow;
       }
 
-      final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
+      if(await isEmailAlreadyRegistered(googleUser.email)){
+        await GoogleSignIn.instance.signOut();
+        emit(ThisEmailSignedWithEmailAndPasswordMethod());
+        return;
+      }
 
+      final googleAuth = googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -274,12 +287,16 @@ class LoginCubit extends Cubit<LoginStates> {
       if (!authenticated) return;
     }
 
+    if (!context.mounted) return;
+
     Map<String, String> accounts = await AccountStorage.getAccounts();
 
     if (accounts.isEmpty) {
       myToast(msg: "مفيش حسابات محفوظة", state: ToastStates.error);
       return;
     }
+
+    if (!context.mounted) return;
 
     final selectedEmail = await showModalBottomSheet<String>(
       context: context,

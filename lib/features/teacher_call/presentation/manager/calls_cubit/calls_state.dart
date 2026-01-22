@@ -1,6 +1,5 @@
 part of 'calls_cubit.dart';
 
-@immutable
 sealed class CallsState {}
 
 final class CallsInitial extends CallsState {}

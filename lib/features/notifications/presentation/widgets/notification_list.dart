@@ -55,7 +55,7 @@ class _NotificationListState extends State<NotificationList> {
       final count = countSnapshot.count ?? 0;
       CacheService.setData(key: "notificationCount", value: count);
     } catch (e) {
-      print('Error updating notification count: $e');
+      debugPrint('Error updating notification count: $e');
     }
   }
 
@@ -79,7 +79,7 @@ class _NotificationListState extends State<NotificationList> {
         _hasMore = false;
       }
     } catch (e) {
-      print('Error loading initial data: $e');
+      debugPrint('Error loading initial data: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -113,7 +113,7 @@ class _NotificationListState extends State<NotificationList> {
         _hasMore = false;
       }
     } catch (e) {
-      print('Error loading more data: $e');
+      debugPrint('Error loading more data: $e');
     } finally {
       if (mounted) {
         setState(() {

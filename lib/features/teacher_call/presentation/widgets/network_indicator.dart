@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
-import '../../../../../core/utilities/services/call_service.dart';
+import '../../../../core/utilities/services/webrtc_call_service.dart';
 
 class NetworkQualityIndicator extends StatelessWidget {
   final CallQuality quality;

@@ -1,9 +1,7 @@
-import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mehrab/core/utilities/services/firebase_notification.dart';
 import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
-import 'package:meta/meta.dart';
 
 part 'calls_state.dart';
 

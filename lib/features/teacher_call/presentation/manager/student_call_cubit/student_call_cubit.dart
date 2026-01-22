@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mehrab/core/utilities/resources/constants.dart';
 import 'package:mehrab/core/utilities/services/firebase_notification.dart';
 import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
@@ -17,7 +18,12 @@ import 'package:screen_off/screen_off.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/utilities/services/call_foreground_service.dart';
 import '../../../../../core/utilities/services/call_kit_service.dart';
-import '../../../../../core/utilities/services/call_service.dart';
+import '../../../../../core/utilities/services/webrtc_call_service.dart';
+import '../../../../../core/utilities/services/socket_service.dart';
+import '../../../../../core/utilities/services/turn_credential_service.dart';
+import '../../../../../core/utilities/services/audio_session_service.dart';
+import '../../../../../core/utilities/services/webrtc_constants.dart';
+import '../../../../../core/utilities/functions/dependency_injection.dart';
 
 class StudentCallCubit extends Cubit<StudentCallState> {
   StudentCallCubit({required this.teacherModel}) : super(TeacherCallInitial());
@@ -26,10 +32,17 @@ class StudentCallCubit extends Cubit<StudentCallState> {
 
   static StudentCallCubit get(context) => BlocProvider.of(context);
 
-  late AgoraCallService callService;
+  late WebRTCCallService callService;
+  late SocketService socketService;
+  late AudioSessionService audioSessionService;
+  final TurnCredentialService _turnService = getIt<TurnCredentialService>();
+
   final db = FirebaseFirestore.instance;
   final AudioPlayer _player = AudioPlayer();
   static const _uuid = Uuid();
+
+  String? _remoteSocketId;
+  final List<RTCIceCandidate> _pendingCandidates = [];
 
   Future<void> requestPermissions() async {
     var micStatus = await Permission.microphone.status;
@@ -105,7 +118,8 @@ class StudentCallCubit extends Cubit<StudentCallState> {
         await CallForegroundService.init(silentMode: false);
       }
       await sendCallToTeacher();
-      await setupAgoraCallService();
+      await setupWebRTCCallService();
+      await connectToSignalingServer();
       callPushNotification();
       callListener();
       startCallTimeout();
@@ -174,8 +188,8 @@ class StudentCallCubit extends Cubit<StudentCallState> {
         'status': 'ended',
         'endedTime': FieldValue.serverTimestamp(),
       });
-      final endCallAgora = endAgoraCall();
-      await Future.wait([updateCall, endCallAgora]);
+      final endCallWebRTC = endWebRTCCall();
+      await Future.wait([updateCall, endCallWebRTC]);
       if (isByUser) {
         emit(CallFinished(model: teacherModel));
       } else {
@@ -204,47 +218,47 @@ class StudentCallCubit extends Cubit<StudentCallState> {
         .doc(callDocId)
         .snapshots()
         .listen((snapshot) {
-          if (snapshot.exists) {
-            CallModel data = CallModel.fromJson(snapshot.data() ?? {});
-            if (data.status == 'answered') {
-              if (!isCallAnswered) {
-                onTeacherAnswer(data);
-              }
-            } else if (data.status == 'declined') {
-              onCallDecline();
-              emit(TeacherInAnotherCall());
-            }
-            
-            // Listen for pre-comments (only if call is answered and not ended)
-            if (isCallAnswered && 
-                data.status != 'ended' && 
-                data.status != 'missed') {
-              final preComment = snapshot.data()?['preComment'] as String?;
-              
-              if (preComment != null && preComment != currentPreComment) {
-                currentPreComment = preComment;
-                HapticFeedback.vibrate();
-                
-                // Play sound for every new message
-                playMessageReceivedSound();
-                
-                emit(PreCommentReceived(comment: preComment));
-                
-                // Clear comment after 7 seconds
-                _preCommentTimer?.cancel();
-                _preCommentTimer = Timer(const Duration(seconds: 7), () {
-                  if (currentPreComment == preComment) {
-                    currentPreComment = null;
-                    emit(PreCommentCleared());
-                  }
-                });
-              }
-            } else if (data.status == 'ended' || data.status == 'missed') {
-              // Clear comment if call ended
-              _clearPreComment();
-            }
+      if (snapshot.exists) {
+        CallModel data = CallModel.fromJson(snapshot.data() ?? {});
+        if (data.status == 'answered') {
+          if (!isCallAnswered) {
+            onTeacherAnswer(data);
           }
-        });
+        } else if (data.status == 'declined') {
+          onCallDecline();
+          emit(TeacherInAnotherCall());
+        }
+
+        // Listen for pre-comments (only if call is answered and not ended)
+        if (isCallAnswered &&
+            data.status != 'ended' &&
+            data.status != 'missed') {
+          final preComment = snapshot.data()?['preComment'] as String?;
+
+          if (preComment != null && preComment != currentPreComment) {
+            currentPreComment = preComment;
+            HapticFeedback.vibrate();
+
+            // Play sound for every new message
+            playMessageReceivedSound();
+
+            emit(PreCommentReceived(comment: preComment));
+
+            // Clear comment after 7 seconds
+            _preCommentTimer?.cancel();
+            _preCommentTimer = Timer(const Duration(seconds: 7), () {
+              if (currentPreComment == preComment) {
+                currentPreComment = null;
+                emit(PreCommentCleared());
+              }
+            });
+          }
+        } else if (data.status == 'ended' || data.status == 'missed') {
+          // Clear comment if call ended
+          _clearPreComment();
+        }
+      }
+    });
   }
 
   Future<void> onTeacherAnswer(CallModel data) async {
@@ -253,8 +267,8 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     stopSound();
     await Future.delayed(Duration(milliseconds: 300));
     _callTimeoutTimer?.cancel();
-    // Keep listening for pre-comments, don't cancel subscription
-    joinAgoraChannel(data.callId);
+    // Join the signaling room when teacher answers
+    socketService.joinRoom(data.callId);
   }
 
   Future<void> onCallDecline() async {
@@ -262,6 +276,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     _clearPreComment();
     await db.collection('users').doc(teacherModel.uid).update({'isBusy': false});
   }
+
   void closeListener() {
     FirebaseFirestore.instance
         .collection('calls')
@@ -293,13 +308,27 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   bool isSpeakerOn = true;
   bool isVideoEnabled = false;
   bool isRemoteVideoEnabled = false;
-  int? remoteUid;
+  String? remoteUid;
 
-  Future<void> setupAgoraCallService() async {
-    callService = AgoraCallService();
-    callService.onUserJoined = (uid) {
+  Future<void> setupWebRTCCallService() async {
+    callService = WebRTCCallService();
+    audioSessionService = AudioSessionService();
+
+    // Configure audio session
+    await audioSessionService.configureForCall();
+
+    // Fetch TURN credentials
+    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if (authToken != null) {
+      final iceConfig = await _turnService.fetchCredentials(authToken);
+      if (iceConfig != null) {
+        callService.setIceServers(iceConfig);
+      }
+    }
+
+    callService.onUserJoined = (peerId) {
       isAnotherUserJoined = true;
-      remoteUid = uid;
+      remoteUid = peerId;
       startCallTimer();
       playAnswerSound();
       HapticFeedback.vibrate();
@@ -308,26 +337,121 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       }
       emit(AnotherUserJoinedSuccessfully());
     };
-    callService.onUserLeft = (uid) async {
+
+    callService.onUserLeft = (peerId) async {
       await endCallAfterAnswer(isByUser: false);
     };
+
     callService.onError = (error) {
       emit(AgoraConnectionError(error: error));
     };
+
     callService.onCallEnded = () {};
+
     callService.onConnectionSuccess = () {};
-    callService.onRemoteVideoStateChanged = (uid, enabled) {
+
+    callService.onRemoteVideoStateChanged = (peerId, enabled) {
       isRemoteVideoEnabled = enabled;
       emit(RemoteVideoStateChanged());
     };
+
+    callService.onIceCandidate = (candidate) {
+      if (_remoteSocketId != null) {
+        socketService.sendIceCandidate(candidate, _remoteSocketId!);
+      } else {
+        _pendingCandidates.add(candidate);
+      }
+    };
+
+    callService.onRenegotiationOffer = (offer) {
+      if (_remoteSocketId != null) {
+        socketService.sendOffer(offer, _remoteSocketId!);
+        debugPrint('Student: Sent renegotiation offer');
+      }
+    };
+
     await callService.initialize();
   }
 
-  Future<void> joinAgoraChannel(String channelId) async {
-    await callService.joinChannel(channelId);
+  Future<void> connectToSignalingServer() async {
+    socketService = SocketService();
+
+    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if (authToken == null) {
+      emit(AgoraConnectionError(error: 'Authentication failed'));
+      return;
+    }
+
+    socketService.onConnected = () {
+      debugPrint('Student: Connected to signaling server');
+    };
+
+    socketService.onError = (error) {
+      debugPrint('Student: Socket error: $error');
+      emit(AgoraConnectionError(error: error));
+    };
+
+    // When teacher joins the room, create and send offer
+    socketService.onUserJoined = (odId, socketId) async {
+      debugPrint('Student: Teacher joined, sending offer');
+      _remoteSocketId = socketId;
+
+      // Send any pending ICE candidates
+      for (var candidate in _pendingCandidates) {
+        socketService.sendIceCandidate(candidate, socketId);
+      }
+      _pendingCandidates.clear();
+
+      // Create and send offer
+      try {
+        final offer = await callService.createOffer();
+        socketService.sendOffer(offer, socketId);
+      } catch (e) {
+        emit(AgoraConnectionError(error: 'Failed to create offer: $e'));
+      }
+    };
+
+    // Handle answer from teacher
+    socketService.onAnswerReceived = (answer, fromSocketId, fromUid) async {
+      debugPrint('Student: Received answer from teacher');
+      try {
+        await callService.setRemoteAnswer(answer);
+      } catch (e) {
+        emit(AgoraConnectionError(error: 'Failed to set answer: $e'));
+      }
+    };
+
+    // Handle ICE candidates from teacher
+    socketService.onIceCandidateReceived = (candidate, fromSocketId) {
+      callService.addIceCandidate(candidate);
+    };
+
+    // Handle video state changes from teacher
+    socketService.onVideoStateChanged = (enabled, fromSocketId) {
+      debugPrint('Student: Teacher video state changed: $enabled');
+      isRemoteVideoEnabled = enabled;
+      if (enabled) {
+        callService.remoteRenderer.srcObject = callService.remoteStream;
+      } else {
+        callService.remoteRenderer.srcObject = null;
+      }
+      emit(RemoteVideoStateChanged());
+    };
+
+    socketService.onUserLeft = (odId, socketId) async {
+      debugPrint('Student: Teacher left');
+      await endCallAfterAnswer(isByUser: false);
+    };
+
+    await socketService.connect(
+      WebRTCConstants.signalingServerUrl,
+      authToken,
+    );
   }
 
-  Future<void> endAgoraCall() async {
+  Future<void> endWebRTCCall() async {
+    socketService.leaveRoom(callDocId ?? '');
+    await socketService.disconnect();
     await callService.endCall();
   }
 
@@ -352,6 +476,11 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       await callService.toggleVideo();
       isVideoEnabled = callService.isVideoEnabled;
       HapticFeedback.heavyImpact();
+
+      // Send video state to remote peer
+      if (_remoteSocketId != null) {
+        socketService.sendVideoState(isVideoEnabled, _remoteSocketId!);
+      }
 
       // When video is enabled, automatically turn on speaker and disable proximity sensor
       if (isVideoEnabled) {
@@ -495,7 +624,9 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     _callTimerController.close();
     stopCallTimer();
     _callSubscription?.cancel();
+    socketService.dispose();
     callService.dispose();
+    audioSessionService.dispose();
     if (Platform.isAndroid) {
       disableProximitySensor();
       CallForegroundService.stopCallService();

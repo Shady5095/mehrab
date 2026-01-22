@@ -3,7 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  agora_rtc_engine
   audioplayers_windows
   cloud_firestore
   connectivity_plus
@@ -12,7 +11,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_core
   firebase_storage
   flutter_secure_storage_windows
-  iris_method_channel
+  flutter_webrtc
   local_auth_windows
   permission_handler_windows
   syncfusion_pdfviewer_windows
