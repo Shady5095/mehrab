@@ -426,6 +426,18 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       callService.addIceCandidate(candidate);
     };
 
+    // Handle video state changes from teacher
+    socketService.onVideoStateChanged = (enabled, fromSocketId) {
+      debugPrint('Student: Teacher video state changed: $enabled');
+      isRemoteVideoEnabled = enabled;
+      if (enabled) {
+        callService.remoteRenderer.srcObject = callService.remoteStream;
+      } else {
+        callService.remoteRenderer.srcObject = null;
+      }
+      emit(RemoteVideoStateChanged());
+    };
+
     socketService.onUserLeft = (odId, socketId) async {
       debugPrint('Student: Teacher left');
       await endCallAfterAnswer(isByUser: false);
@@ -464,6 +476,11 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       await callService.toggleVideo();
       isVideoEnabled = callService.isVideoEnabled;
       HapticFeedback.heavyImpact();
+
+      // Send video state to remote peer
+      if (_remoteSocketId != null) {
+        socketService.sendVideoState(isVideoEnabled, _remoteSocketId!);
+      }
 
       // When video is enabled, automatically turn on speaker and disable proximity sensor
       if (isVideoEnabled) {

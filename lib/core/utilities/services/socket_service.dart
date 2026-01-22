@@ -22,6 +22,7 @@ class SocketService {
   Function(RTCSessionDescription offer, String fromSocketId, String fromUid)? onOfferReceived;
   Function(RTCSessionDescription answer, String fromSocketId, String fromUid)? onAnswerReceived;
   Function(RTCIceCandidate candidate, String fromSocketId)? onIceCandidateReceived;
+  Function(bool enabled, String fromSocketId)? onVideoStateChanged;
 
   bool get isConnected => _isConnected;
   String? get currentRoomId => _currentRoomId;
@@ -123,6 +124,11 @@ class SocketService {
       );
       onIceCandidateReceived?.call(candidate, data['from']);
     });
+
+    _socket!.on('video-state', (data) {
+      debugPrint('Socket: Video state received from ${data['from']}: ${data['enabled']}');
+      onVideoStateChanged?.call(data['enabled'] as bool, data['from'] as String);
+    });
   }
 
   void joinRoom(String callId) {
@@ -189,6 +195,18 @@ class SocketService {
         'sdpMid': candidate.sdpMid,
         'sdpMLineIndex': candidate.sdpMLineIndex,
       },
+      'to': toSocketId,
+    });
+  }
+
+  void sendVideoState(bool enabled, String toSocketId) {
+    if (!_isConnected || _socket == null) {
+      return;
+    }
+
+    debugPrint('Socket: Sending video state ($enabled) to $toSocketId');
+    _socket!.emit('video-state', {
+      'enabled': enabled,
       'to': toSocketId,
     });
   }

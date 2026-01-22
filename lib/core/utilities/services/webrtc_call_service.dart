@@ -22,6 +22,8 @@ class WebRTCCallService {
   final RTCVideoRenderer localRenderer = RTCVideoRenderer();
   final RTCVideoRenderer remoteRenderer = RTCVideoRenderer();
 
+  MediaStream? get remoteStream => _remoteStream;
+
   Timer? _statsTimer;
   // Callbacks matching AgoraCallService interface
   Function(String peerId)? onUserJoined;
@@ -114,18 +116,25 @@ class WebRTCCallService {
         _remoteStream = event.streams[0];
 
         if (event.track.kind == 'video') {
-          remoteRenderer.srcObject = event.track.enabled ? _remoteStream : null;
-          onRemoteVideoStateChanged?.call('remote', event.track.enabled);
-          
+          // Don't enable video view on initial track - wait for explicit unmute
+          // This prevents black screen for voice-only calls
+          remoteRenderer.srcObject = null;
+          onRemoteVideoStateChanged?.call('remote', false);
+
           event.track.onMute = () {
+            debugPrint('WebRTC: Remote video muted');
             remoteRenderer.srcObject = null;
             onRemoteVideoStateChanged?.call('remote', false);
           };
-          
+
           event.track.onUnMute = () {
+            debugPrint('WebRTC: Remote video unmuted');
             remoteRenderer.srcObject = _remoteStream;
             onRemoteVideoStateChanged?.call('remote', true);
           };
+
+          // Don't auto-enable video - rely on explicit socket signaling
+          // to prevent black screen when remote user hasn't enabled video
         }
 
         onUserJoined?.call('remote');
