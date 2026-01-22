@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
+import '../functions/secure_logger.dart';
 
 class SocketService {
   io.Socket? _socket;
@@ -33,7 +33,7 @@ class SocketService {
       await disconnect();
     }
 
-    debugPrint('Socket: Connecting to $serverUrl');
+    SecureLogger.webrtc('Connecting to $serverUrl');
 
     _socket = io.io(
       serverUrl,
@@ -53,30 +53,30 @@ class SocketService {
 
   void _setupEventListeners() {
     _socket!.onConnect((_) {
-      debugPrint('Socket: Connected (id: ${_socket!.id})');
+      SecureLogger.webrtc('Connected (id: ${_socket!.id})');
       _isConnected = true;
       onConnected?.call();
     });
 
     _socket!.onDisconnect((_) {
-      debugPrint('Socket: Disconnected');
+      SecureLogger.webrtc('Disconnected');
       _isConnected = false;
       _currentRoomId = null;
       onDisconnected?.call();
     });
 
     _socket!.onConnectError((error) {
-      debugPrint('Socket: Connection error: $error');
+      SecureLogger.webrtc('Connection error: $error');
       onError?.call('Connection error: $error');
     });
 
     _socket!.onError((error) {
-      debugPrint('Socket: Error: $error');
+      SecureLogger.webrtc('Error: $error');
       onError?.call('Socket error: $error');
     });
 
     _socket!.on('room-joined', (data) {
-      debugPrint('Socket: Room joined: ${data['callId']}');
+      SecureLogger.webrtc('Room joined: ${data['callId']}');
       _currentRoomId = data['callId'];
 
       final participants = (data['participants'] as List?)
@@ -88,17 +88,17 @@ class SocketService {
     });
 
     _socket!.on('user-joined', (data) {
-      debugPrint('Socket: User joined: ${data['odId']}');
+      SecureLogger.webrtc('User joined: ${data['odId']}');
       onUserJoined?.call(data['odId'], data['socketId']);
     });
 
     _socket!.on('user-left', (data) {
-      debugPrint('Socket: User left: ${data['odId']}');
+      SecureLogger.webrtc('User left: ${data['odId']}');
       onUserLeft?.call(data['odId'], data['socketId']);
     });
 
     _socket!.on('offer', (data) {
-      debugPrint('Socket: Offer received from ${data['from']}');
+      SecureLogger.webrtc('Offer received from ${data['from']}');
       final offer = RTCSessionDescription(
         data['offer']['sdp'],
         data['offer']['type'],
@@ -107,7 +107,7 @@ class SocketService {
     });
 
     _socket!.on('answer', (data) {
-      debugPrint('Socket: Answer received from ${data['from']}');
+      SecureLogger.webrtc('Answer received from ${data['from']}');
       final answer = RTCSessionDescription(
         data['answer']['sdp'],
         data['answer']['type'],
@@ -116,7 +116,7 @@ class SocketService {
     });
 
     _socket!.on('ice-candidate', (data) {
-      debugPrint('Socket: ICE candidate received from ${data['from']}');
+      SecureLogger.webrtc('ICE candidate received from ${data['from']}');
       final candidate = RTCIceCandidate(
         data['candidate']['candidate'],
         data['candidate']['sdpMid'],
@@ -126,19 +126,19 @@ class SocketService {
     });
 
     _socket!.on('video-state', (data) {
-      debugPrint('Socket: Video state received from ${data['from']}: ${data['enabled']}');
+      SecureLogger.webrtc('Video state received from ${data['from']}: ${data['enabled']}');
       onVideoStateChanged?.call(data['enabled'] as bool, data['from'] as String);
     });
   }
 
   void joinRoom(String callId) {
     if (!_isConnected || _socket == null) {
-      debugPrint('Socket: Cannot join room - not connected');
+      SecureLogger.webrtc('Cannot join room - not connected');
       onError?.call('Not connected to server');
       return;
     }
 
-    debugPrint('Socket: Joining room $callId');
+    SecureLogger.webrtc('Joining room $callId');
     _socket!.emit('join-room', {'callId': callId});
   }
 
@@ -147,18 +147,18 @@ class SocketService {
       return;
     }
 
-    debugPrint('Socket: Leaving room $callId');
+    SecureLogger.webrtc('Leaving room $callId');
     _socket!.emit('leave-room', {'callId': callId});
     _currentRoomId = null;
   }
 
   void sendOffer(RTCSessionDescription offer, String toSocketId) {
     if (!_isConnected || _socket == null) {
-      debugPrint('Socket: Cannot send offer - not connected');
+      SecureLogger.webrtc('Cannot send offer - not connected');
       return;
     }
 
-    debugPrint('Socket: Sending offer to $toSocketId');
+    SecureLogger.webrtc('Sending offer to $toSocketId');
     _socket!.emit('offer', {
       'offer': {
         'sdp': offer.sdp,
@@ -170,11 +170,11 @@ class SocketService {
 
   void sendAnswer(RTCSessionDescription answer, String toSocketId) {
     if (!_isConnected || _socket == null) {
-      debugPrint('Socket: Cannot send answer - not connected');
+      SecureLogger.webrtc('Cannot send answer - not connected');
       return;
     }
 
-    debugPrint('Socket: Sending answer to $toSocketId');
+    SecureLogger.webrtc('Sending answer to $toSocketId');
     _socket!.emit('answer', {
       'answer': {
         'sdp': answer.sdp,
@@ -204,7 +204,7 @@ class SocketService {
       return;
     }
 
-    debugPrint('Socket: Sending video state ($enabled) to $toSocketId');
+    SecureLogger.webrtc('Sending video state ($enabled) to $toSocketId');
     _socket!.emit('video-state', {
       'enabled': enabled,
       'to': toSocketId,
@@ -213,7 +213,7 @@ class SocketService {
 
   Future<Map<String, dynamic>?> getIceConfig() async {
     if (!_isConnected || _socket == null) {
-      debugPrint('Socket: Cannot get ICE config - not connected');
+      SecureLogger.webrtc('Cannot get ICE config - not connected');
       return null;
     }
 
@@ -244,7 +244,7 @@ class SocketService {
     _isConnected = false;
     _currentRoomId = null;
 
-    debugPrint('Socket: Disconnected and disposed');
+    SecureLogger.webrtc('Disconnected and disposed');
   }
 
   void dispose() {
