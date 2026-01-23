@@ -17,7 +17,6 @@ import 'package:http/http.dart' as http;
 import '../../../../core/utilities/functions/toast.dart';
 import '../../../../core/utilities/resources/constants.dart';
 import '../../../../core/utilities/resources/strings.dart';
-import '../../../../core/utilities/services/account_storage_service.dart';
 import '../../../../core/utilities/services/cache_service.dart';
 
 part 'register_state.dart';
@@ -26,7 +25,7 @@ class RegisterCubit extends Cubit<RegisterState> {
   RegisterCubit({this.socialSignInModel}) : super(RegisterInitial());  // تغيير الاسم إلى socialSignInModel للعامية
   final GoogleSignInModel? socialSignInModel;  // نفس الموديل، لكن عام
 
-  static RegisterCubit instance(context) =>
+  static RegisterCubit instance(BuildContext context) =>
       BlocProvider.of<RegisterCubit>(context);
 
   File? imageFile;
@@ -287,10 +286,9 @@ class RegisterCubit extends Cubit<RegisterState> {
     await uploadImageToImageKit();
     await addUserDataToFireStore();
     await cacheUid(uid??'');
-    AccountStorage.saveAccount(
-      emailController.text.trim(),
-      passwordController.text.trim(),
-    );
+    // SECURITY FIX: Removed password storage (CWE-256)
+    // AccountStorage.saveAccount() has been deprecated for security reasons
+    // Firebase Auth handles session management automatically
     emit(RegisterSuccessState());
   }
 

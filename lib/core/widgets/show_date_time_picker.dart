@@ -10,8 +10,7 @@ Future<DateTime?> showMyDateTimePicker(
   DateTime? lastTime,
   DateTime? initialDate,
 }) async {
-  DateTime? dateTime;
-  await showDatePicker(
+  final dateValue = await showDatePicker(
     initialEntryMode: DatePickerEntryMode.calendarOnly,
     builder: (context, child) {
       return Theme(data: myDateTimePickerTheme(context), child: child!);
@@ -20,41 +19,35 @@ Future<DateTime?> showMyDateTimePicker(
     firstDate: firstTime ?? DateTime.now(),
     lastDate: lastTime ?? DateTime(2040),
     context: context,
-  ).then((dateValue) async {
-    if (dateValue != null) {
-      final DateTime date = dateValue;
-      await showTimePicker(
-        initialEntryMode: TimePickerEntryMode.dialOnly,
+  );
 
-        builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
-            child: Theme(data: myDateTimePickerTheme(context), child: child!),
-          );
-        },
-        context: context,
-        initialTime: initialDate != null
-            ? TimeOfDay(hour: initialDate.hour, minute: initialDate.minute)
-            : TimeOfDay.now(),
-      ).then((timeValue) {
-        if (timeValue != null) {
-          final TimeOfDay time = timeValue;
-          dateTime = DateTime(
-            date.year,
-            date.month,
-            date.day,
-            time.hour,
-            time.minute,
-          );
-        } else {
-          return null;
-        }
-      });
-    } else {
-      return null;
-    }
-  });
-  return dateTime;
+  if (dateValue == null) return null;
+
+  if (!context.mounted) return null;
+
+  final timeValue = await showTimePicker(
+    initialEntryMode: TimePickerEntryMode.dialOnly,
+    builder: (context, child) {
+      return MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+        child: Theme(data: myDateTimePickerTheme(context), child: child!),
+      );
+    },
+    context: context,
+    initialTime: initialDate != null
+        ? TimeOfDay(hour: initialDate.hour, minute: initialDate.minute)
+        : TimeOfDay.now(),
+  );
+
+  if (timeValue == null) return null;
+
+  return DateTime(
+    dateValue.year,
+    dateValue.month,
+    dateValue.day,
+    timeValue.hour,
+    timeValue.minute,
+  );
 }
 
 Future<DateTime?> showTest(
@@ -62,8 +55,7 @@ Future<DateTime?> showTest(
   DateTime? firstTime,
   DateTime? lastTime,
 }) async {
-  DateTime? dateTime;
-  await showDatePicker(
+  final dateValue = await showDatePicker(
     initialEntryMode: DatePickerEntryMode.calendarOnly,
     builder: (context, child) {
       return Theme(data: myDateTimePickerTheme(context), child: child!);
@@ -72,40 +64,33 @@ Future<DateTime?> showTest(
     firstDate: firstTime ?? DateTime(2023),
     lastDate: lastTime ?? DateTime(2040),
     context: context,
-  ).then((dateValue) async {
-    if (dateValue != null) {
+  );
 
-      final DateTime date = dateValue;
-      await showTimePicker(
-        initialEntryMode: TimePickerEntryMode.dialOnly,
+  if (dateValue == null) return null;
 
-        builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
-            child: Theme(data: myDateTimePickerTheme(context), child: child!),
-          );
-        },
-        context: context,
-        initialTime: TimeOfDay.now(),
-      ).then((timeValue) {
-        if (timeValue != null) {
-          final TimeOfDay time = timeValue;
-          dateTime = DateTime(
-            date.year,
-            date.month,
-            date.day,
-            time.hour,
-            time.minute,
-          );
-        } else {
-          return null;
-        }
-      });
-    } else {
-      return null;
-    }
-  });
-  return dateTime;
+  if (!context.mounted) return null;
+
+  final timeValue = await showTimePicker(
+    initialEntryMode: TimePickerEntryMode.dialOnly,
+    builder: (context, child) {
+      return MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+        child: Theme(data: myDateTimePickerTheme(context), child: child!),
+      );
+    },
+    context: context,
+    initialTime: TimeOfDay.now(),
+  );
+
+  if (timeValue == null) return null;
+
+  return DateTime(
+    dateValue.year,
+    dateValue.month,
+    dateValue.day,
+    timeValue.hour,
+    timeValue.minute,
+  );
 }
 
 ThemeData myDateTimePickerTheme(BuildContext context) {

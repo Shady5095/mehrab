@@ -13,7 +13,7 @@ class RateSessionCubit extends Cubit<RateSessionState> {
   RateSessionCubit({required this.callModel, this.isEditMode = false, this.isFromCall = false})
     : super(RateSessionInitial());
 
-  static RateSessionCubit instance(context) => BlocProvider.of(context);
+  static RateSessionCubit instance(BuildContext context) => BlocProvider.of(context);
 
   final CallModel callModel;
 

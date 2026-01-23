@@ -2,6 +2,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="ExtraText">
 
+    <!-- Custom permissions for CallKit security -->
+    <permission
+        android:name="com.mehrab.mehrab_quran.permission.CALL_CONTROL"
+        android:protectionLevel="signature"
+        android:description="@string/call_control_permission_description"
+        android:label="@string/call_control_permission_label" />
+
     <!-- Hardware features -->
     <uses-feature
         android:name="android.hardware.camera"
@@ -51,7 +58,8 @@
     </queries>
 
     <application
-        android:requestLegacyExternalStorage="true"
+        android:requestLegacyExternalStorage="false"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:label="محراب القرآن"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
@@ -121,11 +129,12 @@
             tools:replace="android:screenOrientation"
             android:screenOrientation="unspecified"/>
 
-        <!-- CallKit Incoming -->
+        <!-- CallKit Incoming - Protected with signature-level permission -->
         <receiver
             android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingBroadcastReceiver"
             android:enabled="true"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.mehrab.mehrab_quran.permission.CALL_CONTROL">
             <intent-filter>
                 <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_INCOMING"/>
                 <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_START"/>
@@ -145,10 +154,11 @@
             android:launchMode="singleInstance"
             tools:replace="android:launchMode"/>
 
-        <!-- ✅ CallKit Background Handlers -->
+        <!-- ✅ CallKit Background Handlers - Protected -->
         <receiver
             android:name="com.hiennv.flutter_callkit_incoming.CallkitReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.mehrab.mehrab_quran.permission.CALL_CONTROL">
             <intent-filter>
                 <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_EVENT" />
             </intent-filter>

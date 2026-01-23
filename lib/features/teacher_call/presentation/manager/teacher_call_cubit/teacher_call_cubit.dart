@@ -12,12 +12,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:screen_off/screen_off.dart';
 
+import '../../../../../core/config/app_config.dart';
 import '../../../../../core/utilities/services/call_foreground_service.dart';
 import '../../../../../core/utilities/services/webrtc_call_service.dart';
 import '../../../../../core/utilities/services/socket_service.dart';
 import '../../../../../core/utilities/services/turn_credential_service.dart';
 import '../../../../../core/utilities/services/audio_session_service.dart';
-import '../../../../../core/utilities/services/webrtc_constants.dart';
 import '../../../../../core/utilities/services/firebase_notification.dart';
 import '../../../../../core/utilities/functions/dependency_injection.dart';
 part 'teacher_call_state.dart';
@@ -28,7 +28,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     required this.callModel,
   }) : super(TeacherCallInitial());
 
-  static TeacherCallCubit get(context) => BlocProvider.of(context);
+  static TeacherCallCubit get(BuildContext context) => BlocProvider.of(context);
 
   late WebRTCCallService callService;
   late SocketService socketService;
@@ -193,7 +193,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     await audioSessionService.configureForCall();
 
     // Fetch TURN credentials
-    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
     if (authToken != null) {
       final iceConfig = await _turnService.fetchCredentials(authToken);
       if (iceConfig != null) {
@@ -253,7 +253,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   Future<void> connectToSignalingServer() async {
     socketService = SocketService();
 
-    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
     if (authToken == null) {
       emit(AgoraConnectionError(error: 'Authentication failed'));
       return;
@@ -313,7 +313,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     };
 
     await socketService.connect(
-      WebRTCConstants.signalingServerUrl,
+      AppConfig.signalingServerUrl,
       authToken,
     );
   }

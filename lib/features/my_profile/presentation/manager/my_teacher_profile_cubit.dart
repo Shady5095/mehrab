@@ -24,7 +24,7 @@ class MyTeacherProfileCubit extends Cubit<MyTeacherProfileState> {
   }) : super(MyTeacherProfileInitial());
 
   TeacherModel teacherModel ;
-  static MyTeacherProfileCubit instance(context) => BlocProvider.of(context);
+  static MyTeacherProfileCubit instance(BuildContext context) => BlocProvider.of(context);
 
   File? imageFile;
   String? imageUrl;

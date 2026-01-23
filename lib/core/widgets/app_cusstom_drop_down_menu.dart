@@ -61,7 +61,7 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
   late ScrollController _scrollController;
   final GlobalKey _textFieldKey = GlobalKey();
 
-  void _showPopupMenu(BuildContext context) {
+  Future<void> _showPopupMenu(BuildContext context) async {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     final RenderBox renderBox =
         _textFieldKey.currentContext!.findRenderObject() as RenderBox;
@@ -70,7 +70,7 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
 
     // Use custom width if provided, otherwise use the width of the TextFormField
     final double menuWidth = widget.dropdownWidth ?? size.width;
-    showMenu(
+    final value = await showMenu(
       context: context,
       popUpAnimationStyle: AnimationStyle(
         duration: const Duration(milliseconds: 200),
@@ -141,18 +141,18 @@ class _CustomDropDownMenuState extends State<CustomDropDownMenu> {
         maxWidth: menuWidth,
         maxHeight: 30.hR,
       ),
-    ).then((value) {
-      if (value != null) {
-        widget.isTextTranslated
-            ? _controller.text = value.tr(context)
-            : _controller.text = value;
-        if (widget.onChangedIndex != null) {
-          widget.onChangedIndex!(widget.dropdownItems.indexOf(value));
-        }
+    );
 
-        widget.onChanged(value);
+    if (value != null && context.mounted) {
+      widget.isTextTranslated
+          ? _controller.text = value.tr(context)
+          : _controller.text = value;
+      if (widget.onChangedIndex != null) {
+        widget.onChangedIndex!(widget.dropdownItems.indexOf(value));
       }
-    });
+
+      widget.onChanged(value);
+    }
   }
 
   bool get isLoading {
@@ -267,7 +267,7 @@ class _CustomDropDownMenuState2 extends State<CustomDropDownMenu2> {
   late ScrollController _scrollController;
   final GlobalKey _textFieldKey = GlobalKey();
 
-  void _showPopupMenu(BuildContext context) {
+  Future<void> _showPopupMenu(BuildContext context) async {
     final RenderBox renderBox =
         _textFieldKey.currentContext!.findRenderObject() as RenderBox;
     final Offset offset = renderBox.localToGlobal(Offset.zero);
@@ -275,7 +275,7 @@ class _CustomDropDownMenuState2 extends State<CustomDropDownMenu2> {
 
     // Use custom width if provided, otherwise use the width of the TextFormField
     final double menuWidth = widget.dropdownWidth ?? size.width;
-    showMenu(
+    final value = await showMenu(
       context: context,
       popUpAnimationStyle: AnimationStyle(
         duration: const Duration(milliseconds: 200),
@@ -335,14 +335,14 @@ class _CustomDropDownMenuState2 extends State<CustomDropDownMenu2> {
         maxWidth: menuWidth,
         maxHeight: 30.hR,
       ),
-    ).then((value) {
-      if (value != null) {
-        widget.isTextTranslated
-            ? _controller.text = value.tr(context)
-            : _controller.text = value;
-        widget.onChanged(value);
-      }
-    });
+    );
+
+    if (value != null && context.mounted) {
+      widget.isTextTranslated
+          ? _controller.text = value.tr(context)
+          : _controller.text = value;
+      widget.onChanged(value);
+    }
   }
 
   bool get isLoading {
@@ -524,7 +524,7 @@ class _MultiSelectionExpansionTileState
           }),
         ),
         Builder(
-          builder: (context) {
+          builder: (BuildContext context) {
             if (isShowError) {
               return Column(
                 children: [
@@ -668,7 +668,7 @@ class _CustomDropDownMenuWithSearchState extends State<CustomDropDownMenuWithSea
     });
   }
 
-  void _showPopupMenu(BuildContext context) {
+  Future<void> _showPopupMenu(BuildContext context) async {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     final RenderBox renderBox =
     _textFieldKey.currentContext!.findRenderObject() as RenderBox;
@@ -679,7 +679,7 @@ class _CustomDropDownMenuWithSearchState extends State<CustomDropDownMenuWithSea
     _searchController.clear();
     filteredItems = widget.dropdownItems;
 
-    showMenu<String>(
+    final value = await showMenu<String>(
       context: context,
       color: context.chatColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -756,15 +756,15 @@ class _CustomDropDownMenuWithSearchState extends State<CustomDropDownMenuWithSea
           ),
         ),
       ],
-    ).then((value) {
-      if (value != null) {
-        _controller.text = widget.isTextTranslated ? value.tr(context) : value;
-        widget.onChanged(value);
-        if (widget.onChangedIndex != null) {
-          widget.onChangedIndex!(widget.dropdownItems.indexOf(value));
-        }
+    );
+
+    if (value != null && context.mounted) {
+      _controller.text = widget.isTextTranslated ? value.tr(context) : value;
+      widget.onChanged(value);
+      if (widget.onChangedIndex != null) {
+        widget.onChangedIndex!(widget.dropdownItems.indexOf(value));
       }
-    });
+    }
   }
 
   bool get isLoading => widget.dropdownItems.isEmpty && widget.isShowLoading;

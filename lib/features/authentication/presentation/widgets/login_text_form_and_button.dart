@@ -10,7 +10,6 @@ import 'package:mehrab/features/authentication/presentation/widgets/password_suf
 import '../../../../core/utilities/resources/assets.dart';
 import '../../../../core/utilities/resources/colors.dart';
 import '../../../../core/utilities/resources/strings.dart';
-import '../../../../core/utilities/services/account_storage_service.dart';
 import '../../../../core/utilities/validator.dart';
 import '../../../../core/widgets/buttons_widget.dart';
 import '../../../../core/widgets/height_sized_box.dart';
@@ -118,54 +117,8 @@ class LoginTextFormAndButton extends StatelessWidget {
                       },
                     ),
                   ),
-                  FutureBuilder<Map<String, String>>(
-                    future: AccountStorage.getAccounts(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const SizedBox.shrink(); // لسه بيجيب الداتا
-                      }
-
-                      final accounts = snapshot.data ?? {};
-                      if (accounts.isEmpty) {
-                        return const SizedBox.shrink(); // مفيش حسابات → متعرضش الزرار
-                      }
-                      return InkWell(
-                        onTap: () {
-                          cubit.loginWithBiometrics(context);
-                        },
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 5),
-                            Container(
-                              width: 13.wR,
-                              height: 50,
-                              padding: const EdgeInsets.all(7.5),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(color: AppColors.myAppColor),
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withValues(alpha: 0.2),
-                                    spreadRadius: 1,
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Image(
-                                image: AssetImage(
-                                  Platform.isIOS
-                                      ? AppAssets.faceId
-                                      : AppAssets.fingerPrint,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                  // Biometric login button removed - password storage deprecated
+                  // Firebase Auth now handles session persistence automatically
                 ],
               ),
               const HeightSizedBox(height: 1),

@@ -151,23 +151,26 @@ class _AddCommentDialogState extends State<AddCommentDialog> {
                 );
               }
 
-              if (mounted) {
-                Navigator.of(context).pop();
-                myToast(
-                  msg: AppStrings.commentAddedSuccessfully.tr(context),
-                  state: ToastStates.success,
+              if (!context.mounted) return;
+
+              final successMsg = AppStrings.commentAddedSuccessfully.tr(context);
+
+              Navigator.of(context).pop();
+
+              myToast(
+                msg: successMsg,
+                state: ToastStates.success,
+              );
+
+              if (!widget.isAdminEdit) {
+                CacheService.setData(
+                  key: "isThisTeacherRated-${widget.teacherUid}",
+                  value: true,
                 );
-
-                if (!widget.isAdminEdit) {
-                  CacheService.setData(
-                    key: "isThisTeacherRated-${widget.teacherUid}",
-                    value: true,
-                  );
-                }
-
-                // Call the callback to refresh the list
-                widget.onCommentAdded?.call();
               }
+
+              // Call the callback to refresh the list
+              widget.onCommentAdded?.call();
             } else {
               myToast(
                 msg: "برجاء اختيار تقييم من 1 ل 5",

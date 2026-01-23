@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_callkit_incoming/entities/android_params.dart';
 import 'package:flutter_callkit_incoming/entities/call_kit_params.dart';
 import 'package:flutter_callkit_incoming/entities/ios_params.dart';
 import 'package:flutter_callkit_incoming/entities/notification_params.dart';
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import '../functions/print_with_color.dart';
+import '../functions/secure_logger.dart';
 
 class CallKitService {
   static final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -185,19 +185,19 @@ class CallKitPermissionHelper {
       // Check if we can use full screen intent
       final canUse = await FlutterCallkitIncoming.canUseFullScreenIntent();
 
-      debugPrint('📱 Can use full screen intent: $canUse');
+      SecureLogger.log('Full screen intent available: $canUse', tag: 'CallKit');
 
       if (canUse == false) {
         // Request permission
-        debugPrint('📱 Requesting full screen intent permission...');
+        SecureLogger.log('Requesting full screen intent permission', tag: 'CallKit');
         final result = await FlutterCallkitIncoming.requestFullIntentPermission();
-        debugPrint('📱 Full screen intent permission result: $result');
+        SecureLogger.log('Full screen intent permission granted: $result', tag: 'CallKit');
         return result ?? false;
       }
 
       return canUse ?? true;
     } catch (e) {
-      debugPrint('❌ Error checking full screen intent permission: $e');
+      SecureLogger.error('Error checking full screen intent permission', tag: 'CallKit', error: e);
       return false;
     }
   }
@@ -212,7 +212,7 @@ class CallKitPermissionHelper {
       final canUse = await FlutterCallkitIncoming.canUseFullScreenIntent();
       return canUse ?? false;
     } catch (e) {
-      debugPrint('❌ Error checking full screen intent: $e');
+      SecureLogger.error('Error checking full screen intent', tag: 'CallKit', error: e);
       return false;
     }
   }

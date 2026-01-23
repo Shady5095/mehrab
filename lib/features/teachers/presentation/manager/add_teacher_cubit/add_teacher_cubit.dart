@@ -25,7 +25,7 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
     this.teacherModel,
 }) : super(AddTeacherInitial());
 
-  static AddTeacherCubit get(context) => BlocProvider.of(context);
+  static AddTeacherCubit get(BuildContext context) => BlocProvider.of(context);
 
   File? imageFile;
   String? imageUrl;
@@ -343,7 +343,7 @@ class AddTeacherCubit extends Cubit<AddTeacherState> {
     });
   }
 
-  clearIgazPdf() {
+  void clearIgazPdf() {
     igazPdfFile = null;
     igazPdfUrl = null;
     emit(AddTeacherInitial());

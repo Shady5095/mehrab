@@ -111,28 +111,27 @@ class RateSessionScreenBody extends StatelessWidget {
                                   controller: cubit.startTimeController,
                                   readOnly: true,
                                   enabled: AppConstants.isAdmin,
-                                  onTap: () {
-                                    showMyDateTimePicker(
+                                  onTap: () async {
+                                    final dateTime = await showMyDateTimePicker(
                                       context,
                                       firstTime: DateTime(2009),
                                       initialDate:
                                           cubit.startTime?.toDate() ??
                                           DateTime.now(),
-                                    ).then((dateTime) {
-                                      if (dateTime != null) {
-                                        cubit.startTime = Timestamp.fromDate(
-                                          dateTime,
-                                        );
-                                        cubit.endTime = null;
-                                        cubit.endTimeController.text = '';
-                                        cubit
-                                            .startTimeController
-                                            .text = formatDateTimePicker(
-                                          context,
-                                          dateTime,
-                                        );
-                                      }
-                                    });
+                                    );
+                                    if (dateTime != null && context.mounted) {
+                                      cubit.startTime = Timestamp.fromDate(
+                                        dateTime,
+                                      );
+                                      cubit.endTime = null;
+                                      cubit.endTimeController.text = '';
+                                      cubit
+                                          .startTimeController
+                                          .text = formatDateTimePicker(
+                                        context,
+                                        dateTime,
+                                      );
+                                    }
                                   },
                                   label: AppStrings.startTime.tr(context),
                                   maxLines: 1,
@@ -145,7 +144,7 @@ class RateSessionScreenBody extends StatelessWidget {
                                   controller: cubit.endTimeController,
                                   readOnly: true,
                                   enabled: AppConstants.isAdmin,
-                                  onTap: () {
+                                  onTap: () async {
                                     if (cubit.startTime == null) {
                                       myToast(
                                         msg: AppStrings
@@ -155,25 +154,24 @@ class RateSessionScreenBody extends StatelessWidget {
                                       );
                                       return;
                                     }
-                                    showMyDateTimePicker(
+                                    final dateTime = await showMyDateTimePicker(
                                       context,
                                       firstTime: cubit.startTime!.toDate(),
                                       initialDate:
                                           cubit.endTime?.toDate() ??
                                           DateTime.now(),
-                                    ).then((dateTime) {
-                                      if (dateTime != null) {
-                                        cubit.endTime = Timestamp.fromDate(
-                                          dateTime,
-                                        );
-                                        cubit
-                                            .endTimeController
-                                            .text = formatDateTimePicker(
-                                          context,
-                                          dateTime,
-                                        );
-                                      }
-                                    });
+                                    );
+                                    if (dateTime != null && context.mounted) {
+                                      cubit.endTime = Timestamp.fromDate(
+                                        dateTime,
+                                      );
+                                      cubit
+                                          .endTimeController
+                                          .text = formatDateTimePicker(
+                                        context,
+                                        dateTime,
+                                      );
+                                    }
                                   },
                                   label: AppStrings.endDate.tr(context),
                                   maxLines: 1,

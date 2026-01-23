@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">محراب القرآن</string>
+
+    <!-- CallKit Custom Permission Strings -->
+    <string name="call_control_permission_label">CallKit Control</string>
+    <string name="call_control_permission_description">Allows control of incoming and outgoing calls within Mehrab Al-Quran app. This permission is restricted to apps signed with the same certificate for security.</string>
+</resources>

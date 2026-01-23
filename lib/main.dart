@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,7 +8,7 @@ import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'app/my_app.dart';
 import 'core/utilities/functions/bloc_observer.dart';
 import 'core/utilities/functions/dependency_injection.dart';
-import 'core/utilities/services/api_service.dart';
+import 'core/utilities/functions/secure_logger.dart';
 import 'core/utilities/services/cache_service.dart';
 import 'core/utilities/services/call_kit_service.dart';
 import 'core/utilities/services/local_notifications_service.dart';
@@ -22,7 +21,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   }
 
-  debugPrint('🔔 Background message received: ${message.messageId}');
+  SecureLogger.firebase(
+    'Background message received',
+    details: 'Type: ${message.data['type']}',
+    tag: 'FCM',
+  );
 
   // Handle incoming call in background
   if (message.data['type'] == 'incoming_call') {
@@ -36,7 +39,7 @@ Future<void> _showBackgroundIncomingCall(Map<String, dynamic> data) async {
   final callerName = data['callerName'] ?? 'Unknown';
   final callerPhoto = data['callerPhoto'];
 
-  debugPrint('📞 Showing background incoming call from: $callerName');
+  SecureLogger.firebase('Incoming call notification', tag: 'CallKit');
 
   // Validate image URL
   final validPhoto = ImageHelper.getValidImageUrl(callerPhoto);
@@ -63,9 +66,6 @@ void main() async {
   // Dependency injection
   setup();
 
-  // Handle Android below 8 HTTP connections
-  HttpOverrides.global = MyHttpOverrides();
-
   // Initialize services
   await Future.wait([
     LocalNotificationsService.init(),
@@ -76,15 +76,12 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Initialize Firebase App Check with Play Integrity (replaces deprecated SafetyNet)
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: AndroidProvider.playIntegrity,
-    appleProvider: AppleProvider.deviceCheck,
-  );
+  await FirebaseAppCheck.instance.activate();
 
   // Register FCM background message handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  debugPrint('✅ App initialized successfully');
+  SecureLogger.info('App initialized successfully', tag: 'App');
 
   // Run app
   runApp(

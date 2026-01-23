@@ -1,0 +1,114 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if file is an image
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    // Helper function to check file size (max 5MB)
+    function isValidSize() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // Helper function to check file size for videos (max 50MB)
+    function isValidVideoSize() {
+      return request.resource.size < 50 * 1024 * 1024;
+    }
+
+    // User profile photos
+    match /users/{userId}/profile/{fileName} {
+      // Users can read their own profile photos
+      allow read: if isAuthenticated();
+
+      // Users can upload their own profile photos
+      allow write: if isAuthenticated() &&
+                     request.auth.uid == userId &&
+                     isImage() &&
+                     isValidSize();
+
+      // Users can delete their own profile photos
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Teacher photos
+    match /teachers/{teacherId}/photos/{fileName} {
+      // Anyone authenticated can view teacher photos
+      allow read: if isAuthenticated();
+
+      // Only the teacher can upload their photos
+      allow write: if isAuthenticated() &&
+                     request.auth.uid == teacherId &&
+                     isImage() &&
+                     isValidSize();
+
+      // Only the teacher can delete their photos
+      allow delete: if isAuthenticated() && request.auth.uid == teacherId;
+    }
+
+    // Student photos
+    match /students/{studentId}/photos/{fileName} {
+      // Teachers and the student can view photos
+      allow read: if isAuthenticated();
+
+      // Only the student can upload their photos
+      allow write: if isAuthenticated() &&
+                     request.auth.uid == studentId &&
+                     isImage() &&
+                     isValidSize();
+
+      // Only the student can delete their photos
+      allow delete: if isAuthenticated() && request.auth.uid == studentId;
+    }
+
+    // Session recordings (if any)
+    match /sessions/{sessionId}/recordings/{fileName} {
+      // Only participants can view recordings
+      allow read: if isAuthenticated();
+
+      // Only backend/admin can upload recordings
+      allow write: if false;
+
+      // No deletion allowed
+      allow delete: if false;
+    }
+
+    // School/institution images
+    match /schools/{schoolId}/images/{fileName} {
+      // Anyone authenticated can view school images
+      allow read: if isAuthenticated();
+
+      // Only admins can upload (via backend)
+      allow write: if false;
+
+      // Only admins can delete (via backend)
+      allow delete: if false;
+    }
+
+    // Attachments for messages/assignments
+    match /attachments/{userId}/{fileName} {
+      // Users can read their own attachments
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+
+      // Users can upload attachments
+      allow write: if isAuthenticated() &&
+                     request.auth.uid == userId &&
+                     isValidVideoSize();
+
+      // Users can delete their own attachments
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Default deny for all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

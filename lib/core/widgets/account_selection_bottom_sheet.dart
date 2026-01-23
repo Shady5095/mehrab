@@ -1,9 +1,13 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:flutter/material.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/widgets/teacher_bottom_sheet_design.dart';
-import '../utilities/services/account_storage_service.dart';
 
+/// ⚠️ DEPRECATED: Password storage removed for security
+/// This widget is no longer used as password-based biometric login
+/// has been replaced with Firebase Auth session management
+@Deprecated('Password storage removed. Use Firebase Auth session persistence.')
 class AccountSelectionBottomSheet extends StatefulWidget {
   final Map<String, String> accounts;
   final ValueChanged<String> onSelect; // استدعاء عند اختيار حساب
@@ -68,8 +72,7 @@ class _AccountSelectionBottomSheetState
     );
 
     if (confirm == true) {
-      await AccountStorage.removeAccount(email);
-      accounts = await AccountStorage.getAccounts();
+      // Password storage removed - this widget is deprecated
       widget.onDelete(email);
       setState(() {});
     }

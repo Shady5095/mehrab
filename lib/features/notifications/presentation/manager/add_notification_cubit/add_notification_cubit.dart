@@ -10,7 +10,7 @@ class AddNotificationCubit extends Cubit<AddNotificationState> {
   AddNotificationCubit({required this.oneUserModel})
     : super(AddNotificationInitial());
 
-  static AddNotificationCubit get(context) => BlocProvider.of(context);
+  static AddNotificationCubit get(BuildContext context) => BlocProvider.of(context);
 
   final UserModel? oneUserModel;
 

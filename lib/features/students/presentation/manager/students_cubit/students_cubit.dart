@@ -8,7 +8,7 @@ part 'students_state.dart';
 class StudentsCubit extends Cubit<StudentsState> {
   StudentsCubit() : super(StudentsInitial());
 
-  static StudentsCubit get(context) => BlocProvider.of(context);
+  static StudentsCubit get(BuildContext context) => BlocProvider.of(context);
   FirebaseFirestore db = FirebaseFirestore.instance;
   final TextEditingController searchController = TextEditingController();
   String searchQuery = '';
