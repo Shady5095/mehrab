@@ -134,7 +134,8 @@
             android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingBroadcastReceiver"
             android:enabled="true"
             android:exported="true"
-            android:permission="com.mehrab.mehrab_quran.permission.CALL_CONTROL">
+            android:permission="com.mehrab.mehrab_quran.permission.CALL_CONTROL"
+            tools:replace="android:permission">
             <intent-filter>
                 <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_INCOMING"/>
                 <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_START"/>

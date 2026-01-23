@@ -46,7 +46,4 @@ app.*.map.json
 /android/app/release
 
 # Firebase private key
-lib/core/utilities/services/sensitive_app_constants.dart
-lib/firebase_options.dart
-ios/Runner/GoogleService-Info.plist
 /ios/build/

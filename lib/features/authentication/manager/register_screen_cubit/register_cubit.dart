@@ -18,6 +18,8 @@ import '../../../../core/utilities/functions/toast.dart';
 import '../../../../core/utilities/resources/constants.dart';
 import '../../../../core/utilities/resources/strings.dart';
 import '../../../../core/utilities/services/cache_service.dart';
+import '../../../../core/utilities/services/secure_cache_service.dart';
+import '../../../../core/utilities/services/crashlytics_service.dart';
 
 part 'register_state.dart';
 
@@ -303,11 +305,12 @@ class RegisterCubit extends Cubit<RegisterState> {
   }
 
   Future<void> cacheUid(String uid) async {
-    await CacheService.setData(key: AppConstants.uid, value: uid).then((value) {
-      if (value == true) {
-        CacheService.uid = CacheService.getData(key: AppConstants.uid);
-      }
-    });
+    // Use SecureCacheService for sensitive uid data
+    await SecureCacheService.setUid(uid);
+
+    // Set user ID in Crashlytics for crash reporting
+    await CrashlyticsService.setUserId(uid);
+    CrashlyticsService.logBreadcrumb('User registered', data: {'uid': uid});
   }
 
   void autoSelectNationalityFromCache() {
