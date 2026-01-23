@@ -193,7 +193,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     await audioSessionService.configureForCall();
 
     // Fetch TURN credentials
-    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
     if (authToken != null) {
       final iceConfig = await _turnService.fetchCredentials(authToken);
       if (iceConfig != null) {
@@ -253,7 +253,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   Future<void> connectToSignalingServer() async {
     socketService = SocketService();
 
-    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
     if (authToken == null) {
       emit(AgoraConnectionError(error: 'Authentication failed'));
       return;
