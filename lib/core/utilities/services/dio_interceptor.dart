@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../resources/constants.dart';
 import 'secure_cache_service.dart';
+import 'crashlytics_service.dart';
 import '../functions/secure_logger.dart';
 
 class DioInterceptor extends Interceptor {
@@ -78,6 +79,9 @@ class DioInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
+    // Log API error to Crashlytics for all significant errors
+    _logApiErrorToCrashlytics(err);
+
     // Handle 401 Unauthorized errors
     if (err.response?.statusCode == AppConstants.unauthenticated &&
         !isDialogShowing) {
@@ -125,6 +129,12 @@ class DioInterceptor extends Interceptor {
                   tag: 'Auth',
                   error: retryError,
                 );
+                // Log retry failure to Crashlytics
+                CrashlyticsService.logApiError(
+                  endpoint: options.path,
+                  statusCode: err.response?.statusCode ?? 0,
+                  error: retryError,
+                );
               }
             }
           }
@@ -132,6 +142,11 @@ class DioInterceptor extends Interceptor {
           SecureLogger.error(
             'Failed to refresh token on 401',
             tag: 'Auth',
+            error: refreshError,
+          );
+          // Log token refresh failure to Crashlytics
+          CrashlyticsService.logAuthError(
+            authMethod: 'token_refresh',
             error: refreshError,
           );
         }
@@ -142,6 +157,49 @@ class DioInterceptor extends Interceptor {
     }
 
     super.onError(err, handler);
+  }
+
+  /// Log API errors to Crashlytics for debugging
+  void _logApiErrorToCrashlytics(DioException err) {
+    try {
+      final statusCode = err.response?.statusCode ?? 0;
+      final endpoint = err.requestOptions.path;
+      final method = err.requestOptions.method;
+
+      // Only log significant errors (not 401 which is handled separately)
+      // and server errors (5xx) or unexpected client errors
+      if (statusCode >= 500 || (statusCode >= 400 && statusCode != 401)) {
+        CrashlyticsService.logApiError(
+          endpoint: '$method $endpoint',
+          statusCode: statusCode,
+          error: err,
+          stackTrace: err.stackTrace,
+        );
+
+        // Add additional context
+        CrashlyticsService.setCustomKeys({
+          'error_type': err.type.toString(),
+          'error_message': err.message ?? 'Unknown error',
+        });
+
+        // Log breadcrumb for tracking user actions
+        CrashlyticsService.logBreadcrumb(
+          'API Error',
+          data: {
+            'endpoint': endpoint,
+            'method': method,
+            'status': statusCode,
+          },
+        );
+      }
+    } catch (e) {
+      // Silently fail if Crashlytics logging fails
+      SecureLogger.error(
+        'Failed to log API error to Crashlytics',
+        tag: 'DioInterceptor',
+        error: e,
+      );
+    }
   }
 
   /// Reset token refresh state (call this on logout)

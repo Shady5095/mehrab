@@ -11,6 +11,8 @@ import 'package:mehrab/core/widgets/my_appbar.dart';
 import 'package:mehrab/features/home/presentation/manager/home_cubit/home_cubit.dart';
 import '../../../../core/utilities/resources/constants.dart';
 import '../../../../core/utilities/services/cache_service.dart';
+import '../../../../core/utilities/services/secure_cache_service.dart';
+import '../../../../core/utilities/services/crashlytics_service.dart';
 import '../../../../core/utilities/services/firebase_notification.dart';
 import 'change_lang_dialog.dart';
 import 'contact_us_dialog.dart';
@@ -174,14 +176,19 @@ class MoreScreenBody extends StatelessWidget {
 }
 
 Future<void> deleteAppCache() async {
+  // Log breadcrumb before logout
+  CrashlyticsService.logBreadcrumb('User logged out');
+
   await Future.wait([
     AppFirebaseNotification.unSubscribeFromTopic(CacheService.userRole ?? ''),
-    CacheService.removeData(key: AppConstants.uid),
-    CacheService.removeData(key: AppConstants.userRole),
     AppFirebaseNotification.deleteNotificationToken(),
+    // Clear all secure data (token, userId, uid, baseUrl, userRole, userPhoto)
+    SecureCacheService.clearAll(),
+    // Clear Crashlytics user context
+    CrashlyticsService.clearUserContext(),
   ]);
-  CacheService.uid = null;
-  CacheService.userRole = null;
+
+  // Reset app constants
   AppConstants.isAdmin = false;
   AppConstants.isTeacher = false;
   AppConstants.isStudent = false;

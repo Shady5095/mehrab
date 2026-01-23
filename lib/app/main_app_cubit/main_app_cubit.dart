@@ -181,12 +181,13 @@ class MainAppCubit extends Cubit<MainAppStates> {
   }
 
   String get checkNextRoute {
-    CacheService.userRole = CacheService.getData(key: AppConstants.userRole);
-    CacheService.uid = CacheService.getData(key: AppConstants.uid);
+    // SecureCacheService.init() loads secure data to CacheService static variables at app startup
+    // so we can read directly from them (they're loaded from encrypted storage)
     if (CacheService.uid != null) {
       if (CacheService.userRole == "student" ||
           CacheService.userRole == "admin" ||
-          CacheService.userRole == "teacher" || CacheService.userRole == "teacherTest") {
+          CacheService.userRole == "teacher" ||
+          CacheService.userRole == "teacherTest") {
         return AppRoutes.homeLayoutRoute;
       }
     } else if (CacheService.getData(key: 'onBoarding') != true) {

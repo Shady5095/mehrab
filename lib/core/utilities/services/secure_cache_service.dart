@@ -14,11 +14,25 @@ import '../functions/secure_logger.dart';
 /// - User IDs
 /// - Firebase UIDs
 /// - API base URLs (may contain sensitive info)
+/// - User photos (may contain PII)
+///
+/// Security enhancements:
+/// - Device-specific encryption keys
+/// - Data only accessible when device unlocked
+/// - Automatic migration from insecure storage
+/// - Memory cache cleared on logout
 class SecureCacheService {
   static const _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(),
+    aOptions: AndroidOptions(
+      // resetOnError: Reset data on error (useful for migration)
+      resetOnError: true,
+    ),
     iOptions: IOSOptions(
-      accessibility: KeychainAccessibility.first_unlock,
+      // Data only accessible when device is unlocked
+      // and only on this specific device (not synced to iCloud)
+      accessibility: KeychainAccessibility.unlocked_this_device,
+      // Prevent sync to iCloud
+      synchronizable: false,
     ),
   );
 
@@ -28,10 +42,36 @@ class SecureCacheService {
   static const String _keyUid = 'secure_uid';
   static const String _keyBaseUrl = 'secure_base_url';
   static const String _keyUserRole = 'secure_user_role';
+  static const String _keyUserPhoto = 'secure_user_photo';
+  static const String _keyMigrationCompleted = 'migration_completed';
 
   /// Initialize and migrate data from SharedPreferences
   static Future<void> init() async {
+    // Check if migration already completed
+    final migrationCompleted = await _storage.read(key: _keyMigrationCompleted);
+    if (migrationCompleted == 'true') {
+      // Migration already done, just load data to memory
+      await _loadToMemory();
+      return;
+    }
+
+    // Perform one-time migration
     await _migrateFromSharedPreferences();
+
+    // Mark migration as completed
+    await _storage.write(key: _keyMigrationCompleted, value: 'true');
+  }
+
+  /// Load all secure data to memory cache for performance
+  static Future<void> _loadToMemory() async {
+    await Future.wait([
+      getToken(),
+      getUserId(),
+      getUid(),
+      getBaseUrl(),
+      getUserRole(),
+      getUserPhoto(),
+    ]);
   }
 
   /// Migrate sensitive data from SharedPreferences to secure storage
@@ -71,11 +111,22 @@ class SecureCacheService {
         await setUserRole(userRole);
         await CacheService.removeData(key: AppConstants.userRole);
       }
+
+      // Migrate user photo
+      final userPhoto = CacheService.getData(key: AppConstants.userPhoto);
+      if (userPhoto != null && userPhoto is String && userPhoto.isNotEmpty) {
+        await setUserPhoto(userPhoto);
+        await CacheService.removeData(key: AppConstants.userPhoto);
+      }
+
+      SecureLogger.info('Secure storage migration completed', tag: 'SecureCacheService');
     } catch (e) {
       // Migration errors should not crash the app
-      // Log in development only
+      // Log error without exposing sensitive data
       assert(() {
-        SecureLogger.error('Migration error', tag: 'SecureCacheService', error: e);
+        SecureLogger.error('Migration failed - please check storage permissions',
+          tag: 'SecureCacheService',
+          error: e);
         return true;
       }());
     }
@@ -218,22 +269,85 @@ class SecureCacheService {
     CacheService.userRole = null;
   }
 
+  // ========== User Photo ==========
+
+  /// Save user photo URL securely
+  static Future<void> setUserPhoto(String userPhoto) async {
+    await _storage.write(key: _keyUserPhoto, value: userPhoto);
+    CacheService.userPhoto = userPhoto;
+  }
+
+  /// Get user photo URL
+  static Future<String?> getUserPhoto() async {
+    if (CacheService.userPhoto != null) {
+      return CacheService.userPhoto;
+    }
+
+    final userPhoto = await _storage.read(key: _keyUserPhoto);
+    if (userPhoto != null) {
+      CacheService.userPhoto = userPhoto;
+    }
+    return userPhoto;
+  }
+
+  /// Remove user photo URL
+  static Future<void> removeUserPhoto() async {
+    await _storage.delete(key: _keyUserPhoto);
+    CacheService.userPhoto = null;
+  }
+
   // ========== Bulk Operations ==========
 
   /// Clear all secure data (logout)
   static Future<void> clearAll() async {
-    await Future.wait([
-      removeToken(),
-      removeUserId(),
-      removeUid(),
-      removeBaseUrl(),
-      removeUserRole(),
-    ]);
+    try {
+      await Future.wait([
+        removeToken(),
+        removeUserId(),
+        removeUid(),
+        removeBaseUrl(),
+        removeUserRole(),
+        removeUserPhoto(),
+      ]);
+
+      // Also clear all memory caches
+      _clearMemoryCache();
+
+      SecureLogger.info('All secure data cleared', tag: 'SecureCacheService');
+    } catch (e) {
+      SecureLogger.error('Failed to clear secure data',
+        tag: 'SecureCacheService',
+        error: e);
+    }
+  }
+
+  /// Clear all data from memory cache
+  static void _clearMemoryCache() {
+    CacheService.token = null;
+    CacheService.userId = null;
+    CacheService.uid = null;
+    CacheService.baseUrl = null;
+    CacheService.userRole = null;
+    CacheService.userPhoto = null;
   }
 
   /// Check if user is logged in (has valid token)
   static Future<bool> isLoggedIn() async {
     final token = await getToken();
     return token != null && token.isNotEmpty;
+  }
+
+  /// Complete secure storage reset (use with caution)
+  /// This will delete ALL secure storage data including migration flag
+  static Future<void> resetSecureStorage() async {
+    try {
+      await _storage.deleteAll();
+      _clearMemoryCache();
+      SecureLogger.warning('Secure storage completely reset', tag: 'SecureCacheService');
+    } catch (e) {
+      SecureLogger.error('Failed to reset secure storage',
+        tag: 'SecureCacheService',
+        error: e);
+    }
   }
 }

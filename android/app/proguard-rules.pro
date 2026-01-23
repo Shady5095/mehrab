@@ -139,3 +139,8 @@
 # Keep crash reporting for production debugging
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
+
+# ========== Google Play Core ==========
+-keep class com.google.android.play.core.** { *; }
+-dontwarn com.google.android.play.core.**
+
