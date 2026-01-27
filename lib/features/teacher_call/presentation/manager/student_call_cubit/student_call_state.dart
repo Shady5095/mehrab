@@ -1,3 +1,4 @@
+import 'package:mehrab/core/utilities/services/webrtc_call_service.dart';
 
 import '../../../../teachers/data/models/teachers_model.dart';
 
@@ -63,6 +64,15 @@ final class CameraPermissionPermanentlyDenied extends StudentCallState {}
 final class CameraPermissionDenied extends StudentCallState {}
 
 final class NetworkQualityUpdated extends StudentCallState {}
+
+/// Emitted when network quality changes during a call
+final class NetworkQualityChanged extends StudentCallState {
+  final CallQuality quality;
+  NetworkQualityChanged({required this.quality});
+}
+
+/// Emitted when the connection is recovering (ICE restart in progress)
+final class ConnectionRecovering extends StudentCallState {}
 
 
 

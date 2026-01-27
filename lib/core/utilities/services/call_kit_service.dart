@@ -137,10 +137,13 @@ class CallKitParamsBuilder {
         supportsVideo: true,
         maximumCallGroups: 1,
         maximumCallsPerCallGroup: 1,
-        audioSessionMode: 'default',
+        // voiceChat mode enables hardware echo cancellation
+        audioSessionMode: 'voiceChat',
         audioSessionActive: true,
-        audioSessionPreferredSampleRate: 44100.0,
-        audioSessionPreferredIOBufferDuration: 0.005,
+        // 48kHz sample rate for better quality with Opus codec
+        audioSessionPreferredSampleRate: 48000.0,
+        // 10ms buffer for balance between latency and stability
+        audioSessionPreferredIOBufferDuration: 0.01,
         supportsDTMF: true,
         supportsHolding: false,
         supportsGrouping: false,

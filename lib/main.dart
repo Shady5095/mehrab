@@ -117,8 +117,8 @@ Future<void> main() async {
       return true;
     };
 
-    // Enable crash collection in release mode only (optional - can be enabled in debug too)
-    // await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(!kDebugMode);
+    // Enable crash collection (set to true to also collect in debug mode for testing)
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
 
     // Register FCM background message handler
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

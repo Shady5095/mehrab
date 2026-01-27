@@ -41,6 +41,10 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   String? _remoteSocketId;
   final List<RTCIceCandidate> _pendingCandidates = [];
 
+  // Connection timeout and retry constants
+  static const int _maxAnswerRetries = 3;
+  static const Duration _answerRetryDelay = Duration(seconds: 2);
+
   Future<void> requestPermissions() async {
     // check and request microphone permission
     var status = await Permission.microphone.status;
@@ -247,6 +251,32 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       }
     };
 
+    // ICE restart handling for network recovery
+    callService.onIceRestartNeeded = () async {
+      if (_remoteSocketId != null) {
+        debugPrint('Teacher: ICE restart needed, creating new offer');
+        try {
+          final offer = await callService.createIceRestartOffer();
+          if (offer != null) {
+            socketService.sendOffer(offer, _remoteSocketId!);
+          }
+        } catch (e) {
+          debugPrint('Teacher: ICE restart offer failed: $e');
+        }
+      }
+    };
+
+    callService.onConnectionRecovering = () {
+      debugPrint('Teacher: Connection recovering...');
+      emit(ConnectionRecovering());
+    };
+
+    // Network quality monitoring
+    callService.onNetworkQualityChanged = (quality) {
+      debugPrint('Teacher: Network quality changed to ${quality.name}');
+      emit(NetworkQualityChanged(quality: quality));
+    };
+
     await callService.initialize();
   }
 
@@ -265,9 +295,39 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       socketService.joinRoom(callModel.callId);
     };
 
+    socketService.onReconnected = () async {
+      debugPrint('Teacher: Socket reconnected to signaling server');
+      // Clear the remote socket ID - it will be updated when we get new signaling
+      _remoteSocketId = null;
+      _pendingCandidates.clear();
+
+      // DON'T reset WebRTC - it's peer-to-peer and might still be alive!
+      // Only reset if we receive a new offer (meaning the other side reset)
+      debugPrint('Teacher: WebRTC connection may still be alive (P2P)');
+      emit(TeacherCallInitial()); // Refresh UI state
+    };
+
+    // Handle room joined - log if student is already present
+    socketService.onRoomJoined = (callId, participants) {
+      debugPrint('Teacher: Room joined with ${participants.length} existing participants');
+      if (participants.isNotEmpty) {
+        // Student is already in the room, we'll receive an offer from them
+        debugPrint('Teacher: Student already in room, waiting for offer');
+      }
+    };
+
+    socketService.onDisconnected = () {
+      debugPrint('Teacher: Socket disconnected, waiting for reconnection...');
+      // Don't end call immediately - socket will attempt to reconnect
+      // Only show error if reconnection fails (handled by onError)
+    };
+
     socketService.onError = (error) {
       debugPrint('Teacher: Socket error: $error');
-      emit(AgoraConnectionError(error: error));
+      // Only emit error if it's not a temporary disconnection
+      if (!error.contains('reconnect')) {
+        emit(AgoraConnectionError(error: error));
+      }
     };
 
     // Handle offer from student
@@ -281,13 +341,8 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       }
       _pendingCandidates.clear();
 
-      // Create and send answer
-      try {
-        final answer = await callService.createAnswer(offer);
-        socketService.sendAnswer(answer, fromSocketId);
-      } catch (e) {
-        emit(AgoraConnectionError(error: 'Failed to create answer: $e'));
-      }
+      // Create and send answer with retry logic
+      await _createAndSendAnswerWithRetry(offer, fromSocketId);
     };
 
     // Handle ICE candidates from student
@@ -322,6 +377,33 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     socketService.leaveRoom(callModel.callId);
     await socketService.disconnect();
     await callService.endCall();
+  }
+
+  /// Creates and sends an answer with retry logic
+  Future<void> _createAndSendAnswerWithRetry(
+    RTCSessionDescription offer,
+    String socketId, [
+    int attempt = 1,
+  ]) async {
+    try {
+      debugPrint('Teacher: Creating answer (attempt $attempt/$_maxAnswerRetries)');
+      final answer = await callService.createAnswer(offer)
+          .timeout(const Duration(seconds: 10));
+      socketService.sendAnswer(answer, socketId);
+      debugPrint('Teacher: Answer sent successfully');
+    } catch (e) {
+      debugPrint('Teacher: Answer creation failed (attempt $attempt): $e');
+      if (attempt < _maxAnswerRetries) {
+        debugPrint('Teacher: Retrying in ${_answerRetryDelay.inSeconds}s...');
+        await Future.delayed(_answerRetryDelay * attempt);
+        await _createAndSendAnswerWithRetry(offer, socketId, attempt + 1);
+      } else {
+        debugPrint('Teacher: All answer attempts failed');
+        emit(AgoraConnectionError(
+          error: 'فشل إنشاء الاتصال بعد عدة محاولات. الرجاء إعادة المحاولة.',
+        ));
+      }
+    }
   }
 
   Future<void> toggleMicMute() async {

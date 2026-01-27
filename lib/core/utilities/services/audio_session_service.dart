@@ -18,17 +18,19 @@ class AudioSessionService {
             AVAudioSessionCategoryOptions.defaultToSpeaker |
             AVAudioSessionCategoryOptions.allowBluetooth |
             AVAudioSessionCategoryOptions.allowBluetoothA2dp,
+        // voiceChat mode enables hardware echo cancellation on iOS
         avAudioSessionMode: AVAudioSessionMode.voiceChat,
         avAudioSessionRouteSharingPolicy:
             AVAudioSessionRouteSharingPolicy.defaultPolicy,
-        avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+        avAudioSessionSetActiveOptions:
+            AVAudioSessionSetActiveOptions.notifyOthersOnDeactivation,
         androidAudioAttributes: const AndroidAudioAttributes(
           contentType: AndroidAudioContentType.speech,
-          flags: AndroidAudioFlags.none,
           usage: AndroidAudioUsage.voiceCommunication,
         ),
-        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-        androidWillPauseWhenDucked: true,
+        androidAudioFocusGainType:
+            AndroidAudioFocusGainType.gainTransientExclusive,
+        androidWillPauseWhenDucked: false,
       ));
 
       _isConfigured = true;

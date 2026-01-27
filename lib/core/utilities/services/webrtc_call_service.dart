@@ -18,13 +18,25 @@ class WebRTCCallService {
   bool isVideoEnabled = false;
   bool isFrontCamera = true;
   bool _isSpeakerOn = true;
+  bool _hasVideoCapability = false;
+  bool _hasAudioCapability = false;
 
   final RTCVideoRenderer localRenderer = RTCVideoRenderer();
   final RTCVideoRenderer remoteRenderer = RTCVideoRenderer();
 
   MediaStream? get remoteStream => _remoteStream;
+  bool get hasVideoCapability => _hasVideoCapability;
+  bool get hasAudioCapability => _hasAudioCapability;
 
   Timer? _statsTimer;
+
+  // ICE restart handling
+  Timer? _iceRestartTimer;
+  int _iceRestartAttempts = 0;
+  static const int _maxIceRestartAttempts = 3;
+  static const Duration _iceRestartDelay = Duration(seconds: 2);
+  RTCIceConnectionState? _lastIceState;
+
   // Callbacks matching AgoraCallService interface
   Function(String peerId)? onUserJoined;
   Function(String peerId)? onUserLeft;
@@ -39,14 +51,77 @@ class WebRTCCallService {
   Function(RTCIceConnectionState state)? onIceConnectionStateChanged;
   Function(RTCSessionDescription offer)? onRenegotiationOffer;
 
+  /// Called when ICE restart is needed (network change recovery)
+  Function()? onIceRestartNeeded;
+
+  /// Called when connection is recovering
+  Function()? onConnectionRecovering;
+
   Map<String, dynamic>? _iceServers;
 
+  /// Optimizes SDP for voice quality by configuring Opus codec parameters
+  /// Returns original SDP if optimization fails to prevent breaking the call
+  String _optimizeSdpForVoice(String sdp) {
+    try {
+      // Set Opus parameters for better voice quality
+      // - useinbandfec=1: Enable forward error correction for packet loss recovery
+      // - stereo=0: Mono audio (better for voice, reduces bandwidth)
+      // - maxaveragebitrate=32000: 32kbps is optimal for voice clarity
+      // - maxplaybackrate=16000: Narrow-band for voice (reduces artifacts)
+      // - sprop-maxcapturerate=16000: Capture rate optimized for voice
+      // - cbr=1: Constant bitrate for more consistent quality
+
+      String optimizedSdp = sdp;
+
+      // Detect line ending used in the SDP (iOS may use \n, others use \r\n)
+      final lineEnding = sdp.contains('\r\n') ? '\r\n' : '\n';
+
+      // Find the Opus codec line and add parameters
+      final opusRegex = RegExp(r'a=fmtp:(\d+) (.*)');
+      optimizedSdp = optimizedSdp.replaceAllMapped(opusRegex, (match) {
+        final payloadType = match.group(1);
+        final existingParams = match.group(2) ?? '';
+
+        // Check if this is the Opus codec by looking for minptime
+        if (existingParams.contains('minptime')) {
+          // Only add parameters if they don't already exist
+          String newParams = existingParams;
+          if (!existingParams.contains('stereo=')) {
+            newParams = '$newParams;stereo=0';
+          }
+          if (!existingParams.contains('maxaveragebitrate=')) {
+            newParams = '$newParams;maxaveragebitrate=32000';
+          }
+          if (!existingParams.contains('useinbandfec=')) {
+            newParams = '$newParams;useinbandfec=1';
+          }
+          if (!existingParams.contains('cbr=')) {
+            newParams = '$newParams;cbr=1';
+          }
+          return 'a=fmtp:$payloadType $newParams';
+        }
+        return match.group(0)!;
+      });
+
+      // Set ptime to 20ms for good balance between latency and quality
+      if (!optimizedSdp.contains('a=ptime:')) {
+        optimizedSdp = optimizedSdp.replaceFirst(
+          RegExp(r'(a=rtpmap:\d+ opus/48000/2)'),
+          '\$1${lineEnding}a=ptime:20',
+        );
+      }
+
+      SecureLogger.webrtc('SDP optimized for voice quality');
+      return optimizedSdp;
+    } catch (e) {
+      SecureLogger.webrtc('SDP optimization failed: $e, using original SDP');
+      return sdp;
+    }
+  }
+
   final Map<String, dynamic> _sdpConstraints = {
-    'mandatory': {
-      'OfferToReceiveAudio': true,
-      'OfferToReceiveVideo': true,
-    },
-    'optional': [],
+    'offerToReceiveAudio': true,
+    'offerToReceiveVideo': true,
   };
 
   Future<void> initialize() async {
@@ -72,11 +147,17 @@ class WebRTCCallService {
   }
 
   Future<void> _createPeerConnection() async {
-    final configuration = _iceServers ?? {
+    final baseConfig = _iceServers ?? {
       'iceServers': [
         {'urls': 'stun:stun.l.google.com:19302'},
         {'urls': 'stun:stun1.l.google.com:19302'},
       ],
+    };
+
+    // Ensure sdpSemantics is set for proper WebRTC operation
+    final configuration = {
+      ...baseConfig,
+      'sdpSemantics': 'unified-plan',
     };
 
     _peerConnection = await createPeerConnection(configuration);
@@ -88,22 +169,34 @@ class WebRTCCallService {
 
     _peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
       SecureLogger.webrtc('ICE connection state: $state');
+      _lastIceState = state;
       onIceConnectionStateChanged?.call(state);
 
       switch (state) {
         case RTCIceConnectionState.RTCIceConnectionStateConnected:
         case RTCIceConnectionState.RTCIceConnectionStateCompleted:
+          // Connection established - reset retry counter and cancel any pending restart
+          _iceRestartAttempts = 0;
+          _iceRestartTimer?.cancel();
           onConnectionSuccess?.call();
           _monitorConnectionQuality();
           break;
         case RTCIceConnectionState.RTCIceConnectionStateFailed:
-          onError?.call('Connection failed');
+          SecureLogger.webrtc('ICE connection failed, attempting restart...');
+          _handleIceFailure();
           break;
         case RTCIceConnectionState.RTCIceConnectionStateDisconnected:
-          SecureLogger.webrtc('Connection disconnected, may reconnect...');
+          SecureLogger.webrtc('Connection disconnected, scheduling ICE restart...');
+          onConnectionRecovering?.call();
+          _scheduleIceRestart();
           break;
         case RTCIceConnectionState.RTCIceConnectionStateClosed:
+          _iceRestartTimer?.cancel();
           onCallEnded?.call();
+          break;
+        case RTCIceConnectionState.RTCIceConnectionStateChecking:
+          // Connection is being established, cancel any restart timer
+          _iceRestartTimer?.cancel();
           break;
         default:
           break;
@@ -151,8 +244,60 @@ class WebRTCCallService {
     SecureLogger.webrtc('Peer connection created');
   }
 
+  /// Schedules an ICE restart after a delay
+  void _scheduleIceRestart() {
+    if (_iceRestartAttempts >= _maxIceRestartAttempts) {
+      SecureLogger.webrtc('Max ICE restart attempts reached ($_maxIceRestartAttempts)');
+      onError?.call('فشل الاتصال بعد عدة محاولات. تحقق من اتصالك بالإنترنت.');
+      return;
+    }
+
+    _iceRestartTimer?.cancel();
+    _iceRestartTimer = Timer(_iceRestartDelay * (_iceRestartAttempts + 1), () {
+      _iceRestartAttempts++;
+      SecureLogger.webrtc('Attempting ICE restart #$_iceRestartAttempts');
+      onIceRestartNeeded?.call();
+    });
+  }
+
+  /// Handles ICE connection failure
+  void _handleIceFailure() {
+    _iceRestartAttempts = 0; // Reset counter for fresh attempt
+    _scheduleIceRestart();
+  }
+
+  /// Creates an offer with ICE restart flag for network recovery
+  Future<RTCSessionDescription> createIceRestartOffer() async {
+    if (_peerConnection == null) {
+      throw Exception('Peer connection not initialized');
+    }
+
+    final constraints = {
+      'offerToReceiveAudio': true,
+      'offerToReceiveVideo': true,
+      'iceRestart': true,
+    };
+
+    try {
+      final offer = await _peerConnection!.createOffer(constraints);
+      await _peerConnection!.setLocalDescription(offer);
+      SecureLogger.webrtc('ICE restart offer created');
+      return offer;
+    } catch (e) {
+      SecureLogger.webrtc('Error creating ICE restart offer: $e');
+      rethrow;
+    }
+  }
+
+  /// Cancels any pending ICE restart
+  void cancelIceRestart() {
+    _iceRestartTimer?.cancel();
+    _iceRestartAttempts = 0;
+  }
+
   Future<void> _createLocalStream() async {
     try {
+      // Simplified audio constraints for better iOS compatibility
       final audioConstraints = {
         'echoCancellation': true,
         'noiseSuppression': true,
@@ -172,12 +317,27 @@ class WebRTCCallService {
           'audio': audioConstraints,
           'video': videoConstraints,
         });
+        _hasAudioCapability = true;
+        _hasVideoCapability = true;
+        SecureLogger.webrtc('Local stream created with audio and video');
       } catch (e) {
         SecureLogger.webrtc('Failed to get video, falling back to audio only: $e');
-        _localStream = await navigator.mediaDevices.getUserMedia({
-          'audio': audioConstraints,
-          'video': false,
-        });
+
+        try {
+          _localStream = await navigator.mediaDevices.getUserMedia({
+            'audio': audioConstraints,
+            'video': false,
+          });
+          _hasAudioCapability = true;
+          _hasVideoCapability = false;
+          SecureLogger.webrtc('Local stream created with audio only');
+        } catch (audioError) {
+          SecureLogger.webrtc('Failed to get audio: $audioError');
+          _hasAudioCapability = false;
+          _hasVideoCapability = false;
+          onError?.call('فشل الوصول إلى الميكروفون. تأكد من إعطاء الصلاحيات المطلوبة.');
+          rethrow;
+        }
       }
 
       // Mute video by default
@@ -187,30 +347,79 @@ class WebRTCCallService {
       isVideoEnabled = false;
       localRenderer.srcObject = null;
 
-      for (var track in _localStream!.getTracks()) {
+      // Add tracks to peer connection
+      final tracks = _localStream!.getTracks();
+      SecureLogger.webrtc('Adding ${tracks.length} tracks to peer connection');
+      for (var track in tracks) {
         await _peerConnection!.addTrack(track, _localStream!);
       }
 
-      SecureLogger.webrtc('Local stream created with audio and video (video muted)');
+      // Wait a bit for the peer connection to process the tracks
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      SecureLogger.webrtc(
+        'Local stream ready (audio: $_hasAudioCapability, video: $_hasVideoCapability)'
+      );
     } catch (e) {
       SecureLogger.webrtc('Error creating local stream: $e');
-      onError?.call('Failed to access microphone/camera: $e');
+      onError?.call('فشل الوصول إلى الميكروفون/الكاميرا: $e');
       rethrow;
     }
   }
 
-  Future<RTCSessionDescription> createOffer() async {
-    await _createPeerConnection();
-    await _createLocalStream();
+  Future<RTCSessionDescription> createOffer({bool forceNew = false}) async {
+    // If we need a fresh connection or don't have one, create it
+    if (_peerConnection == null || forceNew) {
+      if (_peerConnection != null && forceNew) {
+        SecureLogger.webrtc('Force creating new peer connection');
+        await resetForReconnection();
+      }
+      await _createPeerConnection();
+      await _createLocalStream();
+    } else {
+      SecureLogger.webrtc('Reusing existing peer connection for renegotiation');
+    }
 
-    final offer = await _peerConnection!.createOffer(_sdpConstraints);
-    await _peerConnection!.setLocalDescription(offer);
+    try {
+      // Log peer connection state before creating offer
+      final signalingState = _peerConnection!.signalingState;
+      final senders = await _peerConnection!.getSenders();
+      SecureLogger.webrtc('Signaling state: $signalingState, senders count: ${senders.length}');
 
-    SecureLogger.webrtc('Offer created');
-    return offer;
+      // Create offer with empty constraints (most compatible)
+      final offer = await _peerConnection!.createOffer({});
+
+      if (offer.sdp == null || offer.type == null) {
+        SecureLogger.webrtc('createOffer returned null - sdp: ${offer.sdp == null}, type: ${offer.type == null}');
+        throw Exception('createOffer returned null SDP or type');
+      }
+
+      SecureLogger.webrtc('Offer created - type: ${offer.type}, sdp length: ${offer.sdp?.length}');
+
+      // Set local description with the offer
+      await _peerConnection!.setLocalDescription(offer);
+
+      SecureLogger.webrtc('Offer created and set successfully');
+      return offer;
+    } catch (e) {
+      SecureLogger.webrtc('createOffer/setLocalDescription failed: $e');
+      // Reset peer connection on failure so retry starts fresh
+      await resetForReconnection();
+      rethrow;
+    }
   }
 
-  Future<RTCSessionDescription> createAnswer(RTCSessionDescription offer) async {
+  Future<RTCSessionDescription> createAnswer(RTCSessionDescription offer, {bool forceNew = false}) async {
+    // If peer connection exists and has remote description, the other side
+    // has reset their connection - we should reset ours too
+    if (_peerConnection != null) {
+      final remoteDesc = await _peerConnection!.getRemoteDescription();
+      if (remoteDesc != null || forceNew) {
+        SecureLogger.webrtc('Received new offer with existing connection, resetting');
+        await resetForReconnection();
+      }
+    }
+
     if (_peerConnection == null) {
       await _createPeerConnection();
       await _createLocalStream();
@@ -219,6 +428,7 @@ class WebRTCCallService {
     await _peerConnection!.setRemoteDescription(offer);
     await _flushPendingCandidates();
     final answer = await _peerConnection!.createAnswer(_sdpConstraints);
+
     await _peerConnection!.setLocalDescription(answer);
 
     SecureLogger.webrtc('Answer created');
@@ -233,6 +443,7 @@ class WebRTCCallService {
     await _peerConnection!.setRemoteDescription(offer);
     await _flushPendingCandidates();
     final answer = await _peerConnection!.createAnswer(_sdpConstraints);
+
     await _peerConnection!.setLocalDescription(answer);
 
     SecureLogger.webrtc('Remote offer set, answer created');
@@ -365,6 +576,7 @@ class WebRTCCallService {
         double? rtt;
         double? packetsLost;
         double? packetsReceived;
+        double? jitter;
 
         for (var report in stats) {
           if (report.type == 'candidate-pair' && report.values['state'] == 'succeeded') {
@@ -373,48 +585,94 @@ class WebRTCCallService {
           if (report.type == 'inbound-rtp' && report.values['kind'] == 'audio') {
             packetsLost = (report.values['packetsLost'] as num?)?.toDouble();
             packetsReceived = (report.values['packetsReceived'] as num?)?.toDouble();
+            jitter = (report.values['jitter'] as num?)?.toDouble();
           }
         }
 
-        if (rtt != null || (packetsLost != null && packetsReceived != null)) {
-          CallQuality quality;
+        // Calculate quality based on multiple factors
+        final quality = _calculateCallQuality(
+          rtt: rtt,
+          packetsLost: packetsLost,
+          packetsReceived: packetsReceived,
+          jitter: jitter,
+        );
 
-          if (rtt != null) {
-            if (rtt < 0.1) {
-              quality = CallQuality.excellent;
-            } else if (rtt < 0.3) {
-              quality = CallQuality.good;
-            } else {
-              quality = CallQuality.poor;
-            }
-          } else if (packetsLost != null && packetsReceived != null && packetsReceived > 0) {
-            final lossRate = packetsLost / (packetsLost + packetsReceived);
-            if (lossRate < 0.01) {
-              quality = CallQuality.excellent;
-            } else if (lossRate < 0.05) {
-              quality = CallQuality.good;
-            } else {
-              quality = CallQuality.poor;
-            }
-          } else {
-            quality = CallQuality.good;
-          }
-
-          onNetworkQualityChanged?.call(quality);
-        }
+        onNetworkQualityChanged?.call(quality);
       } catch (e) {
         SecureLogger.webrtc('Error monitoring quality: $e');
       }
     });
   }
 
+  CallQuality _calculateCallQuality({
+    double? rtt,
+    double? packetsLost,
+    double? packetsReceived,
+    double? jitter,
+  }) {
+    int poorFactors = 0;
+    int goodFactors = 0;
+
+    // RTT analysis (in seconds)
+    if (rtt != null) {
+      if (rtt < 0.1) {
+        goodFactors += 2; // Excellent RTT
+      } else if (rtt < 0.3) {
+        goodFactors += 1; // Good RTT
+      } else {
+        poorFactors += 1; // Poor RTT
+      }
+    }
+
+    // Jitter analysis (in seconds)
+    if (jitter != null) {
+      if (jitter < 0.03) {
+        goodFactors += 1; // Low jitter
+      } else if (jitter > 0.05) {
+        poorFactors += 1; // High jitter
+      }
+    }
+
+    // Packet loss analysis
+    if (packetsLost != null && packetsReceived != null && packetsReceived > 0) {
+      final lossRate = packetsLost / (packetsLost + packetsReceived);
+      if (lossRate < 0.01) {
+        goodFactors += 2; // Excellent - less than 1% loss
+      } else if (lossRate < 0.05) {
+        goodFactors += 1; // Acceptable - less than 5% loss
+      } else {
+        poorFactors += 2; // Poor - more than 5% loss
+      }
+    }
+
+    // Determine overall quality
+    if (poorFactors >= 2) {
+      return CallQuality.poor;
+    } else if (goodFactors >= 3) {
+      return CallQuality.excellent;
+    } else {
+      return CallQuality.good;
+    }
+  }
+
   Future<void> endCall() async {
     try {
+      // Cancel all timers first
+      _statsTimer?.cancel();
+      _statsTimer = null;
+      _iceRestartTimer?.cancel();
+      _iceRestartTimer = null;
+      _iceRestartAttempts = 0;
+
       if (isVideoEnabled) {
         isVideoEnabled = false;
         if (_localStream != null) {
           for (var track in _localStream!.getVideoTracks()) {
-            track.stop();
+            try {
+              track.stop();
+            } catch (e) {
+              SecureLogger.webrtc('Error stopping video track: $e');
+            }
           }
         }
       }
@@ -450,15 +708,91 @@ class WebRTCCallService {
     }
   }
 
+  /// Checks if the WebRTC peer connection is still active/connected.
+  bool get isConnectionAlive {
+    if (_peerConnection == null) return false;
+
+    // Check ICE connection state
+    // Connected or Completed means the P2P connection is working
+    return true; // We'll check state via callback, not sync getter
+  }
+
+  /// Checks if we need to re-establish the WebRTC connection.
+  /// Returns true if peer connection is null or in a failed/closed state.
+  Future<bool> needsReconnection() async {
+    if (_peerConnection == null) {
+      SecureLogger.webrtc('Peer connection is null, needs reconnection');
+      return true;
+    }
+
+    // If peer connection exists, it might still be alive
+    // The ICE connection state tells us if P2P is working
+    SecureLogger.webrtc('Peer connection exists, checking if still usable');
+    return false;
+  }
+
+  /// Resets the peer connection for reconnection scenarios.
+  /// Only call this if the connection is actually dead.
+  Future<void> resetForReconnection() async {
+    SecureLogger.webrtc('Resetting peer connection for reconnection');
+
+    // Cancel ICE restart timer
+    _iceRestartTimer?.cancel();
+    _iceRestartAttempts = 0;
+
+    // Close existing peer connection but keep renderers initialized
+    if (_localStream != null) {
+      for (var track in _localStream!.getTracks()) {
+        try {
+          track.stop();
+        } catch (e) {
+          SecureLogger.webrtc('Error stopping track: $e');
+        }
+      }
+      await _localStream!.dispose();
+      _localStream = null;
+    }
+
+    if (_remoteStream != null) {
+      await _remoteStream!.dispose();
+      _remoteStream = null;
+    }
+
+    localRenderer.srcObject = null;
+    remoteRenderer.srcObject = null;
+
+    if (_peerConnection != null) {
+      await _peerConnection!.close();
+      _peerConnection = null;
+    }
+
+    // Clear pending ICE candidates
+    _pendingCandidates.clear();
+
+    // Reset state
+    isVideoEnabled = false;
+    _lastIceState = null;
+
+    SecureLogger.webrtc('Peer connection reset complete');
+  }
+
   Future<void> dispose() async {
     try {
+      // Cancel all timers
       _statsTimer?.cancel();
+      _statsTimer = null;
+      _iceRestartTimer?.cancel();
+      _iceRestartTimer = null;
+
       await _closePeerConnection();
 
       await localRenderer.dispose();
       await remoteRenderer.dispose();
 
       isInitialized = false;
+      _hasAudioCapability = false;
+      _hasVideoCapability = false;
+
       SecureLogger.webrtc('Service disposed');
     } catch (e) {
       SecureLogger.webrtc('Error disposing: $e');

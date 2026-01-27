@@ -7,10 +7,12 @@ class SocketService {
   io.Socket? _socket;
   bool _isConnected = false;
   String? _currentRoomId;
+  String? _pendingRejoinRoomId; // Room to rejoin after reconnection
 
   // Connection callbacks
   Function()? onConnected;
   Function()? onDisconnected;
+  Function()? onReconnected; // Called when socket reconnects (not first connect)
   Function(String error)? onError;
 
   // Room callbacks
@@ -28,14 +30,12 @@ class SocketService {
   String? get currentRoomId => _currentRoomId;
   String? get socketId => _socket?.id;
 
-  /// Connect to WebRTC signaling server with authentication
-  ///
-  /// Security Fix: CWE-306 (Missing Authentication for Critical Function)
-  /// CVSS Score: 5.9 (Medium) → FIXED
+  /// Connect to WebRTC signaling server with optional authentication
   ///
   /// [serverUrl] - WebRTC signaling server URL (should use HTTPS)
-  /// [authToken] - Firebase ID token for authentication
-  Future<void> connect(String serverUrl, String authToken) async {
+  /// [authToken] - Optional Firebase ID token for authentication.
+  ///               If not provided, server will assign a guest ID.
+  Future<void> connect(String serverUrl, [String? authToken]) async {
     if (_socket != null) {
       await disconnect();
     }
@@ -48,60 +48,80 @@ class SocketService {
       );
     }
 
-    // SECURITY: Validate auth token is not empty
-    if (authToken.isEmpty) {
-      SecureLogger.error(
-        'Cannot connect to WebRTC server - empty auth token',
-        tag: 'WebRTC',
-      );
-      throw Exception('Authentication token required for WebRTC connection');
-    }
-
     SecureLogger.webrtc('Connecting to signaling server', tag: 'WebRTC');
 
-    _socket = io.io(
-      serverUrl,
-      io.OptionBuilder()
-          .setTransports(['websocket'])
-          // SECURITY FIX: Send authentication token with connection
-          // Server should validate this token before allowing signaling
-          .setAuth({
-            'token': authToken,
-            'type': 'firebase', // Indicate token type for server validation
-          })
-          .enableAutoConnect()
-          .enableReconnection()
-          .setReconnectionAttempts(5)
-          .setReconnectionDelay(1000)
-          .setReconnectionDelayMax(5000)
-          .build(),
-    );
+    final optionBuilder = io.OptionBuilder()
+        .setTransports(['websocket'])
+        .enableAutoConnect()
+        .enableReconnection()
+        .setReconnectionAttempts(5)
+        .setReconnectionDelay(1000)
+        .setReconnectionDelayMax(5000);
+
+    // Only set auth if token is provided
+    if (authToken != null && authToken.isNotEmpty) {
+      optionBuilder.setAuth({
+        'token': authToken,
+        'type': 'firebase',
+      });
+      SecureLogger.webrtc('Connecting with authentication');
+    } else {
+      SecureLogger.webrtc('Connecting as guest (no auth token)');
+    }
+
+    _socket = io.io(serverUrl, optionBuilder.build());
 
     _setupEventListeners();
   }
+
+  bool _hasConnectedOnce = false;
 
   void _setupEventListeners() {
     _socket!.onConnect((_) {
       SecureLogger.webrtc('Connected (id: ${_socket!.id})');
       _isConnected = true;
-      onConnected?.call();
+
+      if (_hasConnectedOnce) {
+        // This is a reconnection
+        SecureLogger.webrtc('Socket reconnected');
+
+        // Rejoin room if we were in one
+        if (_pendingRejoinRoomId != null) {
+          SecureLogger.webrtc('Rejoining room after reconnection: $_pendingRejoinRoomId');
+          _socket!.emit('join-room', {'callId': _pendingRejoinRoomId});
+        }
+
+        onReconnected?.call();
+      } else {
+        _hasConnectedOnce = true;
+        onConnected?.call();
+      }
     });
 
     _socket!.onDisconnect((_) {
       SecureLogger.webrtc('Disconnected');
       _isConnected = false;
+
+      // Save room ID for potential rejoin (don't clear it)
+      if (_currentRoomId != null) {
+        _pendingRejoinRoomId = _currentRoomId;
+        SecureLogger.webrtc('Saved room for rejoin: $_pendingRejoinRoomId');
+      }
       _currentRoomId = null;
+
       onDisconnected?.call();
     });
 
     _socket!.onConnectError((error) {
       SecureLogger.webrtc('Connection error: $error');
-      onError?.call('Connection error: $error');
+      final userMessage = _categorizeConnectionError(error);
+      onError?.call(userMessage);
     });
 
     _socket!.onError((error) {
       SecureLogger.webrtc('Error: $error');
-      onError?.call('Socket error: $error');
+      final userMessage = _categorizeSocketError(error);
+      onError?.call(userMessage);
     });
 
     _socket!.on('room-joined', (data) {
@@ -127,31 +147,74 @@ class SocketService {
     });
 
     _socket!.on('offer', (data) {
-      SecureLogger.webrtc('Offer received from ${data['from']}');
-      final offer = RTCSessionDescription(
-        data['offer']['sdp'],
-        data['offer']['type'],
-      );
-      onOfferReceived?.call(offer, data['from'], data['fromUid']);
+      try {
+        if (data == null || data['offer'] == null) {
+          SecureLogger.webrtc('Invalid offer data received');
+          return;
+        }
+        SecureLogger.webrtc('Offer received from ${data['from']}');
+        final offerData = data['offer'];
+        if (offerData['sdp'] == null || offerData['type'] == null) {
+          SecureLogger.webrtc('Missing SDP or type in offer');
+          return;
+        }
+        final offer = RTCSessionDescription(
+          offerData['sdp'] as String,
+          offerData['type'] as String,
+        );
+        onOfferReceived?.call(
+          offer,
+          data['from'] as String? ?? '',
+          data['fromUid'] as String? ?? '',
+        );
+      } catch (e) {
+        SecureLogger.webrtc('Error parsing offer: $e');
+      }
     });
 
     _socket!.on('answer', (data) {
-      SecureLogger.webrtc('Answer received from ${data['from']}');
-      final answer = RTCSessionDescription(
-        data['answer']['sdp'],
-        data['answer']['type'],
-      );
-      onAnswerReceived?.call(answer, data['from'], data['fromUid']);
+      try {
+        if (data == null || data['answer'] == null) {
+          SecureLogger.webrtc('Invalid answer data received');
+          return;
+        }
+        SecureLogger.webrtc('Answer received from ${data['from']}');
+        final answerData = data['answer'];
+        if (answerData['sdp'] == null || answerData['type'] == null) {
+          SecureLogger.webrtc('Missing SDP or type in answer');
+          return;
+        }
+        final answer = RTCSessionDescription(
+          answerData['sdp'] as String,
+          answerData['type'] as String,
+        );
+        onAnswerReceived?.call(
+          answer,
+          data['from'] as String? ?? '',
+          data['fromUid'] as String? ?? '',
+        );
+      } catch (e) {
+        SecureLogger.webrtc('Error parsing answer: $e');
+      }
     });
 
     _socket!.on('ice-candidate', (data) {
-      SecureLogger.webrtc('ICE candidate received from ${data['from']}');
-      final candidate = RTCIceCandidate(
-        data['candidate']['candidate'],
-        data['candidate']['sdpMid'],
-        data['candidate']['sdpMLineIndex'],
-      );
-      onIceCandidateReceived?.call(candidate, data['from']);
+      try {
+        if (data == null || data['candidate'] == null) {
+          SecureLogger.webrtc('Invalid ICE candidate data received');
+          return;
+        }
+        SecureLogger.webrtc('ICE candidate received from ${data['from']}');
+        final candidateData = data['candidate'];
+        final candidate = RTCIceCandidate(
+          candidateData['candidate'] as String?,
+          candidateData['sdpMid'] as String?,
+          candidateData['sdpMLineIndex'] as int?,
+        );
+        onIceCandidateReceived?.call(candidate, data['from'] as String? ?? '');
+      } catch (e) {
+        SecureLogger.webrtc('Error parsing ICE candidate: $e');
+      }
     });
 
     _socket!.on('video-state', (data) {
@@ -168,6 +231,7 @@ class SocketService {
     }
 
     SecureLogger.webrtc('Joining room $callId');
+    _pendingRejoinRoomId = callId; // Save for potential reconnection
     _socket!.emit('join-room', {'callId': callId});
   }
 
@@ -179,6 +243,7 @@ class SocketService {
     SecureLogger.webrtc('Leaving room $callId');
     _socket!.emit('leave-room', {'callId': callId});
     _currentRoomId = null;
+    _pendingRejoinRoomId = null; // Clear the pending rejoin
   }
 
   void sendOffer(RTCSessionDescription offer, String toSocketId) {
@@ -272,11 +337,71 @@ class SocketService {
     _socket = null;
     _isConnected = false;
     _currentRoomId = null;
+    _pendingRejoinRoomId = null;
+    _hasConnectedOnce = false;
 
     SecureLogger.webrtc('Disconnected and disposed');
   }
 
   void dispose() {
     disconnect();
+  }
+
+  /// Categorizes connection errors into user-friendly messages
+  String _categorizeConnectionError(dynamic error) {
+    final errorStr = error.toString().toLowerCase();
+
+    if (errorStr.contains('auth') ||
+        errorStr.contains('401') ||
+        errorStr.contains('403') ||
+        errorStr.contains('unauthorized')) {
+      return 'فشل التحقق من الهوية. الرجاء تسجيل الدخول مرة أخرى.';
+    }
+
+    if (errorStr.contains('timeout') || errorStr.contains('timed out')) {
+      return 'انتهت مهلة الاتصال. تحقق من اتصالك بالإنترنت.';
+    }
+
+    if (errorStr.contains('econnrefused') ||
+        errorStr.contains('connection refused')) {
+      return 'لا يمكن الوصول إلى الخادم. الرجاء المحاولة لاحقاً.';
+    }
+
+    if (errorStr.contains('ssl') ||
+        errorStr.contains('certificate') ||
+        errorStr.contains('tls')) {
+      return 'خطأ في الاتصال الآمن. الرجاء المحاولة لاحقاً.';
+    }
+
+    if (errorStr.contains('network') ||
+        errorStr.contains('internet') ||
+        errorStr.contains('offline')) {
+      return 'لا يوجد اتصال بالإنترنت. تحقق من اتصالك.';
+    }
+
+    if (errorStr.contains('dns') || errorStr.contains('host')) {
+      return 'تعذر الوصول إلى الخادم. تحقق من اتصالك بالإنترنت.';
+    }
+
+    return 'حدث خطأ اثناء الاتصال بالسيرفر. الرجاء المحاولة مرة أخرى لاحقاً.';
+  }
+
+  /// Categorizes socket errors into user-friendly messages
+  String _categorizeSocketError(dynamic error) {
+    final errorStr = error.toString().toLowerCase();
+
+    if (errorStr.contains('disconnect')) {
+      return 'انقطع الاتصال. جاري إعادة المحاولة...';
+    }
+
+    if (errorStr.contains('reconnect')) {
+      return 'جاري إعادة الاتصال...';
+    }
+
+    if (errorStr.contains('transport')) {
+      return 'خطأ في الاتصال. جاري المحاولة مرة أخرى...';
+    }
+
+    return 'حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى.';
   }
 }
