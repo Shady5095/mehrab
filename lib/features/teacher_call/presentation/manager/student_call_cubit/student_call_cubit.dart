@@ -142,6 +142,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
 
 
   Future<void> sendCallToTeacher() async {
+    isCallEnded = false; // Reset for new call
     try {
       final batch = db.batch();
       callDocId = _uuid.v4();
@@ -167,7 +168,8 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   }
 
   Future<void> endCallBeforeAnswer({bool isByUser = false}) async {
-    if (callDocId == null) return;
+    if (callDocId == null || isCallEnded) return;
+    isCallEnded = true;
     try {
       _clearPreComment();
       final batch = db.batch();
@@ -183,13 +185,23 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       }
 
     } catch (error) {
-      emit(SendCallToTeacherFailure(error: error.toString()));
+      // If document not found, ignore as call might be already handled
+      if (!error.toString().contains('not-found') && !error.toString().contains('document not found')) {
+        emit(SendCallToTeacherFailure(error: error.toString()));
+      } else {
+        if (isByUser) {
+          emit(CallEndedByUserState());
+        } else {
+          emit(CallEndedByTimeOut());
+        }
+      }
     }
   }
 
 
   Future<void> endCallAfterAnswer({bool isByUser = false}) async {
-    if (callDocId == null) return;
+    if (callDocId == null || isCallEnded) return;
+    isCallEnded = true;
     try {
       _clearPreComment();
       if (Platform.isAndroid) {
@@ -207,7 +219,20 @@ class StudentCallCubit extends Cubit<StudentCallState> {
         emit(MaxDurationReached());
       }
     } catch (error) {
-      emit(AgoraConnectionError(error: error.toString()));
+      // If the call was already ended by the other user or document not found, don't emit error
+      if (error.toString().contains('not-found') || error.toString().contains('document not found')) {
+        if (!isByUser) {
+          emit(AnotherUserLeft());
+        } else {
+          emit(CallFinished(model: teacherModel));
+        }
+      } else {
+        if (!isByUser) {
+          emit(AnotherUserLeft());
+        } else {
+          emit(AgoraConnectionError(error: error.toString()));
+        }
+      }
     }
   }
 
@@ -318,6 +343,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   bool isMicMuted = false;
   bool isSpeakerOn = true;
   bool isVideoEnabled = false;
+  bool isCallEnded = false;
   bool isRemoteVideoEnabled = false;
   String? remoteUid;
 
@@ -352,7 +378,11 @@ class StudentCallCubit extends Cubit<StudentCallState> {
     };
 
     callService.onUserLeft = (peerId) async {
-      await endCallAfterAnswer(isByUser: false);
+      if (!isCallEnded) {
+        await endCallAfterAnswer(isByUser: false);
+      } else {
+        emit(AnotherUserLeft());
+      }
     };
 
     callService.onError = (error) {
