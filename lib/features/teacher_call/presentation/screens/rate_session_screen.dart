@@ -9,7 +9,20 @@ class RateSessionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> args = ModalRoute.of(context)!.settings.arguments as List<dynamic>;
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+
+    // Handle case where arguments are null or invalid
+    if (arguments == null || arguments is! List<dynamic> || arguments.isEmpty || arguments[0] == null) {
+      // Navigate back if no valid call data
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pop();
+      });
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    List<dynamic> args = arguments;
     bool isEditMode = args[1] as bool;
     return PopScope(
       canPop: isEditMode,

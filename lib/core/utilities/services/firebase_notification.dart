@@ -16,6 +16,7 @@ import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
 import '../../config/app_config.dart';
 import '../functions/print_with_color.dart';
 import 'call_kit_service.dart';
+import 'audio_session_service.dart';
 
 class AppFirebaseNotification {
   // ==================== Instances ====================
@@ -334,6 +335,23 @@ class AppFirebaseNotification {
           _handleCallTimeout(event.body);
           break;
 
+        case Event.actionCallToggleAudioSession:
+          // iOS requests audio session activation/deactivation
+          _handleAudioSessionToggle(event.body);
+          break;
+
+        case Event.actionCallStart:
+        case Event.actionCallCallback:
+        case Event.actionCallToggleHold:
+        case Event.actionCallToggleMute:
+        case Event.actionCallToggleDmtf:
+        case Event.actionCallToggleGroup:
+        case Event.actionCallToggleAudioRouting:
+        case Event.actionDidUpdateDevicePushTokenVoip:
+          // These events are informational, no action needed
+          printWithColor('ℹ️ CallKit event (no action): ${event.event}');
+          break;
+
         default:
           printWithColor('⚠️ Unhandled CallKit event: ${event.event}');
       }
@@ -427,6 +445,26 @@ class AppFirebaseNotification {
       await FlutterCallkitIncoming.endCall(callId);
     } catch (e) {
       printWithColor('❌ Error handling timeout: $e');
+    }
+  }
+
+  /// Handle audio session toggle request from iOS
+  static Future<void> _handleAudioSessionToggle(
+      Map<String, dynamic>? callData) async {
+    try {
+      final audioSession = AudioSessionService();
+      final isActivate = callData?['isActivate'] as bool? ?? true;
+
+      if (isActivate) {
+        await audioSession.configureForCall();
+        await audioSession.setActive(true);
+        printWithColor('🔊 Audio session activated for CallKit');
+      } else {
+        await audioSession.setActive(false);
+        printWithColor('🔇 Audio session deactivated for CallKit');
+      }
+    } catch (e) {
+      printWithColor('❌ Error toggling audio session: $e');
     }
   }
 

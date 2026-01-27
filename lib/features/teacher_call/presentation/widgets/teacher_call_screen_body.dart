@@ -83,10 +83,13 @@ class TeacherCallScreenBody extends StatelessWidget {
             context.pop();
           }
           context.pop();
-          context.navigateTo(
-            pageName: AppRoutes.rateSessionScreen,
-            arguments: [cubit.latestCallData?.copyWith(endedTime: Timestamp.now()), false,false],
-          );
+          // Only navigate to rate session if we have valid call data
+          if (cubit.latestCallData != null) {
+            context.navigateTo(
+              pageName: AppRoutes.rateSessionScreen,
+              arguments: [cubit.latestCallData!.copyWith(endedTime: Timestamp.now()), false, false],
+            );
+          }
         }
       },
       builder: (context, state) {
@@ -213,11 +216,11 @@ class TeacherCallScreenBody extends StatelessWidget {
                                 color: Colors.white,
                               ),
                             ),
-                            if(cubit.isCallConnected)
+                            if(cubit.isCallConnected && cubit.latestCallData != null)
                            ...[ Spacer(),
                             InkWell(
                               onTap: () {
-                                context.navigateTo(pageName: AppRoutes.rateSessionScreen,arguments: [cubit.latestCallData, true,true]);
+                                context.navigateTo(pageName: AppRoutes.rateSessionScreen,arguments: [cubit.latestCallData!, true, true]);
                               },
                               child: ImageIcon(
                                 AssetImage('assets/images/editSession.png'),
