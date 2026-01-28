@@ -218,7 +218,7 @@ class StudentCallScreenBody extends StatelessWidget {
               Positioned.fill(
                 child: VideoTrackRenderer(
                   cubit.callService.remoteVideoTrack!,
-                  fit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                  fit: VideoViewFit.cover,
                   mirrorMode: VideoViewMirrorMode.off,
                 ),
               ),
@@ -264,7 +264,7 @@ class StudentCallScreenBody extends StatelessWidget {
                     clipBehavior: Clip.hardEdge,
                     child: VideoTrackRenderer(
                       cubit.callService.localVideoTrack!,
-                      fit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      fit: VideoViewFit.cover,
                       mirrorMode: VideoViewMirrorMode.mirror,
                     ),
                   ),
