@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart' hide MessageType;
+import 'package:livekit_client/livekit_client.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
@@ -214,12 +214,12 @@ class StudentCallScreenBody extends StatelessWidget {
         return Stack(
           children: [
             // Remote video (full screen when enabled)
-            if (cubit.isRemoteVideoEnabled && cubit.remoteUid != null)
+            if (cubit.isRemoteVideoEnabled && cubit.remoteUid != null && cubit.callService.remoteVideoTrack != null)
               Positioned.fill(
-                child: RTCVideoView(
-                  cubit.callService.remoteRenderer,
-                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                  mirror: false,
+                child: VideoTrackRenderer(
+                  cubit.callService.remoteVideoTrack!,
+                  fit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                  mirrorMode: VideoViewMirrorMode.off,
                 ),
               ),
 
@@ -243,7 +243,7 @@ class StudentCallScreenBody extends StatelessWidget {
               ),
 
             // Local video preview (small popup on top left)
-            if (cubit.isVideoEnabled)
+            if (cubit.isVideoEnabled && cubit.callService.localVideoTrack != null)
               Positioned(
                 top: 20,
                 left: 20,
@@ -262,10 +262,10 @@ class StudentCallScreenBody extends StatelessWidget {
                       ],
                     ),
                     clipBehavior: Clip.hardEdge,
-                    child: RTCVideoView(
-                      cubit.callService.localRenderer,
-                      objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                      mirror: true,
+                    child: VideoTrackRenderer(
+                      cubit.callService.localVideoTrack!,
+                      fit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      mirrorMode: VideoViewMirrorMode.mirror,
                     ),
                   ),
                 ),

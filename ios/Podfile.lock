@@ -1594,6 +1594,10 @@ PODS:
   - in_app_review (2.0.0):
     - Flutter
   - leveldb-library (1.22.6)
+  - livekit_client (2.6.1):
+    - Flutter
+    - flutter_webrtc
+    - WebRTC-SDK (= 137.7151.04)
   - local_auth_darwin (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -1666,6 +1670,7 @@ DEPENDENCIES:
   - image_cropper (from `.symlinks/plugins/image_cropper/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - in_app_review (from `.symlinks/plugins/in_app_review/ios`)
+  - livekit_client (from `.symlinks/plugins/livekit_client/ios`)
   - local_auth_darwin (from `.symlinks/plugins/local_auth_darwin/darwin`)
   - open_filex (from `.symlinks/plugins/open_filex/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
@@ -1777,6 +1782,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_picker_ios/ios"
   in_app_review:
     :path: ".symlinks/plugins/in_app_review/ios"
+  livekit_client:
+    :path: ".symlinks/plugins/livekit_client/ios"
   local_auth_darwin:
     :path: ".symlinks/plugins/local_auth_darwin/darwin"
   open_filex:
@@ -1865,6 +1872,7 @@ SPEC CHECKSUMS:
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   in_app_review: 7dd1ea365263f834b8464673f9df72c80c17c937
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
+  livekit_client: ee5503a79b5e1a5cbf6bbf741b4625d2531c8bb9
   local_auth_darwin: c3ee6cce0a8d56be34c8ccb66ba31f7f180aaebb
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   open_filex: 432f3cd11432da3e39f47fcc0df2b1603854eff1

@@ -1,4 +1,4 @@
-import 'package:mehrab/core/utilities/services/webrtc_call_service.dart';
+import 'package:mehrab/core/utilities/services/livekit_call_service.dart';
 
 import '../../../../teachers/data/models/teachers_model.dart';
 

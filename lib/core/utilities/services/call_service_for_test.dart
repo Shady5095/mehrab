@@ -62,6 +62,13 @@ class CallServiceForTest {
       'autoGainControl': true,
       'sampleRate': 8000,  // ✅ جودة تليفون عادي (يوفر 80%)
       'channelCount': 1,
+      // Google-specific constraints for robust audio processing
+      'mandatory': {
+        'googEchoCancellation': 'true',  // Acoustic Echo Cancellation
+        'googNoiseSuppression': 'true', // Noise Suppression
+        'googAutoGainControl': 'true',  // Automatic Gain Control
+      },
+      'optional': [],
     },
     'video': false, // ✅ إلغاء الفيديو تماماً
   };

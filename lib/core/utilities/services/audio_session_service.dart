@@ -54,8 +54,8 @@ class AudioSessionService {
   }
 
   Future<void> switchToSpeaker() async {
-    if (Platform.isIOS) {
-      try {
+    try {
+      if (Platform.isIOS) {
         await _session?.configure(AudioSessionConfiguration(
           avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
           avAudioSessionCategoryOptions:
@@ -63,26 +63,28 @@ class AudioSessionService {
               AVAudioSessionCategoryOptions.allowBluetooth,
           avAudioSessionMode: AVAudioSessionMode.voiceChat,
         ));
-        debugPrint('AudioSession: Switched to speaker');
-      } catch (e) {
-        debugPrint('AudioSession Error switching to speaker: $e');
       }
+      // For Android, speaker switching is handled by WebRTC
+      debugPrint('AudioSession: Switched to speaker');
+    } catch (e) {
+      debugPrint('AudioSession Error switching to speaker: $e');
     }
   }
 
   Future<void> switchToEarpiece() async {
-    if (Platform.isIOS) {
-      try {
+    try {
+      if (Platform.isIOS) {
         await _session?.configure(AudioSessionConfiguration(
           avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
           avAudioSessionCategoryOptions:
               AVAudioSessionCategoryOptions.allowBluetooth,
           avAudioSessionMode: AVAudioSessionMode.voiceChat,
         ));
-        debugPrint('AudioSession: Switched to earpiece');
-      } catch (e) {
-        debugPrint('AudioSession Error switching to earpiece: $e');
       }
+      // For Android, speaker switching is handled by WebRTC
+      debugPrint('AudioSession: Switched to earpiece');
+    } catch (e) {
+      debugPrint('AudioSession Error switching to earpiece: $e');
     }
   }
 

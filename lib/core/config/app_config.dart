@@ -24,44 +24,58 @@ class AppConfig {
   /// Check if running in production mode
   static bool get isProduction => _environment == 'production';
 
-  // ========== WebRTC Configuration ==========
+  // ========== LiveKit Configuration ==========
 
-  /// WebRTC Signaling Server URL
-  /// Set via --dart-define=SIGNALING_SERVER_URL=https://your-server.com
+  /// LiveKit Server URL (WebSocket URL for LiveKit server)
+  /// Set via --dart-define=LIVEKIT_SERVER_URL=wss://your-livekit-server.com
+  static const String _livekitServerUrl = String.fromEnvironment(
+    'LIVEKIT_SERVER_URL',
+    defaultValue: 'wss://livekit.mehrab-alquran.com',
+  );
+
+  static String get livekitServerUrl {
+    if (kDebugMode && isDevelopment) {
+      return const String.fromEnvironment(
+        'DEV_LIVEKIT_SERVER_URL',
+        defaultValue: _livekitServerUrl,
+      );
+    }
+    return _livekitServerUrl;
+  }
+
+  /// LiveKit API URL (Backend API for token generation)
+  /// Set via --dart-define=LIVEKIT_API_URL=https://your-api.com
+  static const String _livekitApiUrl = String.fromEnvironment(
+    'LIVEKIT_API_URL',
+    defaultValue: 'https://signal.mehrab-alquran.com',
+  );
+
+  static String get livekitApiUrl {
+    if (kDebugMode && isDevelopment) {
+      return const String.fromEnvironment(
+        'DEV_LIVEKIT_API_URL',
+        defaultValue: _livekitApiUrl,
+      );
+    }
+    return _livekitApiUrl;
+  }
+
+  /// Signaling Server URL (Backend for notifications and tokens)
+  /// Set via --dart-define=SIGNALING_SERVER_URL=https://your-signaling-server.com
   static const String _signalingServerUrl = String.fromEnvironment(
     'SIGNALING_SERVER_URL',
-    defaultValue: 'https://signal.ahmedhany.dev',
+    defaultValue: 'https://signal.mehrab-alquran.com',
   );
 
   static String get signalingServerUrl {
     if (kDebugMode && isDevelopment) {
-      // Can override for local development
       return const String.fromEnvironment(
-        'DEV_SIGNALING_URL',
+        'DEV_SIGNALING_SERVER_URL',
         defaultValue: _signalingServerUrl,
       );
     }
     return _signalingServerUrl;
   }
-
-  /// TURN Server Domain
-  /// Set via --dart-define=TURN_DOMAIN=turn.your-server.com
-  static const String _turnDomain = String.fromEnvironment(
-    'TURN_DOMAIN',
-    defaultValue: 'turn.ahmedhany.dev',
-  );
-
-  static String get turnDomain {
-    if (kDebugMode && isDevelopment) {
-      return const String.fromEnvironment(
-        'DEV_TURN_DOMAIN',
-        defaultValue: _turnDomain,
-      );
-    }
-    return _turnDomain;
-  }
-
-  // ========== API Configuration ==========
 
   /// API Base URL
   /// Set via --dart-define=API_BASE_URL=https://api.your-server.com
@@ -116,8 +130,9 @@ class AppConfig {
     if (kDebugMode) {
       debugPrint('=== App Configuration ===');
       debugPrint('Environment: $_environment');
+      debugPrint('LiveKit Server: $livekitServerUrl');
+      debugPrint('LiveKit API: $livekitApiUrl');
       debugPrint('Signaling Server: $signalingServerUrl');
-      debugPrint('TURN Domain: $turnDomain');
       debugPrint('API Base URL: $apiBaseUrl');
       debugPrint('API Timeout: $apiTimeout seconds');
       debugPrint('Debug Logging: $enableDebugLogging');

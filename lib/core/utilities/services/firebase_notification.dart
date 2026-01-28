@@ -340,20 +340,9 @@ class AppFirebaseNotification {
           _handleAudioSessionToggle(event.body);
           break;
 
-        case Event.actionCallStart:
-        case Event.actionCallCallback:
-        case Event.actionCallToggleHold:
-        case Event.actionCallToggleMute:
-        case Event.actionCallToggleDmtf:
-        case Event.actionCallToggleGroup:
-        case Event.actionCallToggleAudioRouting:
-        case Event.actionDidUpdateDevicePushTokenVoip:
-          // These events are informational, no action needed
-          printWithColor('ℹ️ CallKit event (no action): ${event.event}');
-          break;
-
         default:
-          printWithColor('⚠️ Unhandled CallKit event: ${event.event}');
+          // Other events are informational, no action needed
+          printWithColor('ℹ️ CallKit event: ${event.event}');
       }
     });
   }
