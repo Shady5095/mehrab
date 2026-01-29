@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +18,7 @@ import 'core/utilities/services/cache_service.dart';
 import 'core/utilities/services/secure_cache_service.dart';
 import 'core/utilities/services/internet_connectivity_service.dart';
 import 'core/utilities/services/call_kit_service.dart';
+import 'core/utilities/services/call_state_service.dart';
 import 'core/utilities/services/local_notifications_service.dart';
 import 'firebase_options.dart';
 
@@ -62,6 +64,23 @@ Future<void> _showBackgroundIncomingCall(Map<String, dynamic> data) async {
   debugPrint('🔔 [BACKGROUND_CALLKIT] CallId: $callId, Caller: $callerName, Photo: $callerPhoto');
 
   SecureLogger.firebase('Incoming call notification', tag: 'CallKit');
+
+  // Check if there are already active calls
+  try {
+    final activeCalls = await FlutterCallkitIncoming.activeCalls();
+    if (activeCalls.isNotEmpty) {
+      debugPrint('🔔 [BACKGROUND_CALLKIT] Active calls detected: ${activeCalls.length}, ignoring new call');
+      return;
+    }
+    // Also check global call state
+    if (CallStateService().isCurrentlyInCall) {
+      debugPrint('🔔 [BACKGROUND_CALLKIT] User already in call according to global state, ignoring new call');
+      return;
+    }
+  } catch (e) {
+    debugPrint('❌ [BACKGROUND_CALLKIT] Error checking active calls: $e');
+    // Continue showing the call despite error
+  }
 
   // Validate image URL
   final validPhoto = ImageHelper.getValidImageUrl(callerPhoto);
@@ -137,6 +156,24 @@ Future<void> _verifyAuthState() async {
 }
 
 // ==================== Main Function ====================
+/// Reset user busy status to false on app start
+Future<void> _resetBusyStatusOnStart() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({'isBusy': false});
+      debugPrint('🔄 [APP_START] Reset busy status to false for user: ${user.uid}');
+    } catch (e) {
+      debugPrint('❌ [APP_START] Failed to reset busy status: $e');
+    }
+  } else {
+    debugPrint('🔄 [APP_START] No authenticated user, skipping busy status reset');
+  }
+}
+
 Future<void> main() async {
   // Run the app within a guarded zone to catch all errors
   runZonedGuarded<Future<void>>(() async {
@@ -163,6 +200,9 @@ Future<void> main() async {
 
     // Verify Firebase Auth state and clear invalid sessions
     await _verifyAuthState();
+
+    // Reset busy status on app start
+    await _resetBusyStatusOnStart();
 
     // Initialize Firebase App Check with Play Integrity (replaces deprecated SafetyNet)
     await FirebaseAppCheck.instance.activate();

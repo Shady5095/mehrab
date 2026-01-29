@@ -16,6 +16,7 @@ import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
 import '../../config/app_config.dart';
 import '../functions/print_with_color.dart';
 import 'call_kit_service.dart';
+import 'call_state_service.dart';
 
 class AppFirebaseNotification {
   // ==================== Instances ====================
@@ -101,7 +102,7 @@ class AppFirebaseNotification {
   /// Handle notifications when app is in foreground
   static void whileAppOpenHandleNotification(
       HomeCubit homeCubit, BuildContext context) {
-    FirebaseMessaging.onMessage.listen((message) {
+    FirebaseMessaging.onMessage.listen((message) async {
       printWithColor('📬 [FOREGROUND] Notification received');
       printWithColor('📬 [FOREGROUND] Title: ${message.notification?.title}');
       printWithColor('📬 [FOREGROUND] Body: ${message.notification?.body}');
@@ -116,7 +117,23 @@ class AppFirebaseNotification {
       if (message.data['type'] == 'incoming_call') {
         printWithColor('📞 [FOREGROUND] Incoming call notification detected');
         if (AppRouteObserver.currentRouteName != AppRoutes.teacherCallScreen) {
-          printWithColor('📞 [FOREGROUND] Not in call screen, showing incoming call dialog');
+          printWithColor('📞 [FOREGROUND] Not in call screen, checking for active calls');
+          try {
+            final activeCalls = await FlutterCallkitIncoming.activeCalls();
+            if (activeCalls.isNotEmpty) {
+              printWithColor('📞 [FOREGROUND] Active calls detected: ${activeCalls.length}, ignoring new call');
+              return;
+            }
+            // Also check global call state
+            if (CallStateService().isCurrentlyInCall) {
+              printWithColor('📞 [FOREGROUND] User already in call according to global state, ignoring new call');
+              return;
+            }
+          } catch (e) {
+            printWithColor('❌ [FOREGROUND] Error checking active calls: $e');
+            // Continue showing the call despite error
+          }
+          printWithColor('📞 [FOREGROUND] No active calls, showing incoming call dialog');
           if (context.mounted) {
             _showIncomingCall(message.data, context);
           } else {

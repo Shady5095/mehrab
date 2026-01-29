@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:livekit_client/livekit_client.dart' as lk;
 import '../../config/app_config.dart';
+import 'call_state_service.dart';
 
 enum CallQuality {
   excellent,
@@ -96,7 +97,7 @@ class LiveKitCallService {
     }
   }
 
-  Future<void> connect(String token, String roomName) async {
+  Future<void> connect(String token, String roomName, {String? callId}) async {
     try {
       // Add timeout for faster failure detection
       await _room?.connect(
@@ -105,6 +106,10 @@ class LiveKitCallService {
       ).timeout(const Duration(seconds: 15), onTimeout: () {
         throw Exception('Connection timeout - LiveKit server not responding');
       });
+
+      // Set call state
+      final effectiveCallId = callId ?? roomName;
+      CallStateService().setInCall(effectiveCallId);
 
       // Set up participant event listeners
       _setupParticipantListeners();
@@ -254,6 +259,7 @@ class LiveKitCallService {
 
   Future<void> endCall() async {
     await _room?.disconnect();
+    CallStateService().setNotInCall();
     onCallEnded?.call();
   }
 
