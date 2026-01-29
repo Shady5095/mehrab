@@ -273,7 +273,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
         return response.data['token'];
       }
     } catch (error) {
-      if (error is DioError) {
+      if (error is DioException) {
         debugPrint('Failed to get LiveKit token: ${error.message}');
         if (error.response != null) {
           debugPrint('Status: ${error.response?.statusCode}');

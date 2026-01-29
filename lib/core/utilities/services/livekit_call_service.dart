@@ -65,14 +65,35 @@ class LiveKitCallService {
 
   void _onRoomEvent() {
     final currentState = _room?.connectionState;
-    if (currentState == lk.ConnectionState.connected && 
+    if (currentState == lk.ConnectionState.connected &&
         _previousConnectionState != lk.ConnectionState.connected) {
       onConnectionSuccess?.call();
-    } else if (currentState == lk.ConnectionState.disconnected && 
+    } else if (currentState == lk.ConnectionState.disconnected &&
                _previousConnectionState != lk.ConnectionState.disconnected) {
       onCallEnded?.call();
     }
     _previousConnectionState = currentState;
+
+    // Handle track publication/unpublication events
+    if (_room != null) {
+      // Check for any track changes in remote participants
+      for (final participant in _room!.remoteParticipants.values) {
+        // A video track is considered "enabled" if:
+        // 1. There's a video track publication
+        // 2. The track is not null
+        // 3. The publication is not muted
+        final hasVideo = participant.trackPublications.values
+            .any((pub) => pub.kind == lk.TrackType.VIDEO && pub.track != null && !pub.muted);
+
+        // Only notify if state actually changed
+        final lastKnownState = _lastVideoStates[participant.identity] ?? false;
+        if (lastKnownState != hasVideo) {
+          _lastVideoStates[participant.identity] = hasVideo;
+          debugPrint('📹 Room event - Video state changed for ${participant.identity}: $hasVideo');
+          onRemoteVideoStateChanged?.call(participant.identity, hasVideo);
+        }
+      }
+    }
   }
 
   Future<void> connect(String token, String roomName) async {
@@ -93,6 +114,9 @@ class LiveKitCallService {
   // Track notified participants to avoid duplicate callbacks
   final Set<String> _notifiedParticipants = {};
 
+  // Track last known video states to detect changes
+  final Map<String, bool> _lastVideoStates = {};
+
   void _setupParticipantListeners() {
     if (_room == null) return;
 
@@ -106,6 +130,9 @@ class LiveKitCallService {
           debugPrint('🔗 LiveKit participant connected: ${participant.identity}');
           _notifiedParticipants.add(participant.identity);
           onUserJoined?.call(participant.identity);
+          
+          // Set up track listeners for this participant
+          _setupTrackListeners(participant);
         }
         
         // Update remote video state
@@ -126,6 +153,49 @@ class LiveKitCallService {
         onUserLeft?.call(identity);
       }
     });
+  }
+
+  // Track listeners for individual participants
+  final Map<String, void Function()> _participantListeners = {};
+
+  void _setupTrackListeners(lk.RemoteParticipant participant) {
+    // Clean up existing listener for this participant
+    final existingListener = _participantListeners[participant.identity];
+    if (existingListener != null) {
+      participant.removeListener(existingListener);
+    }
+
+    // Create a listener function for track events
+    void trackEventListener() {
+      // Check current video state by looking at track publications
+      // A video track is considered "enabled" if:
+      // 1. There's a video track publication
+      // 2. The track is not null
+      // 3. The publication is not muted
+      final hasVideo = participant.trackPublications.values
+          .any((pub) => pub.kind == lk.TrackType.VIDEO && pub.track != null && !pub.muted);
+
+      // Only notify if state actually changed
+      final lastKnownState = _lastVideoStates[participant.identity] ?? false;
+      if (lastKnownState != hasVideo) {
+        _lastVideoStates[participant.identity] = hasVideo;
+        debugPrint('📹 Participant listener - Video state changed for ${participant.identity}: $hasVideo');
+        onRemoteVideoStateChanged?.call(participant.identity, hasVideo);
+      }
+    }
+
+    // Add the listener to the participant
+    participant.addListener(trackEventListener);
+
+    // Store the listener for cleanup
+    _participantListeners[participant.identity] = trackEventListener;
+
+    // Also check initial state when setting up listener
+    final initialHasVideo = participant.trackPublications.values
+        .any((pub) => pub.kind == lk.TrackType.VIDEO && pub.track != null && !pub.muted);
+    _lastVideoStates[participant.identity] = initialHasVideo;
+    debugPrint('📹 Initial video state for ${participant.identity}: video=$initialHasVideo');
+    onRemoteVideoStateChanged?.call(participant.identity, initialHasVideo);
   }
 
   Future<void> setIceServers(List<Map<String, dynamic>> iceServers) async {
@@ -179,6 +249,18 @@ class LiveKitCallService {
   }
 
   void dispose() {
+    // Clean up participant listeners
+    if (_room != null) {
+      for (final participant in _room!.remoteParticipants.values) {
+        final listener = _participantListeners[participant.identity];
+        if (listener != null) {
+          participant.removeListener(listener);
+        }
+      }
+    }
+    _participantListeners.clear();
+    _lastVideoStates.clear();
+
     _room?.dispose();
     _room = null;
   }
