@@ -199,13 +199,16 @@ class StudentCallScreenBody extends StatelessWidget {
             state is MaxDurationReached ||
             state is AnotherUserLeft) {
           context.pop();
-          showDialog(
-            context: context,
-            builder: (BuildContext context) => CallEndedDialog(
-              teacherUid: teacherModel.uid,
-            ),
-          );
-          AppReviewService.showReviewPromptIfNeeded();
+          // Show dialog after the current frame
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) => CallEndedDialog(
+                teacherUid: teacherModel.uid,
+              ),
+            );
+            AppReviewService.showReviewPromptIfNeeded();
+          });
         }
       },
       builder: (context, state) {

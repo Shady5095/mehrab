@@ -25,10 +25,12 @@ class HomeLayoutBody extends StatelessWidget {
           if (!context.mounted) {
             return;
           }
-          context.navigateAndRemoveUntil(
-            pageName: AppRoutes.loginRoute,
-          );
-          showDialog(context: context, builder: (context)=>AccountDeletedDialog());
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.navigateAndRemoveUntil(
+              pageName: AppRoutes.loginRoute,
+            );
+            showDialog(context: context, builder: (context)=>AccountDeletedDialog());
+          });
         }
       },
       builder: (context, state) {

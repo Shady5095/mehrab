@@ -98,13 +98,22 @@ class LiveKitCallService {
 
   Future<void> connect(String token, String roomName) async {
     try {
+      // Add timeout for faster failure detection
       await _room?.connect(
         'wss://${AppConfig.livekitUrl.replaceFirst('https://', '')}',
         token,
-      );
+      ).timeout(const Duration(seconds: 15), onTimeout: () {
+        throw Exception('Connection timeout - LiveKit server not responding');
+      });
 
       // Set up participant event listeners
       _setupParticipantListeners();
+
+      // Ensure microphone is enabled if not muted
+      if (localParticipant != null && !isMicMuted) {
+        await localParticipant!.setMicrophoneEnabled(true);
+        debugPrint('🎤 Microphone enabled after connecting to room');
+      }
 
     } catch (error) {
       onError?.call('Failed to connect to room: $error');

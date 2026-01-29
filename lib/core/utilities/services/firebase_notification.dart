@@ -47,13 +47,20 @@ class AppFirebaseNotification {
   // ==================== Initialization ====================
   static Future<void> initNotification(
       BuildContext context, HomeCubit homeCubit) async {
+    printWithColor('🔄 [FCM_INIT] Starting FCM notification initialization');
+
     await notificationPermission;
+    printWithColor('✅ [FCM_INIT] Notification permission granted');
 
     // Request full screen intent permission for Android 14+
     if (Platform.isAndroid) {
+      printWithColor('🤖 [FCM_INIT] Android platform detected, requesting full screen intent permission');
       await CallKitPermissionHelper.ensureFullScreenIntentPermission();
     }
+
     if (context.mounted) {
+      printWithColor('📱 [FCM_INIT] Context mounted, setting up notification handlers');
+
       // Setup notification handlers
       whileAppOpenHandleNotification(homeCubit, context);
       whileAppCloseHandleNotification(context);
@@ -71,12 +78,22 @@ class AppFirebaseNotification {
       } else {
         _instance.getAPNSToken();
       }
+
+      printWithColor('✅ [FCM_INIT] FCM notification initialization completed');
+    } else {
+      printWithColor('⚠️ [FCM_INIT] Context not mounted, skipping FCM setup');
     }
   }
 
   // ==================== Permissions ====================
   static Future<void> get notificationPermission async {
+    printWithColor('🔐 [FCM_PERMISSIONS] Requesting notification permission');
     await _instance.requestPermission(announcement: true);
+    printWithColor('✅ [FCM_PERMISSIONS] Notification permission requested');
+
+    // Check FCM token
+    final token = await _instance.getToken();
+    printWithColor('🔑 [FCM_TOKEN] FCM Token: ${token?.substring(0, 20)}...');
   }
 
   // ==================== Notification Handlers ====================
@@ -85,7 +102,10 @@ class AppFirebaseNotification {
   static void whileAppOpenHandleNotification(
       HomeCubit homeCubit, BuildContext context) {
     FirebaseMessaging.onMessage.listen((message) {
-      printWithColor('📬 Foreground notification received');
+      printWithColor('📬 [FOREGROUND] Notification received');
+      printWithColor('📬 [FOREGROUND] Title: ${message.notification?.title}');
+      printWithColor('📬 [FOREGROUND] Body: ${message.notification?.body}');
+      printWithColor('📬 [FOREGROUND] Data: ${message.data}');
 
       // Update notification count
       if (message.notification != null) {
@@ -93,10 +113,20 @@ class AppFirebaseNotification {
       }
 
       // Handle incoming call
-      if (message.data['type'] == 'incoming_call' && AppRouteObserver.currentRouteName != AppRoutes.teacherCallScreen) {
-        if (context.mounted) {
-          _showIncomingCall(message.data, context);
+      if (message.data['type'] == 'incoming_call') {
+        printWithColor('📞 [FOREGROUND] Incoming call notification detected');
+        if (AppRouteObserver.currentRouteName != AppRoutes.teacherCallScreen) {
+          printWithColor('📞 [FOREGROUND] Not in call screen, showing incoming call dialog');
+          if (context.mounted) {
+            _showIncomingCall(message.data, context);
+          } else {
+            printWithColor('⚠️ [FOREGROUND] Context not mounted, cannot show incoming call');
+          }
+        } else {
+          printWithColor('📞 [FOREGROUND] Already in call screen, ignoring incoming call notification');
         }
+      } else {
+        printWithColor('📬 [FOREGROUND] Regular notification (not incoming call)');
       }
     });
   }
@@ -105,15 +135,25 @@ class AppFirebaseNotification {
   static Future<void> whileAppCloseHandleNotification(
       BuildContext context) async {
     await _instance.getInitialMessage().then((message) {
-      if (message != null && context.mounted) {
-        printWithColor('📬 App opened from terminated state');
+      if (message != null) {
+        printWithColor('📬 [TERMINATED] App opened from terminated state');
+        printWithColor('📬 [TERMINATED] Title: ${message.notification?.title}');
+        printWithColor('📬 [TERMINATED] Body: ${message.notification?.body}');
+        printWithColor('📬 [TERMINATED] Data: ${message.data}');
 
-        if (message.data['type'] == 'incoming_call') {
-          // Call was already handled by background handler
-          printWithColor('🔔 CallKit already shown');
+        if (context.mounted) {
+          if (message.data['type'] == 'incoming_call') {
+            // Call was already handled by background handler
+            printWithColor('🔔 [TERMINATED] CallKit already shown for incoming call');
+          } else {
+            printWithColor('📬 [TERMINATED] Handling regular notification');
+            onTabNotification(message, context);
+          }
         } else {
-          onTabNotification(message, context);
+          printWithColor('⚠️ [TERMINATED] Context not mounted');
         }
+      } else {
+        printWithColor('📬 [TERMINATED] No initial message');
       }
     });
   }
@@ -122,15 +162,25 @@ class AppFirebaseNotification {
   static Future<void> whileAppOnBackgroundHandleNotification(
       BuildContext context) async {
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      if (message.data.isNotEmpty && context.mounted) {
-        printWithColor('📬 App opened from background');
+      if (message.data.isNotEmpty) {
+        printWithColor('📬 [BACKGROUND] App opened from background');
+        printWithColor('📬 [BACKGROUND] Title: ${message.notification?.title}');
+        printWithColor('📬 [BACKGROUND] Body: ${message.notification?.body}');
+        printWithColor('📬 [BACKGROUND] Data: ${message.data}');
 
-        if (message.data['type'] == 'incoming_call') {
-          // Call was already handled by CallKit
-          printWithColor('🔔 CallKit already handled');
+        if (context.mounted) {
+          if (message.data['type'] == 'incoming_call') {
+            // Call was already handled by CallKit
+            printWithColor('🔔 [BACKGROUND] CallKit already handled incoming call');
+          } else {
+            printWithColor('📬 [BACKGROUND] Handling regular notification');
+            onTabNotification(message, context);
+          }
         } else {
-          onTabNotification(message, context);
+          printWithColor('⚠️ [BACKGROUND] Context not mounted');
         }
+      } else {
+        printWithColor('📬 [BACKGROUND] Empty data in background notification');
       }
     });
   }
@@ -231,48 +281,65 @@ class AppFirebaseNotification {
     required String teacherUid,
     required String studentUid,
   }) async {
+    printWithColor('📞 [CALL_NOTIFICATION] Starting to send incoming call notification');
+    printWithColor('📞 [CALL_NOTIFICATION] CallId: $callId, Caller: $callerName, Teacher: $teacherUid, Student: $studentUid');
+
     try {
       final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
       if (authToken == null) {
-        printWithColor('❌ Error: User not authenticated');
+        printWithColor('❌ [CALL_NOTIFICATION] Error: User not authenticated - cannot send notification');
         return;
       }
 
+      printWithColor('✅ [CALL_NOTIFICATION] Auth token obtained successfully');
+
       // Validate and get proper image URL
       final validPhoto = ImageHelper.getValidImageUrl(callerPhoto);
+      printWithColor('🖼️ [CALL_NOTIFICATION] Caller photo validated: $validPhoto');
+
+      final signalingUrl = '${AppConfig.signalingServerUrl}/api/send-notification';
+      printWithColor('🌐 [CALL_NOTIFICATION] Sending to signaling server: $signalingUrl');
+
+      final requestData = {
+        'topic': teacherUid,
+        'title': 'Incoming Call',
+        'body': '$callerName is calling you',
+        'data': {
+          'type': 'incoming_call',
+          'callId': callId,
+          'callerName': callerName,
+          'callerPhoto': validPhoto,
+          'teacherUid': teacherUid,
+          'studentUid': studentUid,
+        },
+      };
+
+      printWithColor('📤 [CALL_NOTIFICATION] Request data: ${requestData.toString()}');
 
       final response = await _dio.post(
-        '${AppConfig.signalingServerUrl}/api/send-notification',
-        data: {
-          'topic': teacherUid,
-          'title': 'Incoming Call',
-          'body': '$callerName is calling you',
-          'data': {
-            'type': 'incoming_call',
-            'callId': callId,
-            'callerName': callerName,
-            'callerPhoto': validPhoto,
-            'teacherUid': teacherUid,
-            'studentUid': studentUid,
-          },
-        },
+        signalingUrl,
+        data: requestData,
         options: Options(
           headers: {
-            'Authorization': 'Bearer $authToken',
+            'Authorization': 'Bearer ${authToken.substring(0, 20)}...', // Log partial token for security
             'Content-Type': 'application/json',
           },
         ),
       );
 
+      printWithColor('📡 [CALL_NOTIFICATION] Response status: ${response.statusCode}');
+
       if (response.statusCode == 200) {
-        printWithColor('✅ Incoming call notification sent to: $teacherUid');
+        printWithColor('✅ [CALL_NOTIFICATION] Incoming call notification sent successfully to teacher: $teacherUid');
       } else {
-        printWithColor('❌ Call notification error: ${response.data}');
+        printWithColor('❌ [CALL_NOTIFICATION] Call notification failed with status ${response.statusCode}: ${response.data}');
       }
     } on DioException catch (e) {
-      printWithColor('❌ Call notification error: ${e.response?.data ?? e.message}');
+      printWithColor('❌ [CALL_NOTIFICATION] DioException: ${e.message}');
+      printWithColor('❌ [CALL_NOTIFICATION] Response data: ${e.response?.data}');
+      printWithColor('❌ [CALL_NOTIFICATION] Response status: ${e.response?.statusCode}');
     } catch (e) {
-      printWithColor('❌ Call notification error: $e');
+      printWithColor('❌ [CALL_NOTIFICATION] Unexpected error: $e');
     }
   }
 
@@ -453,10 +520,25 @@ class AppFirebaseNotification {
   // ==================== Topics Management ====================
 
   static void subscribeToTopic(String role) {
-    _instance.subscribeToTopic('all');
-    _instance.subscribeToTopic(role);
-    _instance.subscribeToTopic(CacheService.uid ?? 'all');
-    printWithColor('✅ Subscribed to topics: all, $role, ${CacheService.uid}');
+    printWithColor('📡 [TOPIC_SUBSCRIPTION] Starting topic subscription for role: $role');
+
+    final uid = CacheService.uid ?? 'all';
+    printWithColor('📡 [TOPIC_SUBSCRIPTION] User UID: $uid');
+
+    try {
+      _instance.subscribeToTopic('all');
+      printWithColor('✅ [TOPIC_SUBSCRIPTION] Subscribed to topic: all');
+
+      _instance.subscribeToTopic(role);
+      printWithColor('✅ [TOPIC_SUBSCRIPTION] Subscribed to topic: $role');
+
+      _instance.subscribeToTopic(uid);
+      printWithColor('✅ [TOPIC_SUBSCRIPTION] Subscribed to topic: $uid');
+
+      printWithColor('🎉 [TOPIC_SUBSCRIPTION] Successfully subscribed to all topics');
+    } catch (e) {
+      printWithColor('❌ [TOPIC_SUBSCRIPTION] Error subscribing to topics: $e');
+    }
   }
 
   static Future<void> unSubscribeFromTopic(String role) async {

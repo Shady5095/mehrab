@@ -20,10 +20,19 @@ import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  debugPrint('🔄 [BACKGROUND_HANDLER] Background message handler started');
+
   // Initialize Firebase for background isolate
   if (Firebase.apps.isEmpty) {
+    debugPrint('🔄 [BACKGROUND_HANDLER] Initializing Firebase in background isolate');
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    debugPrint('✅ [BACKGROUND_HANDLER] Firebase initialized successfully');
   }
+
+  debugPrint('📬 [BACKGROUND_HANDLER] Message received:');
+  debugPrint('📬 [BACKGROUND_HANDLER] Title: ${message.notification?.title}');
+  debugPrint('📬 [BACKGROUND_HANDLER] Body: ${message.notification?.body}');
+  debugPrint('📬 [BACKGROUND_HANDLER] Data: ${message.data}');
 
   SecureLogger.firebase(
     'Background message received',
@@ -33,22 +42,31 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   // Handle incoming call in background
   if (message.data['type'] == 'incoming_call') {
+    debugPrint('📞 [BACKGROUND_HANDLER] Incoming call detected, showing CallKit');
     await _showBackgroundIncomingCall(message.data);
+  } else {
+    debugPrint('📬 [BACKGROUND_HANDLER] Not an incoming call notification');
   }
 }
 
 /// Show CallKit incoming call from background
 Future<void> _showBackgroundIncomingCall(Map<String, dynamic> data) async {
+  debugPrint('🔔 [BACKGROUND_CALLKIT] Starting to show CallKit incoming call');
+
   final callId = data['callId'] ?? '';
   final callerName = data['callerName'] ?? 'Unknown';
   final callerPhoto = data['callerPhoto'];
+
+  debugPrint('🔔 [BACKGROUND_CALLKIT] CallId: $callId, Caller: $callerName, Photo: $callerPhoto');
 
   SecureLogger.firebase('Incoming call notification', tag: 'CallKit');
 
   // Validate image URL
   final validPhoto = ImageHelper.getValidImageUrl(callerPhoto);
+  debugPrint('🔔 [BACKGROUND_CALLKIT] Validated photo URL: $validPhoto');
 
   // Build CallKit params
+  debugPrint('🔔 [BACKGROUND_CALLKIT] Building CallKit parameters');
   final params = CallKitParamsBuilder.build(
     callId: callId,
     callerName: callerName,
@@ -56,8 +74,16 @@ Future<void> _showBackgroundIncomingCall(Map<String, dynamic> data) async {
     extraData: data,
   );
 
+  debugPrint('🔔 [BACKGROUND_CALLKIT] CallKit params built successfully');
+
   // Show CallKit incoming call
-  await FlutterCallkitIncoming.showCallkitIncoming(params);
+  debugPrint('🔔 [BACKGROUND_CALLKIT] Showing CallKit incoming call...');
+  try {
+    await FlutterCallkitIncoming.showCallkitIncoming(params);
+    debugPrint('✅ [BACKGROUND_CALLKIT] CallKit incoming call shown successfully');
+  } catch (e) {
+    debugPrint('❌ [BACKGROUND_CALLKIT] Error showing CallKit: $e');
+  }
 }
 
 // ==================== Main Function ====================
@@ -122,6 +148,7 @@ Future<void> main() async {
 
     // Register FCM background message handler
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    debugPrint('✅ [MAIN] FCM background message handler registered');
 
     SecureLogger.info('App initialized successfully with Crashlytics', tag: 'App');
 

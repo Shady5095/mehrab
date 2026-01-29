@@ -33,8 +33,11 @@ class AudioSessionService {
         androidWillPauseWhenDucked: false,
       ));
 
+      // Activate the audio session
+      await _session!.setActive(true);
+
       _isConfigured = true;
-      debugPrint('AudioSession: Configured for call');
+      debugPrint('AudioSession: Configured and activated for call');
     } catch (e) {
       debugPrint('AudioSession Error: $e');
     }

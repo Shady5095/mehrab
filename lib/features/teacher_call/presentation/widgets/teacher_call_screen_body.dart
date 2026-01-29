@@ -79,14 +79,13 @@ class TeacherCallScreenBody extends StatelessWidget {
         } else if (state is CallFinished ||
             state is MaxDurationReached ||
             state is AnotherUserLeft) {
-          if(AppRouteObserver.currentRouteName == AppRoutes.quranWebView || AppRouteObserver.currentRouteName == AppRoutes.rateSessionScreen){
-            context.pop();
-          }
-          context.pop();
-          context.navigateTo(
-            pageName: AppRoutes.rateSessionScreen,
-            arguments: [cubit.latestCallData?.copyWith(endedTime: Timestamp.now()), false,false],
-          );
+          // Replace the current call screen with the rate session screen after the current frame
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.navigateReplacement(
+              pageName: AppRoutes.rateSessionScreen,
+              arguments: [cubit.latestCallData?.copyWith(endedTime: Timestamp.now()), false, false],
+            );
+          });
         }
       },
       builder: (context, state) {

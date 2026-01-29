@@ -116,19 +116,42 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   }
 
   void initCall() async {
+    debugPrint('📞 [STUDENT_CALL] initCall() started');
+
     await playSound();
+    debugPrint('📞 [STUDENT_CALL] Playing call sound');
+
     await requestPermissions();
+    debugPrint('📞 [STUDENT_CALL] Permissions requested, current state: $state');
+
     if (state is MicrophoneAllowed) {
+      debugPrint('✅ [STUDENT_CALL] Microphone permission granted, proceeding with call setup');
+
       if (Platform.isAndroid) {
+        debugPrint('🤖 [STUDENT_CALL] Android platform detected, initializing foreground service');
         await CallForegroundService.init(silentMode: false);
       }
+
+      debugPrint('📞 [STUDENT_CALL] Sending call to teacher...');
       await sendCallToTeacher();
+
+      debugPrint('📞 [STUDENT_CALL] Setting up LiveKit call service...');
       await setupLiveKitCallService();
+
       // Removed connectToLiveKitRoom from here - will connect after teacher answers
+      debugPrint('📱 [STUDENT_CALL] Sending push notification...');
       callPushNotification();
+
+      debugPrint('👂 [STUDENT_CALL] Setting up call listener...');
       callListener();
+
+      debugPrint('⏰ [STUDENT_CALL] Starting call timeout...');
       startCallTimeout();
+
+      debugPrint('✅ [STUDENT_CALL] Call initialization completed successfully');
       emit(SendCallToTeacherSuccess());
+    } else {
+      debugPrint('❌ [STUDENT_CALL] Microphone permission not granted, call initialization failed');
     }
   }
 
@@ -363,6 +386,8 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       if (Platform.isIOS) {
         callService.switchSpeaker(true);
       }
+      // Ensure audio session is active
+      audioSessionService.setActive(true);
       emit(AnotherUserJoinedSuccessfully());
     };
 
@@ -445,7 +470,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
         return response.data['token'];
       }
     } catch (error) {
-      if (error is DioError) {
+      if (error is DioException) {
         debugPrint('Failed to get LiveKit token: ${error.message}');
         if (error.response != null) {
           debugPrint('Status: ${error.response?.statusCode}');
@@ -527,18 +552,25 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   }
 
   void callPushNotification() {
+    debugPrint('📞 [STUDENT_CALL] callPushNotification() called');
+
     if (callDocId == null || callDocId!.isEmpty) {
-      debugPrint(
-        '❌ ERROR: callDocId is null or empty, cannot send notification',
-      );
+      debugPrint('❌ [STUDENT_CALL] ERROR: callDocId is null or empty, cannot send notification');
       return;
     }
+
+    debugPrint('📞 [STUDENT_CALL] CallDocId validated: $callDocId');
 
     final studentPhoto = ImageHelper.getValidImageUrl(
       currentUserModel?.imageUrl,
     );
 
-    debugPrint('📱 Sending call notification with UUID: $callDocId');
+    debugPrint('📞 [STUDENT_CALL] Student photo validated: $studentPhoto');
+    debugPrint('📞 [STUDENT_CALL] Student name: ${currentUserModel?.name ?? 'طالب'}');
+    debugPrint('📞 [STUDENT_CALL] Teacher UID: ${teacherModel.uid}');
+    debugPrint('📞 [STUDENT_CALL] Student UID: ${currentUserModel?.uid ?? ''}');
+
+    debugPrint('📱 [STUDENT_CALL] Sending incoming call notification to teacher');
 
     AppFirebaseNotification.pushIncomingCallNotification(
       callId: callDocId!,
@@ -547,6 +579,8 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       teacherUid: teacherModel.uid,
       studentUid: currentUserModel?.uid ?? '',
     );
+
+    debugPrint('📱 [STUDENT_CALL] pushIncomingCallNotification() called');
   }
 
   final StreamController<String> _callTimerController =
