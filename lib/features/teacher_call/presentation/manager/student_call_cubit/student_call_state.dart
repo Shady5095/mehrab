@@ -1,4 +1,4 @@
-import 'package:mehrab/core/utilities/services/webrtc_call_service.dart';
+import 'package:livekit_client/livekit_client.dart';
 
 import '../../../../teachers/data/models/teachers_model.dart';
 
@@ -67,7 +67,7 @@ final class NetworkQualityUpdated extends StudentCallState {}
 
 /// Emitted when network quality changes during a call
 final class NetworkQualityChanged extends StudentCallState {
-  final CallQuality quality;
+  final ConnectionQuality quality;
   NetworkQualityChanged({required this.quality});
 }
 

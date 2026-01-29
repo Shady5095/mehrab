@@ -94,10 +94,10 @@ class SecureLogger {
     }
   }
 
-  /// WebRTC signaling events (without sensitive data)
-  static void webrtc(String event, {String? details, String? tag}) {
+  /// LiveKit signaling events (without sensitive data)
+  static void livekit(String event, {String? details, String? tag}) {
     if (kDebugMode) {
-      final prefix = tag != null ? '[WEBRTC][$tag] ' : '[WEBRTC] ';
+      final prefix = tag != null ? '[LIVEKIT][$tag] ' : '[LIVEKIT] ';
       final detailsStr = details != null ? ' - $details' : '';
       debugPrint('$prefix$event$detailsStr');
     }

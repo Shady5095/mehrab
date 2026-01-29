@@ -246,7 +246,7 @@ class CrashlyticsService {
     );
   }
 
-  /// Log WebRTC/call error
+  /// Log LiveKit/call error
   static Future<void> logCallError({
     required String callId,
     required String errorType,
@@ -256,7 +256,7 @@ class CrashlyticsService {
     await setCustomKeys({
       'call_id': callId,
       'call_error_type': errorType,
-      'error_type': 'webrtc_error',
+      'error_type': 'livekit_error',
     });
     await recordError(
       error,

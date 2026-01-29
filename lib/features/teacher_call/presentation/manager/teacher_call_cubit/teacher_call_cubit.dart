@@ -5,8 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mehrab/features/teacher_call/data/models/call_model.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:proximity_sensor/proximity_sensor.dart';
@@ -14,12 +14,9 @@ import 'package:screen_off/screen_off.dart';
 
 import '../../../../../core/config/app_config.dart';
 import '../../../../../core/utilities/services/call_foreground_service.dart';
-import '../../../../../core/utilities/services/webrtc_call_service.dart';
-import '../../../../../core/utilities/services/socket_service.dart';
-import '../../../../../core/utilities/services/turn_credential_service.dart';
+import '../../../../../core/utilities/services/livekit_call_service.dart';
 import '../../../../../core/utilities/services/audio_session_service.dart';
 import '../../../../../core/utilities/services/firebase_notification.dart';
-import '../../../../../core/utilities/functions/dependency_injection.dart';
 part 'teacher_call_state.dart';
 
 class TeacherCallCubit extends Cubit<TeacherCallState> {
@@ -30,20 +27,13 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
 
   static TeacherCallCubit get(BuildContext context) => BlocProvider.of(context);
 
-  late WebRTCCallService callService;
-  late SocketService socketService;
+  late LiveKitCallService callService;
   late AudioSessionService audioSessionService;
-  final TurnCredentialService _turnService = getIt<TurnCredentialService>();
 
   final db = FirebaseFirestore.instance;
   final AudioPlayer _player = AudioPlayer();
 
-  String? _remoteSocketId;
-  final List<RTCIceCandidate> _pendingCandidates = [];
-
-  // Connection timeout and retry constants
-  static const int _maxAnswerRetries = 3;
-  static const Duration _answerRetryDelay = Duration(seconds: 2);
+  String? remoteUid;
 
   Future<void> requestPermissions() async {
     // check and request microphone permission
@@ -97,8 +87,8 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       await Future.delayed(Duration(milliseconds: 300));
     }
     makeTeacherBusy();
-    await setupWebRTCCallService();
-    await connectToSignalingServer();
+    await setupLiveKitCallService();
+    await connectToLiveKitRoom();
   }
 
   Future<void> endCall() async {
@@ -122,7 +112,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       });
       await Future.wait([
         batch.commit(),
-        endWebRTCCall(),
+        callService.endCall(),
         AppFirebaseNotification.endCall(callModel.callId),
       ]);
       emit(CallFinished());
@@ -187,39 +177,36 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   bool isSpeakerOn = true;
   bool isVideoEnabled = false;
   bool isRemoteVideoEnabled = false;
-  String? remoteUid;
 
-  Future<void> setupWebRTCCallService() async {
-    callService = WebRTCCallService();
+  Future<void> setupLiveKitCallService() async {
+    debugPrint('🔧 Teacher setting up LiveKit call service');
+    callService = LiveKitCallService();
     audioSessionService = AudioSessionService();
 
     // Configure audio session
     await audioSessionService.configureForCall();
 
-    // Fetch TURN credentials
-    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
-    if (authToken != null) {
-      final iceConfig = await _turnService.fetchCredentials(authToken);
-      if (iceConfig != null) {
-        callService.setIceServers(iceConfig);
-      }
-    }
-
-    callService.onUserJoined = (peerId) {
-      remoteUid = peerId;
+    callService.onUserJoined = (participantId) {
+      debugPrint('👥 Teacher: User joined LiveKit room: $participantId');
+      remoteUid = participantId;
     };
 
-    callService.onUserLeft = (peerId) async {
+    callService.onUserLeft = (participantId) async {
+      debugPrint('👋 Teacher: User left LiveKit room: $participantId');
       await endCall();
     };
 
     callService.onError = (error) {
+      debugPrint('❌ Teacher LiveKit error: $error');
       emit(AgoraConnectionError(error: error));
     };
 
-    callService.onCallEnded = () {};
+    callService.onCallEnded = () {
+      debugPrint('📞 Teacher LiveKit call ended');
+    };
 
     callService.onConnectionSuccess = () {
+      debugPrint('🔗 Teacher LiveKit connection successful');
       startCallTimer();
       isCallConnected = true;
       playAnswerSound();
@@ -231,180 +218,78 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       emit(TeacherCallInitial());
     };
 
-    callService.onRemoteVideoStateChanged = (peerId, enabled) {
+    callService.onRemoteVideoStateChanged = (participantId, enabled) {
+      debugPrint('📹 Teacher remote video state changed for $participantId: $enabled');
       isRemoteVideoEnabled = enabled;
       emit(RemoteVideoStateChanged());
-    };
-
-    callService.onIceCandidate = (candidate) {
-      if (_remoteSocketId != null) {
-        socketService.sendIceCandidate(candidate, _remoteSocketId!);
-      } else {
-        _pendingCandidates.add(candidate);
-      }
-    };
-
-    callService.onRenegotiationOffer = (offer) {
-      if (_remoteSocketId != null) {
-        socketService.sendOffer(offer, _remoteSocketId!);
-        debugPrint('Teacher: Sent renegotiation offer');
-      }
-    };
-
-    // ICE restart handling for network recovery
-    callService.onIceRestartNeeded = () async {
-      if (_remoteSocketId != null) {
-        debugPrint('Teacher: ICE restart needed, creating new offer');
-        try {
-          final offer = await callService.createIceRestartOffer();
-          if (offer != null) {
-            socketService.sendOffer(offer, _remoteSocketId!);
-          }
-        } catch (e) {
-          debugPrint('Teacher: ICE restart offer failed: $e');
-        }
-      }
-    };
-
-    callService.onConnectionRecovering = () {
-      debugPrint('Teacher: Connection recovering...');
-      emit(ConnectionRecovering());
-    };
-
-    // Network quality monitoring
-    callService.onNetworkQualityChanged = (quality) {
-      debugPrint('Teacher: Network quality changed to ${quality.name}');
-      emit(NetworkQualityChanged(quality: quality));
     };
 
     await callService.initialize();
+    debugPrint('✅ Teacher LiveKit call service initialized');
   }
 
-  Future<void> connectToSignalingServer() async {
-    socketService = SocketService();
+  Future<void> connectToLiveKitRoom() async {
+    debugPrint('🔄 Teacher attempting to connect to LiveKit room: ${callModel.callId}');
+    try {
+      // Get LiveKit token from server
+      final token = await _getLiveKitToken();
+      if (token == null) {
+        debugPrint('❌ Teacher failed to get LiveKit token - token is null');
+        emit(AgoraConnectionError(error: 'Failed to get LiveKit token'));
+        return;
+      }
 
-    final authToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
-    if (authToken == null) {
-      emit(AgoraConnectionError(error: 'Authentication failed'));
-      return;
+      debugPrint('✅ Teacher got LiveKit token, connecting to room...');
+      // Connect to LiveKit room
+      await callService.connect(token, callModel.callId);
+      debugPrint('✅ Teacher LiveKit connect method called successfully');
+    } catch (error) {
+      debugPrint('❌ Teacher failed to connect to LiveKit room: $error');
+      emit(AgoraConnectionError(error: 'Failed to connect to LiveKit room: $error'));
     }
+  }
 
-    socketService.onConnected = () {
-      debugPrint('Teacher: Connected to signaling server');
-      // Join the room immediately when connected
-      socketService.joinRoom(callModel.callId);
-    };
+  Future<String?> _getLiveKitToken() async {
+    try {
+      // Get Firebase auth token
+      final authToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
 
-    socketService.onReconnected = () async {
-      debugPrint('Teacher: Socket reconnected to signaling server');
-      // Clear the remote socket ID - it will be updated when we get new signaling
-      _remoteSocketId = null;
-      _pendingCandidates.clear();
+      // Call the server's /token endpoint
+      final response = await Dio().post(
+        '${AppConfig.signalingServerUrl}/api/livekit/token',
+        data: {
+          'roomName': callModel.callId,
+          'participantName': callModel.teacherName,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
 
-      // DON'T reset WebRTC - it's peer-to-peer and might still be alive!
-      // Only reset if we receive a new offer (meaning the other side reset)
-      debugPrint('Teacher: WebRTC connection may still be alive (P2P)');
-      emit(TeacherCallInitial()); // Refresh UI state
-    };
-
-    // Handle room joined - log if student is already present
-    socketService.onRoomJoined = (callId, participants) {
-      debugPrint('Teacher: Room joined with ${participants.length} existing participants');
-      if (participants.isNotEmpty) {
-        // Student is already in the room, we'll receive an offer from them
-        debugPrint('Teacher: Student already in room, waiting for offer');
+      if (response.statusCode == 200 && response.data['token'] != null) {
+        return response.data['token'];
       }
-    };
-
-    socketService.onDisconnected = () {
-      debugPrint('Teacher: Socket disconnected, waiting for reconnection...');
-      // Don't end call immediately - socket will attempt to reconnect
-      // Only show error if reconnection fails (handled by onError)
-    };
-
-    socketService.onError = (error) {
-      debugPrint('Teacher: Socket error: $error');
-      // Only emit error if it's not a temporary disconnection
-      if (!error.contains('reconnect')) {
-        emit(AgoraConnectionError(error: error));
-      }
-    };
-
-    // Handle offer from student
-    socketService.onOfferReceived = (offer, fromSocketId, fromUid) async {
-      debugPrint('Teacher: Received offer from student');
-      _remoteSocketId = fromSocketId;
-
-      // Send any pending ICE candidates
-      for (var candidate in _pendingCandidates) {
-        socketService.sendIceCandidate(candidate, fromSocketId);
-      }
-      _pendingCandidates.clear();
-
-      // Create and send answer with retry logic
-      await _createAndSendAnswerWithRetry(offer, fromSocketId);
-    };
-
-    // Handle ICE candidates from student
-    socketService.onIceCandidateReceived = (candidate, fromSocketId) {
-      callService.addIceCandidate(candidate);
-    };
-
-    // Handle video state changes from student
-    socketService.onVideoStateChanged = (enabled, fromSocketId) {
-      debugPrint('Teacher: Student video state changed: $enabled');
-      isRemoteVideoEnabled = enabled;
-      if (enabled) {
-        callService.remoteRenderer.srcObject = callService.remoteStream;
+    } catch (error) {
+      if (error is DioError) {
+        debugPrint('Failed to get LiveKit token: ${error.message}');
+        if (error.response != null) {
+          debugPrint('Status: ${error.response?.statusCode}');
+          debugPrint('Data: ${error.response?.data}');
+        }
       } else {
-        callService.remoteRenderer.srcObject = null;
+        debugPrint('Failed to get LiveKit token: $error');
       }
-      emit(RemoteVideoStateChanged());
-    };
-
-    socketService.onUserLeft = (odId, socketId) async {
-      debugPrint('Teacher: Student left');
-      await endCall();
-    };
-
-    await socketService.connect(
-      AppConfig.signalingServerUrl,
-      authToken,
-    );
+    }
+    return null;
   }
 
-  Future<void> endWebRTCCall() async {
-    socketService.leaveRoom(callModel.callId);
-    await socketService.disconnect();
-    await callService.endCall();
-  }
+
 
   /// Creates and sends an answer with retry logic
-  Future<void> _createAndSendAnswerWithRetry(
-    RTCSessionDescription offer,
-    String socketId, [
-    int attempt = 1,
-  ]) async {
-    try {
-      debugPrint('Teacher: Creating answer (attempt $attempt/$_maxAnswerRetries)');
-      final answer = await callService.createAnswer(offer)
-          .timeout(const Duration(seconds: 10));
-      socketService.sendAnswer(answer, socketId);
-      debugPrint('Teacher: Answer sent successfully');
-    } catch (e) {
-      debugPrint('Teacher: Answer creation failed (attempt $attempt): $e');
-      if (attempt < _maxAnswerRetries) {
-        debugPrint('Teacher: Retrying in ${_answerRetryDelay.inSeconds}s...');
-        await Future.delayed(_answerRetryDelay * attempt);
-        await _createAndSendAnswerWithRetry(offer, socketId, attempt + 1);
-      } else {
-        debugPrint('Teacher: All answer attempts failed');
-        emit(AgoraConnectionError(
-          error: 'فشل إنشاء الاتصال بعد عدة محاولات. الرجاء إعادة المحاولة.',
-        ));
-      }
-    }
-  }
+
 
   Future<void> toggleMicMute() async {
     await callService.toggleMute();
@@ -426,11 +311,6 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       await callService.toggleVideo();
       isVideoEnabled = callService.isVideoEnabled;
       HapticFeedback.heavyImpact();
-
-      // Send video state to remote peer
-      if (_remoteSocketId != null) {
-        socketService.sendVideoState(isVideoEnabled, _remoteSocketId!);
-      }
 
       // When video is enabled, automatically turn on speaker and disable proximity sensor
       if (isVideoEnabled) {
@@ -455,8 +335,10 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   }
 
   Future<void> switchSpeaker() async {
+    debugPrint('🔊 Teacher switching speaker. Current state: $isSpeakerOn');
     await callService.switchSpeaker(!callService.isSpeakerOn);
     isSpeakerOn = callService.isSpeakerOn;
+    debugPrint('🔊 Teacher speaker switched. New state: $isSpeakerOn');
     HapticFeedback.heavyImpact();
     if (Platform.isAndroid) {
       if (!isSpeakerOn && !isVideoEnabled) {
@@ -571,7 +453,6 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     stopCallTimer();
     _clearPreComment();
     _callSubscription?.cancel();
-    socketService.dispose();
     callService.dispose();
     audioSessionService.dispose();
     if (Platform.isAndroid) {
