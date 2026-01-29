@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -14,6 +15,7 @@ import 'core/utilities/functions/dependency_injection.dart';
 import 'core/utilities/functions/secure_logger.dart';
 import 'core/utilities/services/cache_service.dart';
 import 'core/utilities/services/secure_cache_service.dart';
+import 'core/utilities/services/internet_connectivity_service.dart';
 import 'core/utilities/services/call_kit_service.dart';
 import 'core/utilities/services/local_notifications_service.dart';
 import 'firebase_options.dart';
@@ -86,6 +88,54 @@ Future<void> _showBackgroundIncomingCall(Map<String, dynamic> data) async {
   }
 }
 
+/// Verify Firebase Auth state and clear cache if invalid
+Future<void> _verifyAuthState() async {
+  try {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    
+    if (currentUser == null) {
+      // No user signed in, clear any cached auth data
+      debugPrint('🔐 [AUTH_VERIFY] No current user, clearing cache');
+      await SecureCacheService.clearAll();
+      return;
+    }
+
+    // Check internet connectivity before attempting token validation
+    final connectivityService = InternetConnectivityService();
+    final hasConnection = await connectivityService.hasInternetConnection();
+    
+    if (!hasConnection) {
+      // Offline - allow cached session to continue
+      debugPrint('🔐 [AUTH_VERIFY] Offline - skipping token validation, allowing cached session');
+      return;
+    }
+
+    // Online - verify token is still valid by forcing refresh
+    debugPrint('🔐 [AUTH_VERIFY] Online - verifying token for user: ${currentUser.uid}');
+    
+    // Add timeout to prevent hanging on slow networks
+    try {
+      await currentUser.getIdToken(true).timeout(const Duration(seconds: 10));
+      debugPrint('✅ [AUTH_VERIFY] Token valid, user authenticated');
+    } on TimeoutException {
+      // Network too slow, treat as validation failure to be safe
+      debugPrint('⏰ [AUTH_VERIFY] Token validation timed out, signing out for security');
+      throw Exception('Token validation timeout');
+    }
+  } catch (e) {
+    // Token invalid or refresh failed, sign out and clear cache
+    debugPrint('❌ [AUTH_VERIFY] Token invalid, signing out: $e');
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (signOutError) {
+      debugPrint('⚠️ [AUTH_VERIFY] Error during sign out: $signOutError');
+    }
+    
+    await SecureCacheService.clearAll();
+    debugPrint('🧹 [AUTH_VERIFY] Cache cleared');
+  }
+}
+
 // ==================== Main Function ====================
 Future<void> main() async {
   // Run the app within a guarded zone to catch all errors
@@ -110,6 +160,9 @@ Future<void> main() async {
 
     // Initialize Firebase
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+    // Verify Firebase Auth state and clear invalid sessions
+    await _verifyAuthState();
 
     // Initialize Firebase App Check with Play Integrity (replaces deprecated SafetyNet)
     await FirebaseAppCheck.instance.activate();
