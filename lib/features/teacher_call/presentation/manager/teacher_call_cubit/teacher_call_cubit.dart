@@ -34,6 +34,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
   final AudioPlayer _player = AudioPlayer();
 
   String? remoteUid;
+  String? _liveKitHost;
 
   Future<void> requestPermissions() async {
     // check and request microphone permission
@@ -243,7 +244,7 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
 
       debugPrint('✅ Teacher got LiveKit token, connecting to room...');
       // Connect to LiveKit room
-      await callService.connect(token, callModel.callId);
+      await callService.connect(token, callModel.callId, host: _liveKitHost);
       debugPrint('✅ Teacher LiveKit connect method called successfully');
     } catch (error) {
       debugPrint('❌ Teacher failed to connect to LiveKit room: $error');
@@ -275,6 +276,8 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
       );
 
       if (response.statusCode == 200 && response.data['token'] != null) {
+        // Store the host for later use in connection
+        _liveKitHost = response.data['host'];
         return response.data['token'];
       }
     } catch (error) {

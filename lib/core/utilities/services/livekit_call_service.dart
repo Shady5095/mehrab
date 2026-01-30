@@ -97,11 +97,14 @@ class LiveKitCallService {
     }
   }
 
-  Future<void> connect(String token, String roomName, {String? callId}) async {
+  Future<void> connect(String token, String roomName, {String? callId, String? host}) async {
     try {
+      // Use provided host or fallback to config
+      final livekitHost = host ?? AppConfig.livekitUrl.replaceFirst('https://', '');
+      
       // Add timeout for faster failure detection
       await _room?.connect(
-        'wss://${AppConfig.livekitUrl.replaceFirst('https://', '')}',
+        'wss://${livekitHost}',
         token,
       ).timeout(const Duration(seconds: 15), onTimeout: () {
         throw Exception('Connection timeout - LiveKit server not responding');
