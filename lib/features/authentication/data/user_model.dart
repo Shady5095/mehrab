@@ -52,7 +52,7 @@ class UserModel {
       joinedAt: json['joinedAt'] as Timestamp? ?? Timestamp.now(),
       favoriteIgaz: json['favoriteIgaz'] as String?,
       deviceModel: json['deviceModel'] as String?,
-      isMale: json['isMale'] as bool? ?? false,
+      isMale: json['isMale'] as bool? ?? true,
       countryCode: json['countryCode'] as String? ?? '',
       countryCodeNumber: json['countryCodeNumber'] as String? ?? '',
     );
