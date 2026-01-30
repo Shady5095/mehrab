@@ -2,13 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../resources/constants.dart';
 import 'secure_cache_service.dart';
+import 'token_service.dart';
 import 'crashlytics_service.dart';
 import '../functions/secure_logger.dart';
 
 class DioInterceptor extends Interceptor {
   static bool isDialogShowing = false;
-  static DateTime? _lastTokenRefresh;
-  static const Duration _tokenRefreshInterval = Duration(minutes: 5);
 
   const DioInterceptor();
 
@@ -20,11 +19,7 @@ class DioInterceptor extends Interceptor {
     // SECURITY FIX: Load token from secure storage instead of SharedPreferences
     // Addresses CWE-311 (Missing Encryption of Sensitive Data)
 
-    // Check and refresh Firebase token if needed
-    // Addresses CWE-613 (Insufficient Session Expiration)
-    await _refreshFirebaseTokenIfNeeded();
-
-    final token = await SecureCacheService.getToken();
+    final token = await TokenService.getValidToken();
     final baseUrl = await SecureCacheService.getBaseUrl();
 
     if (token != null) {
@@ -35,43 +30,6 @@ class DioInterceptor extends Interceptor {
     }
 
     super.onRequest(options, handler);
-  }
-
-  /// Refresh Firebase token if it's about to expire
-  /// Prevents 401 errors by proactively refreshing tokens
-  static Future<void> _refreshFirebaseTokenIfNeeded() async {
-    try {
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) return;
-
-      // Check if we need to refresh based on time
-      final now = DateTime.now();
-      if (_lastTokenRefresh != null &&
-          now.difference(_lastTokenRefresh!) < _tokenRefreshInterval) {
-        // Token was refreshed recently, skip
-        return;
-      }
-
-      // Force token refresh to get a fresh token
-      // Firebase tokens typically expire after 1 hour
-      final idToken = await currentUser.getIdToken(true); // true = force refresh
-
-      if (idToken != null) {
-        // Update token in secure storage
-        await SecureCacheService.setToken(idToken);
-        _lastTokenRefresh = now;
-
-        SecureLogger.info('Token refreshed successfully', tag: 'Auth');
-      }
-    } catch (e) {
-      SecureLogger.error(
-        'Failed to refresh Firebase token',
-        tag: 'Auth',
-        error: e,
-      );
-      // Don't throw - allow request to proceed with existing token
-      // If token is expired, backend will return 401 and we'll handle it in onError
-    }
   }
 
   @override
@@ -98,12 +56,11 @@ class DioInterceptor extends Interceptor {
         try {
           final currentUser = FirebaseAuth.instance.currentUser;
           if (currentUser != null) {
-            final freshToken = await currentUser.getIdToken(true);
+            final freshToken = await TokenService.refreshToken();
 
             if (freshToken != null && freshToken != currentToken) {
               // Token was refreshed successfully
               await SecureCacheService.setToken(freshToken);
-              _lastTokenRefresh = DateTime.now();
 
               SecureLogger.info('Token refreshed after 401, retrying request', tag: 'Auth');
 
@@ -204,7 +161,6 @@ class DioInterceptor extends Interceptor {
 
   /// Reset token refresh state (call this on logout)
   static void resetTokenRefreshState() {
-    _lastTokenRefresh = null;
     isDialogShowing = false;
   }
 }

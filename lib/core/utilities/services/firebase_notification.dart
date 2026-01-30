@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_callkit_incoming/entities/call_event.dart';
@@ -17,6 +16,7 @@ import '../../config/app_config.dart';
 import '../functions/print_with_color.dart';
 import 'call_kit_service.dart';
 import 'call_state_service.dart';
+import 'token_service.dart';
 
 class AppFirebaseNotification {
   // ==================== Instances ====================
@@ -253,7 +253,7 @@ class AppFirebaseNotification {
     required String topic,
   }) async {
     try {
-      final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+      final authToken = await TokenService.getValidToken();
       if (authToken == null) {
         printWithColor('❌ Error: User not authenticated');
         return;
@@ -302,7 +302,7 @@ class AppFirebaseNotification {
     printWithColor('📞 [CALL_NOTIFICATION] CallId: $callId, Caller: $callerName, Teacher: $teacherUid, Student: $studentUid');
 
     try {
-      final authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+      final authToken = await TokenService.getValidToken();
       if (authToken == null) {
         printWithColor('❌ [CALL_NOTIFICATION] Error: User not authenticated - cannot send notification');
         return;
@@ -338,7 +338,7 @@ class AppFirebaseNotification {
         data: requestData,
         options: Options(
           headers: {
-            'Authorization': 'Bearer ${authToken.substring(0, 20)}...', // Log partial token for security
+            'Authorization': 'Bearer $authToken',
             'Content-Type': 'application/json',
           },
         ),

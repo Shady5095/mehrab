@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
@@ -18,6 +16,7 @@ import '../../../../../core/utilities/services/call_foreground_service.dart';
 import '../../../../../core/utilities/services/livekit_call_service.dart';
 import '../../../../../core/utilities/services/audio_session_service.dart';
 import '../../../../../core/utilities/services/firebase_notification.dart';
+import '../../../../../core/utilities/services/token_service.dart';
 part 'teacher_call_state.dart';
 
 class TeacherCallCubit extends Cubit<TeacherCallState> {
@@ -254,14 +253,8 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
 
   Future<String?> _getLiveKitToken() async {
     try {
-      // Get Firebase auth token (try cached first, refresh if expired)
-      String? authToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-      
-      // Check if token is expired, if so force refresh
-      if (authToken != null && _isTokenExpired(authToken)) {
-        debugPrint('🔄 Firebase token expired, forcing refresh...');
-        authToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
-      }
+      // Get Firebase auth token (cached, refresh if expired)
+      final authToken = await TokenService.getValidToken();
 
       // Call the server's /token endpoint with timeout
       final response = await Dio().post(
@@ -297,43 +290,6 @@ class TeacherCallCubit extends Cubit<TeacherCallState> {
     }
     return null;
   }
-
-  /// Check if Firebase ID token is expired by decoding JWT
-  bool _isTokenExpired(String token) {
-    try {
-      // JWT has 3 parts separated by '.'
-      final parts = token.split('.');
-      if (parts.length != 3) return true; // Invalid token format
-      
-      // Decode the payload (second part)
-      final payload = parts[1];
-      // Add padding if needed
-      final normalizedPayload = base64Url.normalize(payload);
-      final decodedPayload = utf8.decode(base64Url.decode(normalizedPayload));
-      
-      // Parse JSON
-      final payloadMap = json.decode(decodedPayload);
-      
-      // Get expiration time (exp claim)
-      final exp = payloadMap['exp'];
-      if (exp == null) return true; // No expiration claim
-      
-      // Convert to DateTime and check if expired
-      final expirationDate = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
-      final now = DateTime.now();
-      
-      // Add 5 minute buffer to account for clock skew
-      final bufferTime = now.add(const Duration(minutes: 5));
-      
-      return bufferTime.isAfter(expirationDate);
-    } catch (e) {
-      debugPrint('Error checking token expiration: $e');
-      // If we can't decode, assume it's expired to be safe
-      return true;
-    }
-  }
-
-
 
   /// Creates and sends an answer with retry logic
 

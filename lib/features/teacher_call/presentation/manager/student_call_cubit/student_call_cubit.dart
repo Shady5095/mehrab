@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
@@ -21,6 +20,7 @@ import '../../../../../core/utilities/services/call_kit_service.dart';
 import '../../../../../core/utilities/services/livekit_call_service.dart';
 import '../../../../../core/utilities/services/audio_session_service.dart';
 import '../../../../../core/utilities/services/firebase_notification.dart';
+import '../../../../../core/utilities/services/token_service.dart';
 
 class StudentCallCubit extends Cubit<StudentCallState> {
   StudentCallCubit({required this.teacherModel}) : super(TeacherCallInitial());
@@ -449,7 +449,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   Future<String?> _getLiveKitToken() async {
     try {
       // Get Firebase auth token
-      final authToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
+      final authToken = await TokenService.getValidToken();
 
       // Call the server's /token endpoint
       final response = await Dio().post(

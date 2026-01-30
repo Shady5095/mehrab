@@ -14,6 +14,7 @@ import '../../../../core/utilities/services/cache_service.dart';
 import '../../../../core/utilities/services/secure_cache_service.dart';
 import '../../../../core/utilities/services/crashlytics_service.dart';
 import '../../../../core/utilities/services/firebase_notification.dart';
+import '../../../../core/utilities/services/dio_interceptor.dart';
 import 'change_lang_dialog.dart';
 import 'contact_us_dialog.dart';
 
@@ -186,6 +187,8 @@ Future<void> deleteAppCache() async {
     SecureCacheService.clearAll(),
     // Clear Crashlytics user context
     CrashlyticsService.clearUserContext(),
+    // Reset Dio interceptor state
+    Future(() => DioInterceptor.resetTokenRefreshState()),
   ]);
 
   // Reset app constants
