@@ -14,7 +14,7 @@ class _QuranWebViewState extends State<QuranWebView> {
   late WebViewController _controller;
   bool _isLoading = true;
   double _scrollPosition = 0.0;
-  String _currentUrl = 'https://quran.com/ar';
+  String _currentUrl = 'https://quran.islamonline.net';
   bool _canGoBack = false;
 
   @override

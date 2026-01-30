@@ -59,7 +59,6 @@ class StudentsCubit extends Cubit<StudentsState> {
         .where("isMale", isEqualTo: currentUserModel?.isMale ?? true)
         .orderBy("joinedAt", descending: true)
         .limit(limit);
-    
     Query adminQueryRef = db
         .collection('users')
         .where("userRole", isEqualTo: "student")

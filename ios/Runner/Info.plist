@@ -33,7 +33,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.736983329149-64lp0fovcbj8usdt1omvbr3q4a4ln3t7</string>
+				<string>com.googleusercontent.apps.736983329149-ir3gu9av3cetgicntnpikj5btfh6u7rc</string>
 			</array>
 		</dict>
 		<dict>
@@ -85,7 +85,5 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
-	<key>GIDClientID</key>
-	<string>736983329149-64lp0fovcbj8usdt1omvbr3q4a4ln3t7.apps.googleusercontent.com</string>
 </dict>
 </plist>
