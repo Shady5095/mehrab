@@ -9,6 +9,7 @@ import '../manager/home_cubit/home_cubit.dart';
 import '../widgets/account_deleted_dialog.dart';
 import '../widgets/home_bottom_navigation_bar.dart';
 import '../widgets/more_screen_body.dart';
+import '../widgets/session_expired_dialog.dart';
 
 
 class HomeLayoutBody extends StatelessWidget {
@@ -25,10 +26,29 @@ class HomeLayoutBody extends StatelessWidget {
           if (!context.mounted) {
             return;
           }
-          context.navigateAndRemoveUntil(
-            pageName: AppRoutes.loginRoute,
-          );
-          showDialog(context: context, builder: (context)=>AccountDeletedDialog());
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            await context.navigateAndRemoveUntil(
+              pageName: AppRoutes.loginRoute,
+            );
+            showDialog(context: context, builder: (context)=>AccountDeletedDialog());
+          });
+        }
+        if(state is GetUserDataErrorState){
+          if(state.mess == "[cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.") {
+            deleteAppCache();
+            FirebaseAuth.instance.signOut();
+            //HomeCubit.instance(context).onSignOut();
+            if (!context.mounted) {
+              return;
+            }
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+             await context.navigateAndRemoveUntil(
+                pageName: AppRoutes.loginRoute,
+              );
+              showDialog(context: context,
+                  builder: (context) => SessionExpiredDialog());
+            });
+          }
         }
       },
       builder: (context, state) {

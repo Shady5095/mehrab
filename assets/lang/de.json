@@ -182,6 +182,7 @@
   "enterValidUrl": "Geben Sie eine gültige URL ein",
   "enterUrl": "Bitte geben Sie eine URL ein",
   "sessionEnd": "Ihre Sitzung ist abgelaufen, bitte melden Sie sich erneut an",
+  "sessionExpiredPleaseLoginAgain": "Ihre Sitzung ist beendet, bitte melden Sie sich erneut an",
   "false": "Falsch",
   "yourAnswer": "Ihre Antwort",
   "donwloadResult": "Ergebnis herunterladen",

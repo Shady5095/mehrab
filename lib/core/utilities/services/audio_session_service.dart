@@ -18,21 +18,26 @@ class AudioSessionService {
             AVAudioSessionCategoryOptions.defaultToSpeaker |
             AVAudioSessionCategoryOptions.allowBluetooth |
             AVAudioSessionCategoryOptions.allowBluetoothA2dp,
+        // voiceChat mode enables hardware echo cancellation on iOS
         avAudioSessionMode: AVAudioSessionMode.voiceChat,
         avAudioSessionRouteSharingPolicy:
             AVAudioSessionRouteSharingPolicy.defaultPolicy,
-        avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+        avAudioSessionSetActiveOptions:
+            AVAudioSessionSetActiveOptions.notifyOthersOnDeactivation,
         androidAudioAttributes: const AndroidAudioAttributes(
           contentType: AndroidAudioContentType.speech,
-          flags: AndroidAudioFlags.none,
           usage: AndroidAudioUsage.voiceCommunication,
         ),
-        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-        androidWillPauseWhenDucked: true,
+        androidAudioFocusGainType:
+            AndroidAudioFocusGainType.gainTransientExclusive,
+        androidWillPauseWhenDucked: false,
       ));
 
+      // Activate the audio session
+      await _session!.setActive(true);
+
       _isConfigured = true;
-      debugPrint('AudioSession: Configured for call');
+      debugPrint('AudioSession: Configured and activated for call');
     } catch (e) {
       debugPrint('AudioSession Error: $e');
     }

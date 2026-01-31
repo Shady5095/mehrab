@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart' hide MessageType;
+import 'package:livekit_client/livekit_client.dart' as lk;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
@@ -199,13 +199,16 @@ class StudentCallScreenBody extends StatelessWidget {
             state is MaxDurationReached ||
             state is AnotherUserLeft) {
           context.pop();
-          showDialog(
-            context: context,
-            builder: (BuildContext context) => CallEndedDialog(
-              teacherUid: teacherModel.uid,
-            ),
-          );
-          AppReviewService.showReviewPromptIfNeeded();
+          // Show dialog after the current frame
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) => CallEndedDialog(
+                teacherUid: teacherModel.uid,
+              ),
+            );
+            AppReviewService.showReviewPromptIfNeeded();
+          });
         }
       },
       builder: (context, state) {
@@ -216,11 +219,12 @@ class StudentCallScreenBody extends StatelessWidget {
             // Remote video (full screen when enabled)
             if (cubit.isRemoteVideoEnabled && cubit.remoteUid != null)
               Positioned.fill(
-                child: RTCVideoView(
-                  cubit.callService.remoteRenderer,
-                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                  mirror: false,
-                ),
+                child: cubit.callService.remoteVideoTrack != null
+                    ? lk.VideoTrackRenderer(
+                        cubit.callService.remoteVideoTrack!,
+                        fit: lk.VideoViewFit.cover,
+                      )
+                    : Container(),
               ),
 
             // Default background with gradient
@@ -262,11 +266,13 @@ class StudentCallScreenBody extends StatelessWidget {
                       ],
                     ),
                     clipBehavior: Clip.hardEdge,
-                    child: RTCVideoView(
-                      cubit.callService.localRenderer,
-                      objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                      mirror: true,
-                    ),
+                    child: cubit.callService.localVideoTrack != null
+                        ? lk.VideoTrackRenderer(
+                            cubit.callService.localVideoTrack!,
+                            fit: lk.VideoViewFit.cover,
+                            mirrorMode: lk.VideoViewMirrorMode.mirror,
+                          )
+                        : Container(),
                   ),
                 ),
               ),

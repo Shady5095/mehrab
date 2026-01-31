@@ -5,8 +5,8 @@ import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/print_with_color.dart';
 import 'package:mehrab/core/utilities/functions/toast.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
-import '../../../../core/utilities/resources/constants.dart';
-import '../../../../core/utilities/services/cache_service.dart';
+import '../../../../core/utilities/services/secure_cache_service.dart';
+import '../../../../core/utilities/services/crashlytics_service.dart';
 import '../../data/google_sign_in_model.dart';
 import 'login_screen_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -269,11 +269,12 @@ class LoginCubit extends Cubit<LoginStates> {
   }
 
   Future<void> cacheUid(String uid) async {
-    await CacheService.setData(key: AppConstants.uid, value: uid).then((value) {
-      if (value == true) {
-        CacheService.uid = CacheService.getData(key: AppConstants.uid);
-      }
-    });
+    // Use SecureCacheService for sensitive uid data
+    await SecureCacheService.setUid(uid);
+
+    // Set user ID in Crashlytics for crash reporting
+    await CrashlyticsService.setUserId(uid);
+    CrashlyticsService.logBreadcrumb('User logged in', data: {'uid': uid});
   }
   /// ⚠️ REMOVED: Biometric login with password storage
   /// Password storage has been deprecated for security reasons (CWE-256)

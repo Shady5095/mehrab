@@ -9,6 +9,7 @@ import 'package:mehrab/core/utilities/functions/internet_connection.dart';
 import 'package:mehrab/core/utilities/functions/print_with_color.dart';
 import 'package:mehrab/core/utilities/resources/strings.dart';
 import 'package:mehrab/core/utilities/services/cache_service.dart';
+import 'package:mehrab/core/utilities/services/secure_cache_service.dart';
 import 'package:mehrab/core/utilities/services/firebase_notification.dart';
 import 'package:mehrab/features/authentication/data/user_model.dart';
 import 'package:mehrab/features/sessions/presentation/screens/sessions_screen.dart';
@@ -134,18 +135,11 @@ class HomeCubit extends Cubit<HomeState> {
 
 
   Future<void> cacheRole(String role) async {
-    if (CacheService.getData(key: AppConstants.userRole) == role) {
+    if (CacheService.userRole == role) {
       return;
     }
-    await CacheService.setData(key: AppConstants.userRole, value: role).then((
-      value,
-    ) {
-      if (value == true) {
-        CacheService.userRole = CacheService.getData(
-          key: AppConstants.userRole,
-        );
-      }
-    });
+    // Use SecureCacheService for sensitive userRole data
+    await SecureCacheService.setUserRole(role);
     AppFirebaseNotification.subscribeToTopic(userModel?.userRole ?? '');
   }
 

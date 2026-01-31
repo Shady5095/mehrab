@@ -23,6 +23,11 @@ extension NavigateReplacementExtension on BuildContext {
       );
 }
 
+extension NavigateReplacementNamedExtension on BuildContext {
+  Future<Object?> navigateReplacement({required String pageName, Object? arguments}) =>
+      Navigator.of(this).pushReplacementNamed(pageName, arguments: arguments);
+}
+
 extension PopUntilSpecificRouteExtension on BuildContext {
   void popUntilSpecificRoute({required String pageName}) =>
       Navigator.of(this).popUntil(ModalRoute.withName(pageName));

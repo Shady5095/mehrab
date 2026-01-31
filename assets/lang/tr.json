@@ -182,6 +182,7 @@
   "enterValidUrl": "Geçerli bir URL girin",
   "enterUrl": "Lütfen URL girin",
   "sessionEnd": "Oturumunuz sona erdi, lütfen tekrar giriş yapın",
+  "sessionExpiredPleaseLoginAgain": "Oturumunuz sona erdi, lütfen tekrar giriş yapın",
   "false": "Yanlış",
   "yourAnswer": "Cevabınız",
   "donwloadResult": "Sonucu İndir",

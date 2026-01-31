@@ -175,6 +175,7 @@
   "viewCorrectedFile": "View Corrected File",
   "lessons": "Lessons",
   "sessionEnd": "Your session has Ended , Please Login again",
+  "sessionExpiredPleaseLoginAgain": "Your session has ended, please log in again",
   "schoolUrlNotCorrect": "School URl not correct",
   "virtuals": "Virtual",
   "assignment": "Assignment",

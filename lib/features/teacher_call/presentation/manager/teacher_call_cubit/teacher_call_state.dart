@@ -51,3 +51,14 @@ final class PreCommentReceived extends TeacherCallState {
 }
 
 final class PreCommentCleared extends TeacherCallState {}
+
+final class NetworkQualityUpdated extends TeacherCallState {}
+
+/// Emitted when network quality changes during a call
+final class NetworkQualityChanged extends TeacherCallState {
+  final CallQuality quality;
+  NetworkQualityChanged({required this.quality});
+}
+
+/// Emitted when the connection is recovering (ICE restart in progress)
+final class ConnectionRecovering extends TeacherCallState {}

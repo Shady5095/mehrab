@@ -182,6 +182,7 @@
   "enterValidUrl": "أدخل عنوان URL صالحًا",
   "enterUrl": "الرجاء إدخال عنوان URL",
   "sessionEnd": "انتهت جلستك , برجاء تسجيل الدخول مره اخري",
+  "sessionExpiredPleaseLoginAgain": "انتهت جلستك, برجاء تسجيل الدخول مرة اخرى",
   "false": "خطأ",
   "yourAnswer": "اجابتك",
   "donwloadResult": "تحميل النتيجة",

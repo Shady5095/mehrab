@@ -3,7 +3,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart' hide MessageType;
+import 'package:livekit_client/livekit_client.dart' as lk;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mehrab/core/config/routes/extension.dart';
 import 'package:mehrab/core/utilities/functions/toast.dart';
@@ -79,14 +79,13 @@ class TeacherCallScreenBody extends StatelessWidget {
         } else if (state is CallFinished ||
             state is MaxDurationReached ||
             state is AnotherUserLeft) {
-          if(AppRouteObserver.currentRouteName == AppRoutes.quranWebView || AppRouteObserver.currentRouteName == AppRoutes.rateSessionScreen){
-            context.pop();
-          }
-          context.pop();
-          context.navigateTo(
-            pageName: AppRoutes.rateSessionScreen,
-            arguments: [cubit.latestCallData?.copyWith(endedTime: Timestamp.now()), false,false],
-          );
+          // Replace the current call screen with the rate session screen after the current frame
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.navigateReplacement(
+              pageName: AppRoutes.rateSessionScreen,
+              arguments: [cubit.latestCallData?.copyWith(endedTime: Timestamp.now()), false, false],
+            );
+          });
         }
       },
       builder: (context, state) {
@@ -95,11 +94,12 @@ class TeacherCallScreenBody extends StatelessWidget {
             // Remote video (full screen when enabled)
             if (cubit.isRemoteVideoEnabled && cubit.remoteUid != null)
               Positioned.fill(
-                child: RTCVideoView(
-                  cubit.callService.remoteRenderer,
-                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                  mirror: false,
-                ),
+                child: cubit.callService.remoteVideoTrack != null
+                    ? lk.VideoTrackRenderer(
+                        cubit.callService.remoteVideoTrack!,
+                        fit: lk.VideoViewFit.contain,
+                      )
+                    : Container(),
               ),
 
             // Default background with gradient
@@ -141,11 +141,13 @@ class TeacherCallScreenBody extends StatelessWidget {
                       ],
                     ),
                     clipBehavior: Clip.hardEdge,
-                    child: RTCVideoView(
-                      cubit.callService.localRenderer,
-                      objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                      mirror: true,
-                    ),
+                    child: cubit.callService.localVideoTrack != null
+                        ? lk.VideoTrackRenderer(
+                            cubit.callService.localVideoTrack!,
+                            fit: lk.VideoViewFit.cover,
+                            mirrorMode: lk.VideoViewMirrorMode.mirror,
+                          )
+                        : Container(),
                   ),
                 ),
               ),

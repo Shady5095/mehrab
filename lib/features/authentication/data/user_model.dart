@@ -49,10 +49,10 @@ class UserModel {
       password: json['password'] as String? ?? '',
       userRole: json['userRole'] as String? ?? '',
       signInMethod: json['signInMethod'] as String? ?? '',
-      joinedAt: json['joinedAt'] as Timestamp,
+      joinedAt: json['joinedAt'] as Timestamp? ?? Timestamp.now(),
       favoriteIgaz: json['favoriteIgaz'] as String?,
       deviceModel: json['deviceModel'] as String?,
-      isMale: json['isMale'] as bool,
+      isMale: json['isMale'] as bool? ?? true,
       countryCode: json['countryCode'] as String? ?? '',
       countryCodeNumber: json['countryCodeNumber'] as String? ?? '',
     );

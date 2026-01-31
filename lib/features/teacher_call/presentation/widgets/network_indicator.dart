@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:livekit_client/livekit_client.dart';
 import 'package:mehrab/core/utilities/resources/colors.dart';
-import '../../../../core/utilities/services/webrtc_call_service.dart';
 
 class NetworkQualityIndicator extends StatelessWidget {
-  final CallQuality quality;
+  final ConnectionQuality quality;
   final double size;
   final Color? color;
 
@@ -32,18 +32,22 @@ class NetworkQualityIndicator extends StatelessWidget {
 
   Color _getQualityColor() {
     switch (quality) {
-      case CallQuality.excellent:
+      case ConnectionQuality.excellent:
         return AppColors.coolGreen;
-      case CallQuality.good:
+      case ConnectionQuality.good:
         return Colors.orange;
-      case CallQuality.poor:
+      case ConnectionQuality.poor:
         return Colors.red;
+      case ConnectionQuality.lost:
+        return Colors.grey;
+      default:
+        return Colors.grey;
     }
   }
 }
 
 class _WifiSignalPainter extends CustomPainter {
-  final CallQuality quality;
+  final ConnectionQuality quality;
   final Color color;
 
   _WifiSignalPainter({
@@ -69,11 +73,13 @@ class _WifiSignalPainter extends CustomPainter {
     );
 
     // عدد الأقواس بناءً على الجودة
-    final arcCount = quality == CallQuality.excellent
+    final arcCount = quality == ConnectionQuality.excellent
         ? 3
-        : quality == CallQuality.good
+        : quality == ConnectionQuality.good
         ? 2
-        : 1;
+        : quality == ConnectionQuality.poor
+        ? 1
+        : 0;
 
     // رسم الأقواس
     for (int i = 0; i < arcCount; i++) {
@@ -106,7 +112,7 @@ class _WifiSignalPainter extends CustomPainter {
 
 // Widget مع Animation للتغييرات
 class AnimatedNetworkQualityIndicator extends StatefulWidget {
-  final CallQuality quality;
+  final ConnectionQuality quality;
   final double size;
   final Color? color;
 

@@ -61,4 +61,14 @@ class InternetConnectivityService {
     _subscription = null;
 
   }
+
+  /// Check if device has internet connectivity
+  Future<bool> hasInternetConnection() async {
+    try {
+      final result = await _connectivity.checkConnectivity();
+      return result.isNotEmpty && result.first != ConnectivityResult.none;
+    } catch (e) {
+      return false;
+    }
+  }
 }

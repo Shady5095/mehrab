@@ -44,22 +44,14 @@ class AppConfig {
     return _signalingServerUrl;
   }
 
-  /// TURN Server Domain
-  /// Set via --dart-define=TURN_DOMAIN=turn.your-server.com
-  static const String _turnDomain = String.fromEnvironment(
-    'TURN_DOMAIN',
-    defaultValue: 'turn.ahmedhany.dev',
+  /// LiveKit Server URL
+  /// Set via --dart-define=LIVEKIT_URL=https://livekit.your-server.com
+  static const String _livekitUrl = String.fromEnvironment(
+    'LIVEKIT_URL',
+    defaultValue: 'https://livekit.mehrab-alquran.com/',
   );
 
-  static String get turnDomain {
-    if (kDebugMode && isDevelopment) {
-      return const String.fromEnvironment(
-        'DEV_TURN_DOMAIN',
-        defaultValue: _turnDomain,
-      );
-    }
-    return _turnDomain;
-  }
+  static String get livekitUrl => _livekitUrl;
 
   // ========== API Configuration ==========
 
@@ -117,7 +109,7 @@ class AppConfig {
       debugPrint('=== App Configuration ===');
       debugPrint('Environment: $_environment');
       debugPrint('Signaling Server: $signalingServerUrl');
-      debugPrint('TURN Domain: $turnDomain');
+      debugPrint('LiveKit URL: $livekitUrl');
       debugPrint('API Base URL: $apiBaseUrl');
       debugPrint('API Timeout: $apiTimeout seconds');
       debugPrint('Debug Logging: $enableDebugLogging');

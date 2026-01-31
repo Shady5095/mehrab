@@ -11,7 +11,7 @@ class StudentCallScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     List<dynamic> args = ModalRoute.of(context)!.settings.arguments as List<dynamic>;
     return PopScope(
-      canPop: false,
+      canPop: false, // Prevent back button
       child: BlocProvider(
         create: (context) => StudentCallCubit(
           teacherModel: args[0],

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>736983329149-64lp0fovcbj8usdt1omvbr3q4a4ln3t7.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.736983329149-64lp0fovcbj8usdt1omvbr3q4a4ln3t7</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>736983329149-10em29hpkna4g8fgg6obnpt3e0j4449v.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCmFp8H601On0RXCGgcCZmyxFSXgi8hlHM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>736983329149</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.shady.mehrab</string>
+	<key>PROJECT_ID</key>
+	<string>mehrab-a8e60</string>
+	<key>STORAGE_BUCKET</key>
+	<string>mehrab-a8e60.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:736983329149:ios:3eae3cded938b5591f4414</string>
+	<key>ADMOB_APP_ID</key>
+	<string>ca-app-pub-2260945537418243~1806575023</string>
+</dict>
+</plist>

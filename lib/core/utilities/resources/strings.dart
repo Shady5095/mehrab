@@ -1513,6 +1513,7 @@ class AppStrings {
   static const String atTime = 'atTime';
   static const String femaleTeachers = 'femaleTeachers';
   static const String chooseYourTeacherNow = 'chooseYourTeacherNow';
+  static const String sessionExpiredPleaseLoginAgain = 'sessionExpiredPleaseLoginAgain';
 
 
 
