@@ -37,6 +37,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
   static const _uuid = Uuid();
 
   String? remoteUid;
+  String? _liveKitHost;
 
   // Connection timeout handling
   Timer? _connectionEstablishmentTimer;
@@ -438,7 +439,7 @@ class StudentCallCubit extends Cubit<StudentCallState> {
 
       debugPrint('✅ Got LiveKit token, connecting to room...');
       // Connect to LiveKit room
-      await callService.connect(token, callDocId ?? '');
+      await callService.connect(token, callDocId ?? '', host: _liveKitHost);
       debugPrint('✅ LiveKit connect method called successfully');
     } catch (error) {
       debugPrint('❌ Failed to connect to LiveKit room: $error');
@@ -467,6 +468,8 @@ class StudentCallCubit extends Cubit<StudentCallState> {
       );
 
       if (response.statusCode == 200 && response.data['token'] != null) {
+        // Store the host for later use in connection
+        _liveKitHost = response.data['host'];
         return response.data['token'];
       }
     } catch (error) {

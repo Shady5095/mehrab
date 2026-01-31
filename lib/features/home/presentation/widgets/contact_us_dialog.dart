@@ -124,6 +124,18 @@ class ContactUsDialog extends StatelessWidget {
                       label: 'واتساب',
                       onTap: () {
                         openWhatsapp(
+                          phoneNumber: "+905343284249",
+                          text: 'مرحبا ياشيخ حسني, اريد التواصل معك بخصوص...',
+                        );
+                      },
+                    ),
+                    SizedBox(width: 5),
+                    _buildContactButton(
+                      icon: FontAwesomeIcons.whatsapp,
+                      color: Color(0xFF25D366),
+                      label: 'واتساب',
+                      onTap: () {
+                        openWhatsapp(
                           phoneNumber: "+905308187582",
                           text: 'مرحبا ياشيخ حسني, اريد التواصل معك بخصوص...',
                         );
