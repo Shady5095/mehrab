@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -11,25 +10,6 @@ void myToast({
   Toast? toastLength,
 }) {
   if (msg == null) return;
-
-  // macOS doesn't support native toast, use SnackBar instead
-  if (!kIsWeb && Platform.isMacOS) {
-    final context = MyApp.navigatorKey.currentContext;
-    if (context != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(msg),
-          backgroundColor: toastColor(state),
-          duration: toastLength == Toast.LENGTH_LONG
-              ? const Duration(seconds: 4)
-              : const Duration(seconds: 2),
-        ),
-      );
-    } else {
-      debugPrint('Toast: $msg');
-    }
-    return;
-  }
 
   Fluttertoast.showToast(
     msg: msg,

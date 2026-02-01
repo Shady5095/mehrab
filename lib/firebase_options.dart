@@ -2,7 +2,7 @@
 // ignore_for_file: type=lint
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+    show defaultTargetPlatform, TargetPlatform;
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -16,18 +16,11 @@ import 'package:flutter/foundation.dart'
 /// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
-    if (kIsWeb) {
-      return web;
-    }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
         return ios;
-      case TargetPlatform.macOS:
-        return macos;
-      case TargetPlatform.windows:
-        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -39,16 +32,6 @@ class DefaultFirebaseOptions {
         );
     }
   }
-
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAMpSMU17o8R2tllbz3MC00roQTRfgXZdM',
-    appId: '1:736983329149:web:95b500cf380da3e01f4414',
-    messagingSenderId: '736983329149',
-    projectId: 'mehrab-a8e60',
-    authDomain: 'mehrab-a8e60.firebaseapp.com',
-    storageBucket: 'mehrab-a8e60.firebasestorage.app',
-    measurementId: 'G-XB9T4XJPDY',
-  );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCTJRX6ZtamN2_thEmFJ0vhdunKm7u2CjA',
@@ -67,27 +50,6 @@ class DefaultFirebaseOptions {
     androidClientId: '736983329149-10em29hpkna4g8fgg6obnpt3e0j4449v.apps.googleusercontent.com',
     iosClientId: '736983329149-64lp0fovcbj8usdt1omvbr3q4a4ln3t7.apps.googleusercontent.com',
     iosBundleId: 'com.shady.mehrab',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCmFp8H601On0RXCGgcCZmyxFSXgi8hlHM',
-    appId: '1:736983329149:ios:ce0fd8952f5777631f4414',
-    messagingSenderId: '736983329149',
-    projectId: 'mehrab-a8e60',
-    storageBucket: 'mehrab-a8e60.firebasestorage.app',
-    androidClientId: '736983329149-10em29hpkna4g8fgg6obnpt3e0j4449v.apps.googleusercontent.com',
-    iosClientId: '736983329149-4qtqqbdpvenq7krlh61f321gatoqrvfa.apps.googleusercontent.com',
-    iosBundleId: 'com.example.mehrab',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAMpSMU17o8R2tllbz3MC00roQTRfgXZdM',
-    appId: '1:736983329149:web:28ff8e17570f10081f4414',
-    messagingSenderId: '736983329149',
-    projectId: 'mehrab-a8e60',
-    authDomain: 'mehrab-a8e60.firebaseapp.com',
-    storageBucket: 'mehrab-a8e60.firebasestorage.app',
-    measurementId: 'G-8RGGJGQS5M',
   );
 
 }
