@@ -2,7 +2,7 @@
 // ignore_for_file: type=lint
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, TargetPlatform;
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -16,11 +16,27 @@ import 'package:flutter/foundation.dart'
 /// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
+    if (kIsWeb) {
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
+    }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
         return ios;
+      case TargetPlatform.macOS:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
+      case TargetPlatform.windows:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -47,9 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '736983329149',
     projectId: 'mehrab-a8e60',
     storageBucket: 'mehrab-a8e60.firebasestorage.app',
-    androidClientId: '736983329149-10em29hpkna4g8fgg6obnpt3e0j4449v.apps.googleusercontent.com',
+    androidClientId: '736983329149-fqn8dod955hg2i5s2tfvmuuij1d61k9u.apps.googleusercontent.com',
     iosClientId: '736983329149-64lp0fovcbj8usdt1omvbr3q4a4ln3t7.apps.googleusercontent.com',
     iosBundleId: 'com.shady.mehrab',
   );
-
 }
